@@ -1,0 +1,454 @@
+{
+  "generated_at": "2026-04-27 01:38:26",
+  "mode": "vector_only_pipeline_with_llm_keywords",
+  "pipeline": "LLM keywords -> VectorIndex.query() -> HybridSearch.rerank()",
+  "llm_model": "gemini-2.5-flash",
+  "results": [
+    {
+      "size": 20,
+      "pass": 19,
+      "fail": 1,
+      "pass_rate": 95.0,
+      "elapsed_ms": 396119.085,
+      "elapsed_sec": 396.119,
+      "avg_ms_per_query": 19805.95,
+      "avg_orch_ms": 19805.75,
+      "ram_start_mb": 104.363,
+      "ram_end_mb": 112.918,
+      "ram_peak_mb": 113.855,
+      "ram_delta_mb": 9.492,
+      "failures": [
+        {
+          "query": "What controls apply to delinquency monitoring and follow-up?",
+          "expected": "Credit & Loans",
+          "got": "IT & Digital",
+          "keywords": [
+            "delinquency",
+            "monitoring",
+            "follow-up"
+          ]
+        }
+      ]
+    },
+    {
+      "size": 50,
+      "pass": 45,
+      "fail": 5,
+      "pass_rate": 90.0,
+      "elapsed_ms": 865847.56,
+      "elapsed_sec": 865.848,
+      "avg_ms_per_query": 17316.95,
+      "avg_orch_ms": 17316.74,
+      "ram_start_mb": 111.812,
+      "ram_end_mb": 112.52,
+      "ram_peak_mb": 114.77,
+      "ram_delta_mb": 2.957,
+      "failures": [
+        {
+          "query": "What controls apply to delinquency monitoring and follow-up?",
+          "expected": "Credit & Loans",
+          "got": "IT & Digital",
+          "keywords": [
+            "delinquency",
+            "monitoring",
+            "follow-up"
+          ]
+        },
+        {
+          "query": "What operations policy explains management escalation workfl",
+          "expected": "Operations",
+          "got": "Credit & Loans",
+          "keywords": [
+            "operations",
+            "policy",
+            "management"
+          ]
+        },
+        {
+          "query": "What policy governs high-risk cash transaction escalation?",
+          "expected": "Operations",
+          "got": "IT & Digital",
+          "keywords": [
+            "high-risk",
+            "cash",
+            "transaction"
+          ]
+        },
+        {
+          "query": "Which IT policy covers infrastructure hardening and monitori",
+          "expected": "IT & Digital",
+          "got": "HR & Admin",
+          "keywords": [
+            "policy",
+            "infrastructure",
+            "hardening"
+          ]
+        },
+        {
+          "query": "How are software release and rollback safeguards defined?",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "keywords": [
+            "software release",
+            "release",
+            "deployment"
+          ]
+        }
+      ]
+    },
+    {
+      "size": 80,
+      "pass": 70,
+      "fail": 10,
+      "pass_rate": 87.5,
+      "elapsed_ms": 1334403.488,
+      "elapsed_sec": 1334.403,
+      "avg_ms_per_query": 16680.04,
+      "avg_orch_ms": 16679.85,
+      "ram_start_mb": 112.594,
+      "ram_end_mb": 114.051,
+      "ram_peak_mb": 115.414,
+      "ram_delta_mb": 2.82,
+      "failures": [
+        {
+          "query": "What controls apply to delinquency monitoring and follow-up?",
+          "expected": "Credit & Loans",
+          "got": "IT & Digital",
+          "keywords": [
+            "delinquency",
+            "monitoring",
+            "follow-up"
+          ]
+        },
+        {
+          "query": "What operations policy explains management escalation workfl",
+          "expected": "Operations",
+          "got": "Credit & Loans",
+          "keywords": [
+            "operations",
+            "policy",
+            "management"
+          ]
+        },
+        {
+          "query": "What policy governs high-risk cash transaction escalation?",
+          "expected": "Operations",
+          "got": "IT & Digital",
+          "keywords": [
+            "high-risk",
+            "cash",
+            "transaction"
+          ]
+        },
+        {
+          "query": "Which IT policy covers infrastructure hardening and monitori",
+          "expected": "IT & Digital",
+          "got": "HR & Admin",
+          "keywords": [
+            "policy",
+            "infrastructure",
+            "hardening"
+          ]
+        },
+        {
+          "query": "How are software release and rollback safeguards defined?",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "keywords": [
+            "software release",
+            "release",
+            "deployment"
+          ]
+        },
+        {
+          "query": "Which IT standards define access control for critical system",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "keywords": [
+            "access control",
+            "IT security",
+            "information security"
+          ]
+        },
+        {
+          "query": "How are digital-service outages escalated by the technology ",
+          "expected": "IT & Digital",
+          "got": "Operations",
+          "keywords": [
+            "digital service",
+            "outage",
+            "escalation"
+          ]
+        },
+        {
+          "query": "How are audit findings prioritized and remediated?",
+          "expected": "Risk & Compliance",
+          "got": "Credit & Loans",
+          "keywords": [
+            "audit",
+            "review",
+            "inspection"
+          ]
+        },
+        {
+          "query": "Which document contains organization-wide schedule guidance?",
+          "expected": "General",
+          "got": "Risk & Compliance",
+          "keywords": [
+            "schedule",
+            "guidance",
+            "policy"
+          ]
+        },
+        {
+          "query": "Which general policy note is shared across all departments?",
+          "expected": "General",
+          "got": "HR & Admin",
+          "keywords": [
+            "policy",
+            "general",
+            "company-wide"
+          ]
+        }
+      ]
+    },
+    {
+      "size": 100,
+      "pass": 78,
+      "fail": 22,
+      "pass_rate": 78.0,
+      "elapsed_ms": 1200370.855,
+      "elapsed_sec": 1200.371,
+      "avg_ms_per_query": 12003.71,
+      "avg_orch_ms": 12003.53,
+      "ram_start_mb": 114.051,
+      "ram_end_mb": 115.801,
+      "ram_peak_mb": 115.801,
+      "ram_delta_mb": 1.75,
+      "failures": [
+        {
+          "query": "What controls apply to delinquency monitoring and follow-up?",
+          "expected": "Credit & Loans",
+          "got": "Risk & Compliance",
+          "keywords": [
+            "delinquency",
+            "monitoring",
+            "follow-up"
+          ]
+        },
+        {
+          "query": "What operations policy explains management escalation workfl",
+          "expected": "Operations",
+          "got": "HR & Admin",
+          "keywords": [
+            "operations",
+            "policy",
+            "management"
+          ]
+        },
+        {
+          "query": "What policy governs high-risk cash transaction escalation?",
+          "expected": "Operations",
+          "got": "Credit & Loans",
+          "keywords": [
+            "high-risk",
+            "cash",
+            "transaction"
+          ]
+        },
+        {
+          "query": "What cyber-security controls are required for core banking s",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "keywords": [
+            "cybersecurity",
+            "banking systems",
+            "security controls"
+          ]
+        },
+        {
+          "query": "Which IT policy covers infrastructure hardening and monitori",
+          "expected": "IT & Digital",
+          "got": "HR & Admin",
+          "keywords": [
+            "policy",
+            "infrastructure",
+            "hardening"
+          ]
+        },
+        {
+          "query": "What guidance exists for cyber incident triage in digital ch",
+          "expected": "IT & Digital",
+          "got": "Operations",
+          "keywords": [
+            "cyber incident",
+            "triage",
+            "digital channels"
+          ]
+        },
+        {
+          "query": "Which IT standards define access control for critical system",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "keywords": [
+            "access control",
+            "IT security",
+            "information security"
+          ]
+        },
+        {
+          "query": "How are digital-service outages escalated by the technology ",
+          "expected": "IT & Digital",
+          "got": "Operations",
+          "keywords": [
+            "digital service",
+            "outage",
+            "escalation"
+          ]
+        },
+        {
+          "query": "Which standards define change management for production syst",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "keywords": [
+            "change management",
+            "change control",
+            "production systems"
+          ]
+        },
+        {
+          "query": "What is the policy for vulnerability remediation SLA trackin",
+          "expected": "IT & Digital",
+          "got": "HR & Admin",
+          "keywords": [
+            "vulnerability",
+            "remediation",
+            "SLA"
+          ]
+        },
+        {
+          "query": "Where is backup and disaster recovery validation documented?",
+          "expected": "IT & Digital",
+          "got": null,
+          "keywords": [
+            "backup",
+            "disaster recovery",
+            "validation",
+            "Welfare",
+            "benefits"
+          ]
+        },
+        {
+          "query": "Which policy explains anti-fraud monitoring and investigatio",
+          "expected": "Risk & Compliance",
+          "got": "HR & Admin",
+          "keywords": [
+            "anti-fraud",
+            "fraud prevention",
+            "fraud detection"
+          ]
+        },
+        {
+          "query": "Where are compliance audit standards for business units docu",
+          "expected": "Risk & Compliance",
+          "got": "Operations",
+          "keywords": [
+            "compliance",
+            "policy",
+            "regulation"
+          ]
+        },
+        {
+          "query": "What guidance exists for regulatory reporting and evidence r",
+          "expected": "Risk & Compliance",
+          "got": "IT & Digital",
+          "keywords": [
+            "regulatory",
+            "reporting",
+            "compliance"
+          ]
+        },
+        {
+          "query": "Which policy defines regulatory control self-assessment requ",
+          "expected": "Risk & Compliance",
+          "got": "IT & Digital",
+          "keywords": [
+            "regulatory",
+            "regulation",
+            "compliance"
+          ]
+        },
+        {
+          "query": "How are audit findings prioritized and remediated?",
+          "expected": "Risk & Compliance",
+          "got": "Credit & Loans",
+          "keywords": [
+            "audit",
+            "review",
+            "inspection"
+          ]
+        },
+        {
+          "query": "Where is whistleblowing and misconduct investigation guidanc",
+          "expected": "Risk & Compliance",
+          "got": "IT & Digital",
+          "keywords": [
+            "whistleblowing",
+            "misconduct",
+            "investigation"
+          ]
+        },
+        {
+          "query": "Which document contains organization-wide schedule guidance?",
+          "expected": "General",
+          "got": "Credit & Loans",
+          "keywords": [
+            "schedule",
+            "guidance",
+            "policy"
+          ]
+        },
+        {
+          "query": "Which general policy note is shared across all departments?",
+          "expected": "General",
+          "got": "HR & Admin",
+          "keywords": [
+            "policy",
+            "general",
+            "company-wide"
+          ]
+        },
+        {
+          "query": "How are manual fallback procedures managed during branch sys",
+          "expected": "Operations",
+          "got": "Risk & Compliance",
+          "keywords": [
+            "manual",
+            "fallback",
+            "procedures"
+          ]
+        },
+        {
+          "query": "What IT policy defines system observability and alert manage",
+          "expected": "IT & Digital",
+          "got": "Credit & Loans",
+          "keywords": [
+            "observability",
+            "monitoring",
+            "alerting"
+          ]
+        },
+        {
+          "query": "Which document governs incident postmortem and corrective ac",
+          "expected": "IT & Digital",
+          "got": "HR & Admin",
+          "keywords": [
+            "incident",
+            "postmortem",
+            "corrective action"
+          ]
+        }
+      ]
+    }
+  ]
+}

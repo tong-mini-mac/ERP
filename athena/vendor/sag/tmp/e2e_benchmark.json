@@ -1,0 +1,273 @@
+{
+  "generated_at": "2026-04-26 22:08:28",
+  "mode": "e2e_full_pipeline_no_llm",
+  "note": "LLM generate_keywords simulated via _fallback_keywords_from_query. LLM synthesis not included (no API key).",
+  "results": [
+    {
+      "size": 20,
+      "pass": 19,
+      "fail": 1,
+      "pass_rate": 95.0,
+      "elapsed_ms": 2905.157,
+      "elapsed_sec": 2.905,
+      "avg_ms_per_query": 145.26,
+      "timing_breakdown_ms": {
+        "keyword_gen_via_fallback": 0.78,
+        "lexical_parallel_search": 2478.63,
+        "subset_selection": 2.95,
+        "vector_search": 416.73,
+        "hybrid_rerank": 2.76
+      },
+      "avg_stage_ms": {
+        "keyword_fallback": 0.04,
+        "lexical_search": 123.93,
+        "subset": 0.15,
+        "vector": 20.84,
+        "rerank": 0.14
+      },
+      "ram_start_mb": 21.125,
+      "ram_end_mb": 27.656,
+      "ram_peak_mb": 27.715,
+      "ram_delta_mb": 6.59,
+      "failures": [
+        {
+          "query": "What controls apply to delinquency monitoring and follow-up?",
+          "expected": "Credit & Loans",
+          "got": "Risk & Compliance"
+        }
+      ]
+    },
+    {
+      "size": 50,
+      "pass": 45,
+      "fail": 5,
+      "pass_rate": 90.0,
+      "elapsed_ms": 6738.706,
+      "elapsed_sec": 6.739,
+      "avg_ms_per_query": 134.77,
+      "timing_breakdown_ms": {
+        "keyword_gen_via_fallback": 1.81,
+        "lexical_parallel_search": 5609.49,
+        "subset_selection": 5.78,
+        "vector_search": 1105.89,
+        "hybrid_rerank": 7.4
+      },
+      "avg_stage_ms": {
+        "keyword_fallback": 0.04,
+        "lexical_search": 112.19,
+        "subset": 0.12,
+        "vector": 22.12,
+        "rerank": 0.15
+      },
+      "ram_start_mb": 27.656,
+      "ram_end_mb": 28.809,
+      "ram_peak_mb": 28.945,
+      "ram_delta_mb": 1.289,
+      "failures": [
+        {
+          "query": "What controls apply to delinquency monitoring and follow-up?",
+          "expected": "Credit & Loans",
+          "got": "Risk & Compliance"
+        },
+        {
+          "query": "How should frontline teams report service disruptions quickl",
+          "expected": "Operations",
+          "got": "Risk & Compliance"
+        },
+        {
+          "query": "What policy governs high-risk cash transaction escalation?",
+          "expected": "Operations",
+          "got": "Risk & Compliance"
+        },
+        {
+          "query": "How are queue overload and service-level breaches escalated?",
+          "expected": "Operations",
+          "got": "HR & Admin"
+        },
+        {
+          "query": "How should IT teams handle maintenance windows and risk chec",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance"
+        }
+      ]
+    },
+    {
+      "size": 80,
+      "pass": 69,
+      "fail": 11,
+      "pass_rate": 86.25,
+      "elapsed_ms": 11082.647,
+      "elapsed_sec": 11.083,
+      "avg_ms_per_query": 138.53,
+      "timing_breakdown_ms": {
+        "keyword_gen_via_fallback": 2.94,
+        "lexical_parallel_search": 9161.98,
+        "subset_selection": 10.87,
+        "vector_search": 1881.08,
+        "hybrid_rerank": 12.16
+      },
+      "avg_stage_ms": {
+        "keyword_fallback": 0.04,
+        "lexical_search": 114.52,
+        "subset": 0.14,
+        "vector": 23.51,
+        "rerank": 0.15
+      },
+      "ram_start_mb": 28.809,
+      "ram_end_mb": 29.484,
+      "ram_peak_mb": 29.484,
+      "ram_delta_mb": 0.676,
+      "failures": [
+        {
+          "query": "What controls apply to delinquency monitoring and follow-up?",
+          "expected": "Credit & Loans",
+          "got": "Risk & Compliance"
+        },
+        {
+          "query": "How should frontline teams report service disruptions quickl",
+          "expected": "Operations",
+          "got": "Risk & Compliance"
+        },
+        {
+          "query": "What policy governs high-risk cash transaction escalation?",
+          "expected": "Operations",
+          "got": "Risk & Compliance"
+        },
+        {
+          "query": "How are queue overload and service-level breaches escalated?",
+          "expected": "Operations",
+          "got": "HR & Admin"
+        },
+        {
+          "query": "How should IT teams handle maintenance windows and risk chec",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance"
+        },
+        {
+          "query": "Where are server patching and vulnerability review procedure",
+          "expected": "IT & Digital",
+          "got": "Credit & Loans"
+        },
+        {
+          "query": "Which IT standards define access control for critical system",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance"
+        },
+        {
+          "query": "How are digital-service outages escalated by the technology ",
+          "expected": "IT & Digital",
+          "got": "HR & Admin"
+        },
+        {
+          "query": "Which standards define change management for production syst",
+          "expected": "IT & Digital",
+          "got": "Operations"
+        },
+        {
+          "query": "What is the policy for vulnerability remediation SLA trackin",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance"
+        },
+        {
+          "query": "Which document contains organization-wide schedule guidance?",
+          "expected": "General",
+          "got": "Risk & Compliance"
+        }
+      ]
+    },
+    {
+      "size": 100,
+      "pass": 87,
+      "fail": 13,
+      "pass_rate": 87.0,
+      "elapsed_ms": 13451.395,
+      "elapsed_sec": 13.451,
+      "avg_ms_per_query": 134.51,
+      "timing_breakdown_ms": {
+        "keyword_gen_via_fallback": 3.67,
+        "lexical_parallel_search": 11044.51,
+        "subset_selection": 13.43,
+        "vector_search": 2357.7,
+        "hybrid_rerank": 15.13
+      },
+      "avg_stage_ms": {
+        "keyword_fallback": 0.04,
+        "lexical_search": 110.45,
+        "subset": 0.13,
+        "vector": 23.58,
+        "rerank": 0.15
+      },
+      "ram_start_mb": 29.484,
+      "ram_end_mb": 30.133,
+      "ram_peak_mb": 30.484,
+      "ram_delta_mb": 1.0,
+      "failures": [
+        {
+          "query": "What controls apply to delinquency monitoring and follow-up?",
+          "expected": "Credit & Loans",
+          "got": "Risk & Compliance"
+        },
+        {
+          "query": "How should frontline teams report service disruptions quickl",
+          "expected": "Operations",
+          "got": "Risk & Compliance"
+        },
+        {
+          "query": "What policy governs high-risk cash transaction escalation?",
+          "expected": "Operations",
+          "got": "Risk & Compliance"
+        },
+        {
+          "query": "How are queue overload and service-level breaches escalated?",
+          "expected": "Operations",
+          "got": "HR & Admin"
+        },
+        {
+          "query": "How should IT teams handle maintenance windows and risk chec",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance"
+        },
+        {
+          "query": "Where are server patching and vulnerability review procedure",
+          "expected": "IT & Digital",
+          "got": "Credit & Loans"
+        },
+        {
+          "query": "Which IT standards define access control for critical system",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance"
+        },
+        {
+          "query": "How are digital-service outages escalated by the technology ",
+          "expected": "IT & Digital",
+          "got": "HR & Admin"
+        },
+        {
+          "query": "Which standards define change management for production syst",
+          "expected": "IT & Digital",
+          "got": "Operations"
+        },
+        {
+          "query": "What is the policy for vulnerability remediation SLA trackin",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance"
+        },
+        {
+          "query": "Which document contains organization-wide schedule guidance?",
+          "expected": "General",
+          "got": "Risk & Compliance"
+        },
+        {
+          "query": "How does HR governance describe probation evaluation require",
+          "expected": "HR & Admin",
+          "got": "Risk & Compliance"
+        },
+        {
+          "query": "Which document governs incident postmortem and corrective ac",
+          "expected": "IT & Digital",
+          "got": "Operations"
+        }
+      ]
+    }
+  ]
+}

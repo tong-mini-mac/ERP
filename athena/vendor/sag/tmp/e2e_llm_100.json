@@ -1,0 +1,181 @@
+{
+  "generated_at": "2026-04-26 22:34:40",
+  "mode": "e2e_full_pipeline_with_llm_keyword_gen",
+  "llm_model": "gemini-2.5-flash",
+  "results": [
+    {
+      "size": 100,
+      "pass": 88,
+      "fail": 12,
+      "pass_rate": 88.0,
+      "llm_errors": 0,
+      "elapsed_ms": 239594.453,
+      "elapsed_sec": 239.594,
+      "avg_ms_per_query": 2395.94,
+      "timing_breakdown_ms": {
+        "llm_keyword_gen": 222041.27,
+        "keyword_expand_dept": 0.0,
+        "lexical_parallel_search": 14900.17,
+        "subset_selection": 15.0,
+        "vector_search": 2598.19,
+        "hybrid_rerank": 17.09
+      },
+      "avg_stage_ms": {
+        "llm_keyword": 2220.41,
+        "lexical_search": 149.0,
+        "vector": 25.98,
+        "rerank": 0.17
+      },
+      "ram_start_mb": 96.559,
+      "ram_end_mb": 105.695,
+      "ram_peak_mb": 106.922,
+      "ram_delta_mb": 10.363,
+      "failures": [
+        {
+          "query": "What evidence is required for credit appraisal and risk moni",
+          "expected": "Credit & Loans",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "credit appraisal",
+            "risk monitoring",
+            "evidence",
+            "documentation",
+            "financial statements"
+          ]
+        },
+        {
+          "query": "What policy governs high-risk cash transaction escalation?",
+          "expected": "Operations",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "high-risk",
+            "cash transaction",
+            "escalation",
+            "policy",
+            "reporting"
+          ]
+        },
+        {
+          "query": "How are queue overload and service-level breaches escalated?",
+          "expected": "Operations",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "queue overload",
+            "service level breach",
+            "SLA violation",
+            "escalation procedure",
+            "incident management"
+          ]
+        },
+        {
+          "query": "How should IT teams handle maintenance windows and risk chec",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "IT",
+            "Information Technology",
+            "maintenance",
+            "maintenance window",
+            "scheduled maintenance"
+          ]
+        },
+        {
+          "query": "Where are server patching and vulnerability review procedure",
+          "expected": "IT & Digital",
+          "got": "HR & Admin",
+          "llm_keywords": [
+            "server",
+            "patching",
+            "vulnerability",
+            "security",
+            "procedures"
+          ]
+        },
+        {
+          "query": "Which IT standards define access control for critical system",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "access control",
+            "IT standards",
+            "security policy",
+            "system access",
+            "critical infrastructure"
+          ]
+        },
+        {
+          "query": "Which standards define change management for production syst",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "change management",
+            "change control",
+            "production systems",
+            "ITIL",
+            "ISO standards"
+          ]
+        },
+        {
+          "query": "What is the policy for vulnerability remediation SLA trackin",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "vulnerability",
+            "remediation",
+            "SLA",
+            "service level agreement",
+            "tracking"
+          ]
+        },
+        {
+          "query": "Which HR policy defines promotion and merit review process?",
+          "expected": "HR & Admin",
+          "got": "Operations",
+          "llm_keywords": [
+            "promotion",
+            "merit review",
+            "performance review",
+            "career progression",
+            "advancement"
+          ]
+        },
+        {
+          "query": "Which document explains staff policy acknowledgment requirem",
+          "expected": "HR & Admin",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "staff",
+            "employee",
+            "policy",
+            "acknowledgment",
+            "agreement"
+          ]
+        },
+        {
+          "query": "Where is operational incident response ownership defined?",
+          "expected": "Operations",
+          "got": "HR & Admin",
+          "llm_keywords": [
+            "incident response",
+            "operational incident",
+            "incident management",
+            "ownership",
+            "responsibility"
+          ]
+        },
+        {
+          "query": "What IT policy defines system observability and alert manage",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "observability",
+            "monitoring",
+            "alert management",
+            "alerts",
+            "incident management"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,393 @@
+{
+  "generated_at": "2026-04-26 23:22:36",
+  "mode": "e2e_full_pipeline_with_llm_keyword_gen",
+  "llm_model": "gemini-2.5-flash",
+  "results": [
+    {
+      "size": 20,
+      "pass": 19,
+      "fail": 1,
+      "pass_rate": 95.0,
+      "llm_errors": 0,
+      "elapsed_ms": 51082.184,
+      "elapsed_sec": 51.082,
+      "avg_ms_per_query": 2554.11,
+      "timing_breakdown_ms": {
+        "llm_keyword_gen": 48637.4,
+        "keyword_expand_dept": 0.0,
+        "lexical_parallel_search": 1925.93,
+        "subset_selection": 1.91,
+        "vector_search": 508.38,
+        "hybrid_rerank": 3.43
+      },
+      "avg_stage_ms": {
+        "llm_keyword": 2431.87,
+        "lexical_search": 96.3,
+        "vector": 25.42,
+        "rerank": 0.17
+      },
+      "ram_start_mb": 104.27,
+      "ram_end_mb": 112.859,
+      "ram_peak_mb": 112.891,
+      "ram_delta_mb": 8.621,
+      "failures": [
+        {
+          "query": "What controls apply to delinquency monitoring and follow-up?",
+          "expected": "Credit & Loans",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "delinquency",
+            "monitoring",
+            "follow-up",
+            "controls",
+            "overdue"
+          ],
+          "selected_keywords": [
+            "delinquency",
+            "monitoring",
+            "follow-up",
+            "controls",
+            "overdue"
+          ]
+        }
+      ]
+    },
+    {
+      "size": 50,
+      "pass": 49,
+      "fail": 1,
+      "pass_rate": 98.0,
+      "llm_errors": 0,
+      "elapsed_ms": 74377.057,
+      "elapsed_sec": 74.377,
+      "avg_ms_per_query": 1487.54,
+      "timing_breakdown_ms": {
+        "llm_keyword_gen": 68637.52,
+        "keyword_expand_dept": 0.0,
+        "lexical_parallel_search": 4418.56,
+        "subset_selection": 3.74,
+        "vector_search": 1297.39,
+        "hybrid_rerank": 8.18
+      },
+      "avg_stage_ms": {
+        "llm_keyword": 1372.75,
+        "lexical_search": 88.37,
+        "vector": 25.95,
+        "rerank": 0.16
+      },
+      "ram_start_mb": 111.082,
+      "ram_end_mb": 111.66,
+      "ram_peak_mb": 114.453,
+      "ram_delta_mb": 3.371,
+      "failures": [
+        {
+          "query": "What controls apply to delinquency monitoring and follow-up?",
+          "expected": "Credit & Loans",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "delinquency",
+            "monitoring",
+            "follow-up",
+            "controls",
+            "overdue"
+          ],
+          "selected_keywords": [
+            "delinquency",
+            "monitoring",
+            "follow-up",
+            "controls",
+            "overdue"
+          ]
+        }
+      ]
+    },
+    {
+      "size": 80,
+      "pass": 76,
+      "fail": 4,
+      "pass_rate": 95.0,
+      "llm_errors": 0,
+      "elapsed_ms": 81232.656,
+      "elapsed_sec": 81.233,
+      "avg_ms_per_query": 1015.41,
+      "timing_breakdown_ms": {
+        "llm_keyword_gen": 71686.32,
+        "keyword_expand_dept": 0.0,
+        "lexical_parallel_search": 7444.49,
+        "subset_selection": 7.44,
+        "vector_search": 2063.28,
+        "hybrid_rerank": 12.72
+      },
+      "avg_stage_ms": {
+        "llm_keyword": 896.08,
+        "lexical_search": 93.06,
+        "vector": 25.79,
+        "rerank": 0.16
+      },
+      "ram_start_mb": 111.703,
+      "ram_end_mb": 112.816,
+      "ram_peak_mb": 114.801,
+      "ram_delta_mb": 3.098,
+      "failures": [
+        {
+          "query": "What controls apply to delinquency monitoring and follow-up?",
+          "expected": "Credit & Loans",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "delinquency",
+            "monitoring",
+            "follow-up",
+            "controls",
+            "overdue"
+          ],
+          "selected_keywords": [
+            "delinquency",
+            "monitoring",
+            "follow-up",
+            "controls",
+            "overdue"
+          ]
+        },
+        {
+          "query": "How are digital-service outages escalated by the technology ",
+          "expected": "IT & Digital",
+          "got": "Operations",
+          "llm_keywords": [
+            "digital service",
+            "outage",
+            "escalation",
+            "technology team",
+            "incident"
+          ],
+          "selected_keywords": [
+            "digital service",
+            "outage",
+            "escalation",
+            "technology team",
+            "incident"
+          ]
+        },
+        {
+          "query": "Which standards define change management for production syst",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "change management",
+            "change control",
+            "production systems",
+            "IT systems",
+            "operational changes"
+          ],
+          "selected_keywords": [
+            "change management",
+            "change control",
+            "production systems",
+            "IT systems",
+            "operational changes"
+          ]
+        },
+        {
+          "query": "What is the policy for vulnerability remediation SLA trackin",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "vulnerability",
+            "remediation",
+            "SLA",
+            "service level agreement",
+            "tracking"
+          ],
+          "selected_keywords": [
+            "vulnerability",
+            "remediation",
+            "SLA",
+            "service level agreement",
+            "tracking"
+          ]
+        }
+      ]
+    },
+    {
+      "size": 100,
+      "pass": 92,
+      "fail": 8,
+      "pass_rate": 92.0,
+      "llm_errors": 0,
+      "elapsed_ms": 54502.416,
+      "elapsed_sec": 54.502,
+      "avg_ms_per_query": 545.02,
+      "timing_breakdown_ms": {
+        "llm_keyword_gen": 42035.35,
+        "keyword_expand_dept": 0.0,
+        "lexical_parallel_search": 9616.92,
+        "subset_selection": 9.33,
+        "vector_search": 2798.61,
+        "hybrid_rerank": 17.61
+      },
+      "avg_stage_ms": {
+        "llm_keyword": 420.35,
+        "lexical_search": 96.17,
+        "vector": 27.99,
+        "rerank": 0.18
+      },
+      "ram_start_mb": 112.555,
+      "ram_end_mb": 115.879,
+      "ram_peak_mb": 115.879,
+      "ram_delta_mb": 3.324,
+      "failures": [
+        {
+          "query": "What controls apply to delinquency monitoring and follow-up?",
+          "expected": "Credit & Loans",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "delinquency",
+            "monitoring",
+            "follow-up",
+            "controls",
+            "overdue"
+          ],
+          "selected_keywords": [
+            "delinquency",
+            "monitoring",
+            "follow-up",
+            "controls",
+            "overdue"
+          ]
+        },
+        {
+          "query": "How are digital-service outages escalated by the technology ",
+          "expected": "IT & Digital",
+          "got": "Operations",
+          "llm_keywords": [
+            "digital service",
+            "outage",
+            "escalation",
+            "technology team",
+            "incident"
+          ],
+          "selected_keywords": [
+            "digital service",
+            "outage",
+            "escalation",
+            "technology team",
+            "incident"
+          ]
+        },
+        {
+          "query": "Which standards define change management for production syst",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "change management",
+            "change control",
+            "production systems",
+            "IT systems",
+            "operational changes"
+          ],
+          "selected_keywords": [
+            "change management",
+            "change control",
+            "production systems",
+            "IT systems",
+            "operational changes"
+          ]
+        },
+        {
+          "query": "What is the policy for vulnerability remediation SLA trackin",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "vulnerability",
+            "remediation",
+            "SLA",
+            "service level agreement",
+            "tracking"
+          ],
+          "selected_keywords": [
+            "vulnerability",
+            "remediation",
+            "SLA",
+            "service level agreement",
+            "tracking"
+          ]
+        },
+        {
+          "query": "Which HR policy defines promotion and merit review process?",
+          "expected": "HR & Admin",
+          "got": "Operations",
+          "llm_keywords": [
+            "promotion",
+            "merit review",
+            "performance review",
+            "career advancement",
+            "employee development"
+          ],
+          "selected_keywords": [
+            "promotion",
+            "merit review",
+            "performance review",
+            "career advancement",
+            "employee development"
+          ]
+        },
+        {
+          "query": "Where is operational incident response ownership defined?",
+          "expected": "Operations",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "operational incident",
+            "incident response",
+            "ownership",
+            "responsibility",
+            "accountability"
+          ],
+          "selected_keywords": [
+            "operational incident",
+            "incident response",
+            "ownership",
+            "responsibility",
+            "accountability"
+          ]
+        },
+        {
+          "query": "What IT policy defines system observability and alert manage",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "observability",
+            "monitoring",
+            "alert management",
+            "incident management",
+            "IT policy"
+          ],
+          "selected_keywords": [
+            "observability",
+            "monitoring",
+            "alert management",
+            "incident management",
+            "IT policy"
+          ]
+        },
+        {
+          "query": "Which document governs incident postmortem and corrective ac",
+          "expected": "IT & Digital",
+          "got": "Operations",
+          "llm_keywords": [
+            "incident",
+            "postmortem",
+            "corrective action",
+            "IT",
+            "root cause analysis"
+          ],
+          "selected_keywords": [
+            "incident",
+            "postmortem",
+            "corrective action",
+            "root cause analysis",
+            "problem management"
+          ]
+        }
+      ]
+    }
+  ]
+}

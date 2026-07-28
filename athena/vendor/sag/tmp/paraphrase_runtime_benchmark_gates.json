@@ -1,0 +1,42 @@
+{
+  "generated_at": "2026-04-26 19:01:08",
+  "mode": "vector+hybrid_rerank_with_dept_boost",
+  "results": [
+    {
+      "size": 20,
+      "pass": 19,
+      "fail": 1,
+      "pass_rate": 95.0,
+      "elapsed_ms": 458.903,
+      "elapsed_sec": 0.459,
+      "ram_start_mb": 20.871,
+      "ram_end_mb": 25.473,
+      "ram_peak_mb": 25.539,
+      "ram_delta_mb": 4.668
+    },
+    {
+      "size": 50,
+      "pass": 48,
+      "fail": 2,
+      "pass_rate": 96.0,
+      "elapsed_ms": 1224.942,
+      "elapsed_sec": 1.225,
+      "ram_start_mb": 25.473,
+      "ram_end_mb": 26.41,
+      "ram_peak_mb": 26.41,
+      "ram_delta_mb": 0.938
+    },
+    {
+      "size": 100,
+      "pass": 93,
+      "fail": 7,
+      "pass_rate": 93.0,
+      "elapsed_ms": 2495.295,
+      "elapsed_sec": 2.495,
+      "ram_start_mb": 26.41,
+      "ram_end_mb": 27.191,
+      "ram_peak_mb": 27.191,
+      "ram_delta_mb": 0.781
+    }
+  ]
+}

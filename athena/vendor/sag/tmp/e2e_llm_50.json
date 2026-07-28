@@ -1,0 +1,61 @@
+{
+  "generated_at": "2026-04-26 22:32:40",
+  "mode": "e2e_full_pipeline_with_llm_keyword_gen",
+  "llm_model": "gemini-2.5-flash",
+  "results": [
+    {
+      "size": 50,
+      "pass": 48,
+      "fail": 2,
+      "pass_rate": 96.0,
+      "llm_errors": 0,
+      "elapsed_ms": 122700.884,
+      "elapsed_sec": 122.701,
+      "avg_ms_per_query": 2454.02,
+      "timing_breakdown_ms": {
+        "llm_keyword_gen": 114319.7,
+        "keyword_expand_dept": 0.0,
+        "lexical_parallel_search": 7022.53,
+        "subset_selection": 6.74,
+        "vector_search": 1331.3,
+        "hybrid_rerank": 8.81
+      },
+      "avg_stage_ms": {
+        "llm_keyword": 2286.39,
+        "lexical_search": 140.45,
+        "vector": 26.63,
+        "rerank": 0.18
+      },
+      "ram_start_mb": 96.84,
+      "ram_end_mb": 105.258,
+      "ram_peak_mb": 105.82,
+      "ram_delta_mb": 8.98,
+      "failures": [
+        {
+          "query": "What controls apply to delinquency monitoring and follow-up?",
+          "expected": "Credit & Loans",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "delinquency",
+            "monitoring",
+            "follow-up",
+            "controls",
+            "overdue"
+          ]
+        },
+        {
+          "query": "How should IT teams handle maintenance windows and risk chec",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "IT",
+            "information technology",
+            "maintenance",
+            "scheduled maintenance",
+            "downtime"
+          ]
+        }
+      ]
+    }
+  ]
+}

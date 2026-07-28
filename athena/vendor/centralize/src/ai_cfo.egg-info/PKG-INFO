@@ -1,0 +1,227 @@
+Metadata-Version: 2.4
+Name: ai-cfo
+Version: 0.1.0
+Summary: 5-layer AI CFO pipeline (ingestion → EDA → ML+DE → strategy → dashboard)
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: numpy>=1.26
+Requires-Dist: pandas>=2.1
+Requires-Dist: scipy>=1.11
+Requires-Dist: scikit-learn>=1.3
+Requires-Dist: pydantic>=2.5
+Requires-Dist: python-dotenv>=1.0
+Provides-Extra: dev
+Requires-Dist: pytest>=8.0; extra == "dev"
+Provides-Extra: benchmarks
+Requires-Dist: yfinance>=0.2.40; extra == "benchmarks"
+Provides-Extra: ml
+Requires-Dist: xgboost>=2.0; extra == "ml"
+Requires-Dist: lightgbm>=4.0; extra == "ml"
+Requires-Dist: prophet>=1.1; extra == "ml"
+Provides-Extra: llm
+Requires-Dist: openai>=1.0; extra == "llm"
+
+# AI CFO (`ai-cfo`)
+
+แพ็กเกจ Python — pipeline 5 เลเยอร์ (ingestion → EDA → ML/DE → strategy → dashboard) ชั้นดึงข้อมูลมหภาคหลายแหล่งลง SQLite และสแต็ก ML สี่บทบาท (Forecaster / Detective / Optimizer / Communicator)
+
+## ความต้องการของระบบ
+
+- Python **≥ 3.11**
+- แนะนำ: สร้าง venv แล้วติดตั้งแบบ editable
+
+```bash
+cd Centralize
+pip install -e .
+```
+
+ชุดตัวเลือก (ถ้าต้องการ):
+
+```bash
+pip install -e ".[dev]"        # pytest — รันชุดทดสอบ + สร้างรายงาน
+pip install -e ".[benchmarks]"   # Yahoo Finance — ดัชนี benchmark / energy-logistics ETF
+pip install -e ".[ml]"         # XGBoost / LightGBM / Prophet (โมเดลทางเลือกของ Forecaster)
+pip install -e ".[llm]"        # OpenAI SDK (ไม่บังคับ — Communicator ใช้ REST ได้ทั้ง Gemini / OpenAI)
+```
+
+## การตั้งค่าสภาพแวดล้อม
+
+คัดลอก `.env.example` เป็น `.env` ในโฟลเดอร์โปรเจกต์ (ข้าง `pyproject.toml`)
+
+### มหภาค / เครือข่าย
+
+| ตัวแปร | ความหมาย |
+|--------|-----------|
+| `FRED_API_KEY` | **จำเป็น** ถ้าต้องการดึง FRED + บางซีรีส์ในชั้น crisis (NBER / EPU) |
+| `IMF_HTTPS_PROXY` / `HTTPS_PROXY` | พร็อกซี HTTPS สำหรับเรียก IMF (เช่น `http://127.0.0.1:7890`) — Python **ไม่ได้ใช้พร็อกซีของ Windows อัตโนมัติเสมอไป** |
+| `IMF_HTTP_TIMEOUT` | timeout ต่อ request IMF (วินาที, default 30) |
+| `IMF_CONTINUE_ON_NETWORK_ERROR=1` | ลองครบทุกโซน IMF แม้ล้มบางส่วน (ใช้เวลานานถ้าเน็ตยังต่อไม่ถึง) |
+| `OWID_COVID_DISABLE=1` | ข้ามดึง CSV COVID/ stringency ขนาดใหญ่ |
+| `OWID_COVID_CSV_URL` | กำหนด URL ชุด Our World in Data เอง (ถ้า default ย้าย) |
+
+### Communicator (สรุปผู้บริหาร)
+
+| ตัวแปร | ความหมาย |
+|--------|-----------|
+| `GEMINI_API_KEY` | คีย์ Google AI Studio — [สร้างที่นี่](https://aistudio.google.com/apikey) |
+| `GEMINI_MODEL` | default: `gemini-2.5-flash` |
+| `COMMUNICATOR_LLM_PROVIDER` | `auto` (ค่าเริ่มต้น) — ถ้ามี `GEMINI_API_KEY` จะใช้ Gemini ก่อน; ใส่ `openai` หรือ `gemini` เพื่อบังคับ |
+| `OPENAI_API_KEY` | ใช้เมื่อเลือก OpenAI หรือเป็น fallback ถ้า Gemini ล้ม |
+| `OPENAI_MODEL` | เช่น `gpt-4o-mini` |
+
+**PowerShell (Windows):** ตั้งตัวแปรชั่วครอก่อนรันด้วย
+
+`$env:IMF_CONTINUE_ON_NETWORK_ERROR = "1"`
+
+ไม่ใช่ syntax แบบ CMD `set VAR=1` — ใน PowerShell แบบนั้นไม่ส่งเข้าโปรเซส Python
+
+## คำสั่ง CLI หลัก
+
+### Metadata: `action_candidates` + Monte Carlo (Optimizer)
+
+ถ้าใน `MLStackInput.metadata` มี **`action_candidates`** (รายการ dict ที่มีอย่างน้อย `p_success` และ `payoff_success` **หรือ** `gross_payoff_success`) Optimizer จะต่อท้าย **`+ev_monte_carlo`**: คำนวณ EV เรียงลำดับ + Monte Carlo บน `p_success` (และตัวเลือก `payoff_noise_frac`) แล้วใส่ผลใน **`diagnostics`** (`expected_value_ranking` มีฟิลด์ **`cash_if_success`**, **`risk_value`**, **`success_probability_pct`** สำหรับ Strategy Card / dashboard) และแถวแรกของ **`decisions`** เป็น `action: stochastic_ranking` ตัวอย่าง:
+
+```json
+{
+  "action_candidates": [
+    {
+      "id": "plan_a",
+      "p_success": 0.85,
+      "payoff_success": 2000000,
+      "loss_on_failure": 1000000,
+      "certain_cost": 0
+    },
+    {
+      "id": "plan_b",
+      "p_success": 0.99,
+      "gross_payoff_success": 2000000,
+      "certain_cost": 100000,
+      "loss_on_failure": 0
+    }
+  ],
+  "monte_carlo": {
+    "n_simulations": 5000,
+    "p_success_std": 0.08,
+    "payoff_noise_frac": 0.0,
+    "seed": 42
+  }
+}
+```
+
+**ความหมายฟิลด์เงิน:** `payoff_success` = เงินสุทธิหากสำเร็จ (หลังหักค่าธรรมเนียมแล้ว ถ้าคุณใส่แบบ net); หรือใช้ `gross_payoff_success` + `certain_cost` แล้วระบบคำนวณ net = กรอส − ค่าธรรมเนียมสำหรับ EV / `cash_if_success` — **`risk_value`** = −((1−p)×`loss_on_failure` + `certain_cost`) สอดคล้องการ์ด “Expected Cash” / “Risk Value”
+
+**Dynamic validity (TTL + pre-flight):** ตั้ง **`plan_ttl_hours`** (หรือ `plan_validity.ttl_hours`) และถ้าต้องการล็อก “ณ เวลาไหน” ใส่ **`plan_as_of_utc`** (ISO-8601) — ผล `diagnostics.plan_validity` และแต่ละแถวใน `expected_value_ranking.ranked[].plan_validity` จะมี **`expires_at_utc`**. ก่อน Approve ให้เก็บ **`build_plan_snapshot`** แล้วเรียก **`preflight_revalidate(snapshot, action_candidates, metadata)`** เพื่อได้ `delta_metrics` / `context_delta` และรัน Monte Carlo รอบสั้น (cap 50k sims). **เฝ้าระวังฉุกเฉิน:** ตั้ง **`emergency_void_plans`** หรือ **`crisis_invalidate_plans`** ใน metadata ล่าสุด → `plan_validity.void_state === "emergency"`.
+
+คำสั่ง `stress-test` ใส่ตัวอย่าง `action_candidates` / `monte_carlo` / `plan_ttl_hours` ให้อัตโนมัติ (ดู `stress_test_cli.build_stressed_input`)
+
+```bash
+# Pipeline 5 เลเยอร์ (stub / demo JSON)
+python -m ai_cfo
+python -m ai_cfo pipeline
+
+# ML stack — Forecaster + Detective + Optimizer + Communicator
+python -m ai_cfo ml-stack
+
+# รันฟิตสี่เอเจนต์ + เขียน data/ml_agents/training_report.json
+python -m ai_cfo train-agents
+python -m ai_cfo train-agents --llm    # ใช้ LLM ถ้ามี GEMINI_API_KEY หรือ OPENAI_API_KEY
+
+# อัปเดตมหภาค + log รัน → data/macro_daily_job.jsonl
+python -m ai_cfo macro-daily
+python -m ai_cfo macro-daily --force
+python -m ai_cfo macro-daily --only fred,world_bank
+
+# Peak / trough + บริบทวิกฤตจาก macro.sqlite + (ถ้าเปิด) เกมทฤษฎีหลัง peak
+python -m ai_cfo peak-events --series path/to/series.csv --db data/macro.sqlite --country THA
+python -m ai_cfo peak-events --series series.csv --before-years 2 --after-years 2 --no-game-theory   # ปิดเกมทฤษฎี
+python -m ai_cfo peak-events --series series.csv -o report.json
+
+# What-if / Crisis Mode — สเกลอนุกรมจำลอง + รัน ML stack (covid19 | inflation_spike | trade_war)
+python -m ai_cfo stress-test --scenario covid19
+python -m ai_cfo stress-test --scenario inflation_spike --no-llm
+python -m ai_cfo stress-test --scenario trade_war -o data/examples/stress_trade_war.json
+```
+
+ไฟล์ CSV สำหรับ `peak-events` ต้องมีคอลัมน์อย่างน้อย **`period`** (ปี `YYYY` หรือ `YYYY-MM`) และ **`value`**
+
+ผล `peak-events` ภายใต้ `after_peak.game_theory` จะมี **`scenarios`** — ได้แก่ **Prisoner's Dilemma** (จำลองการเจรจา vs กดดัน) และ **maximin** บนเมทริกซ์ firm เทียบสภาวะตลาด (benign/adverse)
+
+### Peak overlay ผ่าน pipeline (ตัวเลือก)
+
+ตั้งค่าใน `PipelineInput.metadata` เช่น:
+
+- `internal_series_csv` — พาธ CSV ด้านบน
+- `macro_db_path` — default `data/macro.sqlite`
+- `context_country_iso3` — เช่น `THA`
+- `peak_overlay_before_years` / `peak_overlay_after_years`
+- `peak_overlay_game_theory` — `true`/`false`
+- `peak_overlay_include_global` — global max/min
+
+จากนั้นรัน pipeline — Layer 2 จะเติม `event_timeline` เมื่อมี `internal_series_csv`
+
+### ดึงข้อมูลมหภาคลง `data/macro.sqlite`
+
+```bash
+python -m ai_cfo.populate_macro_multisource
+python -m ai_cfo.populate_macro_multisource --if-needed
+python -m ai_cfo.populate_macro_multisource --only world_bank,imf,oecd,crisis,fred
+```
+
+แหล่งที่รองรับ (สรุป):
+
+| แหล่ง | API key | หมายเหตุ |
+|--------|---------|-----------|
+| World Bank | ไม่ต้อง | แผง ~**60 ประเทศ** (ISO3), GDP growth ฯลฯ |
+| IMF (IFS) | **ไม่ต้อง** | ต้อง**ต่อเน็ตถึง** `https://dataservices.imf.org` — ถ้า timeout ใช้พร็อกซีหรือ fallback เงินเฟ้อจาก WB |
+| OECD (CTS CIT) | ไม่ต้อง | อัตรา CIT รวม |
+| FRED | ต้อง `FRED_API_KEY` | สหรัฐ + global + Yahoo ถ้าติดตั้ง `[benchmarks]` |
+| Crisis | ส่วนใหญ่ไม่ต้อง | ปฏิทิน heuristic, OWID stringency, NBER/EPU ผ่าน FRED ถ้ามี key |
+
+ไฟล์ state: `data/macro_refresh_state.json` (ไฟล์ `.sqlite` มักอยู่ใน `.gitignore`)
+
+### อัปเดตมหภาคเมื่อเปิดระบบ
+
+สคริปต์ **`scripts/macro_on_startup.ps1`** — ใช้กับ Task Scheduler (**At log on**) หรือโฟลเดอร์ Startup; เนื้อหาเรียก `python -m ai_cfo macro-daily`
+
+ค่าเริ่มต้น `macro-daily` ใช้ **`--if-needed`** — บังคับดึงใหม่ด้วย **`--force`**
+
+## IMF ต่อไม่ได้ (Connection timed out)
+
+- IMF CompactData เป็น **บริการเปิด ไม่ใช่ปัญหา “ไม่มี API key”**
+- ถ้าเบราว์เซอร์เปิด `dataservices.imf.org` ไม่ขึ้น — แก้ที่ **เครือข่าย / VPN / พร็อกซี** หรือใส่ `IMF_HTTPS_PROXY` ใน `.env`
+- ชั้น IMF มี **fallback** เงินเฟ้อจาก World Bank เมื่อไม่ใส่ `--no-imf-wb-fallback`
+
+## โครงสร้างโปรเจกต์ (สั้นๆ)
+
+| พาธ | บทบาท |
+|------|--------|
+| `src/ai_cfo/` | CLI, pipeline, ML stack, ingestion มหภาค |
+| `data/macro.sqlite` | ตาราง `macro_observation` |
+| `data/ml_agents/training_report.json` | ผลรัน `train-agents` |
+| `tests/` | Pytest |
+| `reports/` | `TEST_REPORT.md`, `junit.xml`, log จากสคริปต์ทดสอบ |
+| `scripts/` | เช่น `macro_on_startup.ps1`, `generate_test_report.py`, `generate_mock_company_data.py` |
+| `docs/ARCHITECTURE.md` | ไดอะแกรม Mermaid สำหรับ Pitch Deck |
+
+สร้างข้อมูลจำลองบริษัท (รายได้รายปี) สำหรับ Demo:
+
+```bash
+python scripts/generate_mock_company_data.py -o data/examples/mock_agency_revenue.csv --scenario covid_style
+python -m ai_cfo peak-events --series data/examples/mock_agency_revenue.csv --db data/macro.sqlite -o data/examples/mock_peak_report.json
+```
+
+## การทดสอบ
+
+```bash
+pip install -e ".[dev]"
+python -m pytest tests -v
+python scripts/generate_test_report.py   # เขียน reports/TEST_REPORT.md + junit.xml
+```
+
+## ใบอนุญาต / License
+
+ตามที่ระบุใน `pyproject.toml` / ไฟล์ LICENSE ของโปรเจกต์ (ถ้ามี)
+
+---
+
+*Global macro context — informed decisions under pandemic, FX, tariffs, geopolitical risk, and tax policy signals.*

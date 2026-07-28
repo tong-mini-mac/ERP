@@ -1,0 +1,56 @@
+{
+  "generated_at": "2026-04-26 23:13:30",
+  "mode": "e2e_full_pipeline_with_llm_keyword_gen",
+  "llm_model": "gemini-2.5-flash",
+  "results": [
+    {
+      "size": 20,
+      "pass": 19,
+      "fail": 1,
+      "pass_rate": 95.0,
+      "llm_errors": 0,
+      "elapsed_ms": 16621.47,
+      "elapsed_sec": 16.621,
+      "avg_ms_per_query": 831.07,
+      "timing_breakdown_ms": {
+        "llm_keyword_gen": 0.57,
+        "keyword_expand_dept": 0.0,
+        "lexical_parallel_search": 1956.04,
+        "subset_selection": 1.72,
+        "vector_search": 14654.57,
+        "hybrid_rerank": 3.43
+      },
+      "avg_stage_ms": {
+        "llm_keyword": 0.03,
+        "lexical_search": 97.8,
+        "vector": 732.73,
+        "rerank": 0.17
+      },
+      "ram_start_mb": 104.734,
+      "ram_end_mb": 529.285,
+      "ram_peak_mb": 529.285,
+      "ram_delta_mb": 424.551,
+      "failures": [
+        {
+          "query": "What controls apply to delinquency monitoring and follow-up?",
+          "expected": "Credit & Loans",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "delinquency",
+            "monitoring",
+            "follow-up",
+            "controls",
+            "overdue"
+          ],
+          "selected_keywords": [
+            "delinquency",
+            "monitoring",
+            "follow-up",
+            "controls",
+            "overdue"
+          ]
+        }
+      ]
+    }
+  ]
+}

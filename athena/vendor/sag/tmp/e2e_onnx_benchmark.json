@@ -1,0 +1,486 @@
+{
+  "generated_at": "2026-04-27 01:29:01",
+  "mode": "onnx_dense_embeddings",
+  "results": [
+    {
+      "size": 20,
+      "pass": 19,
+      "fail": 1,
+      "pass_rate": 95.0,
+      "avg_vector_ms": 684.38,
+      "avg_rerank_ms": 0.06,
+      "total_ms": 13688.77,
+      "ram_start_mb": 478.512,
+      "ram_peak_mb": 483.309,
+      "failures": [
+        {
+          "query": "What controls apply to delinquency monitoring and follow-up?",
+          "expected": "Credit & Loans",
+          "got": "Risk & Compliance",
+          "top3": [
+            {
+              "title": "[RSK-097] Regulatory Compliance Monitoring Strategy 2026",
+              "dept": "Risk & Compliance",
+              "score": 0.3787
+            },
+            {
+              "title": "Internal Control and Regulatory Monitoring for Strategy 2026",
+              "dept": "Risk & Compliance",
+              "score": 0.3555
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "size": 50,
+      "pass": 47,
+      "fail": 3,
+      "pass_rate": 94.0,
+      "avg_vector_ms": 58.03,
+      "avg_rerank_ms": 0.06,
+      "total_ms": 2904.46,
+      "ram_start_mb": 483.309,
+      "ram_peak_mb": 485.996,
+      "failures": [
+        {
+          "query": "What controls apply to delinquency monitoring and follow-up?",
+          "expected": "Credit & Loans",
+          "got": "Risk & Compliance",
+          "top3": [
+            {
+              "title": "[RSK-097] Regulatory Compliance Monitoring Strategy 2026",
+              "dept": "Risk & Compliance",
+              "score": 0.3787
+            },
+            {
+              "title": "Internal Control and Regulatory Monitoring for Strategy 2026",
+              "dept": "Risk & Compliance",
+              "score": 0.3555
+            }
+          ]
+        },
+        {
+          "query": "What cyber-security controls are required for core banking systems?",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "top3": [
+            {
+              "title": "Internal Control and Regulatory Monitoring for Strategy 2026",
+              "dept": "Risk & Compliance",
+              "score": 0.4427
+            },
+            {
+              "title": "IT System Optimization and Security Review",
+              "dept": "IT & Digital",
+              "score": 0.4306
+            },
+            {
+              "title": "[ITD-040] IT Infrastructure and Security Review",
+              "dept": "IT & Digital",
+              "score": 0.399
+            }
+          ]
+        },
+        {
+          "query": "How are software release and rollback safeguards defined?",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "top3": [
+            {
+              "title": "[RSK-093] Compliance Check and Risk Assessment Update",
+              "dept": "Risk & Compliance",
+              "score": 0.4059
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "size": 80,
+      "pass": 69,
+      "fail": 11,
+      "pass_rate": 86.2,
+      "avg_vector_ms": 62.36,
+      "avg_rerank_ms": 0.06,
+      "total_ms": 4993.12,
+      "ram_start_mb": 485.996,
+      "ram_peak_mb": 486.754,
+      "failures": [
+        {
+          "query": "What controls apply to delinquency monitoring and follow-up?",
+          "expected": "Credit & Loans",
+          "got": "Risk & Compliance",
+          "top3": [
+            {
+              "title": "[RSK-097] Regulatory Compliance Monitoring Strategy 2026",
+              "dept": "Risk & Compliance",
+              "score": 0.3787
+            },
+            {
+              "title": "Internal Control and Regulatory Monitoring for Strategy 2026",
+              "dept": "Risk & Compliance",
+              "score": 0.3555
+            }
+          ]
+        },
+        {
+          "query": "What cyber-security controls are required for core banking systems?",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "top3": [
+            {
+              "title": "Internal Control and Regulatory Monitoring for Strategy 2026",
+              "dept": "Risk & Compliance",
+              "score": 0.4427
+            },
+            {
+              "title": "IT System Optimization and Security Review",
+              "dept": "IT & Digital",
+              "score": 0.4306
+            },
+            {
+              "title": "[ITD-040] IT Infrastructure and Security Review",
+              "dept": "IT & Digital",
+              "score": 0.399
+            }
+          ]
+        },
+        {
+          "query": "How are software release and rollback safeguards defined?",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "top3": [
+            {
+              "title": "[RSK-093] Compliance Check and Risk Assessment Update",
+              "dept": "Risk & Compliance",
+              "score": 0.4059
+            }
+          ]
+        },
+        {
+          "query": "Where are server patching and vulnerability review procedures listed?",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "top3": [
+            {
+              "title": "[RSK-093] Compliance Check and Risk Assessment Update",
+              "dept": "Risk & Compliance",
+              "score": 0.4262
+            }
+          ]
+        },
+        {
+          "query": "Which standards define change management for production systems?",
+          "expected": "IT & Digital",
+          "got": "Operations",
+          "top3": [
+            {
+              "title": "[OPS-024] Operations Service Standards and Performance Monitoring",
+              "dept": "Operations",
+              "score": 0.4429
+            }
+          ]
+        },
+        {
+          "query": "How are privileged-access reviews handled for infrastructure admins?",
+          "expected": "IT & Digital",
+          "got": "HR & Admin",
+          "top3": [
+            {
+              "title": "[HRA-014] HR Admin Audit and Monitoring Tasks",
+              "dept": "HR & Admin",
+              "score": 0.3946
+            }
+          ]
+        },
+        {
+          "query": "What is the policy for vulnerability remediation SLA tracking?",
+          "expected": "IT & Digital",
+          "got": "HR & Admin",
+          "top3": [
+            {
+              "title": "[HRA-068] HR Policy Updates and Monitoring Requirements",
+              "dept": "HR & Admin",
+              "score": 0.4585
+            }
+          ]
+        },
+        {
+          "query": "Where is backup and disaster recovery validation documented?",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "top3": [
+            {
+              "title": "[RSK-077] Compliance and Risk Monitoring Procedures",
+              "dept": "Risk & Compliance",
+              "score": 0.3749
+            }
+          ]
+        },
+        {
+          "query": "How are audit findings prioritized and remediated?",
+          "expected": "Risk & Compliance",
+          "got": "Operations",
+          "top3": [
+            {
+              "title": "[OPS-004] Branch Performance and Efficiency Audit",
+              "dept": "Operations",
+              "score": 0.4899
+            },
+            {
+              "title": "Risk and Compliance Audit Report 2026",
+              "dept": "Risk & Compliance",
+              "score": 0.4606
+            }
+          ]
+        },
+        {
+          "query": "Which document contains organization-wide schedule guidance?",
+          "expected": "General",
+          "got": "HR & Admin",
+          "top3": [
+            {
+              "title": "[HRA-041] HR Annual Planning and Review",
+              "dept": "HR & Admin",
+              "score": 0.4288
+            },
+            {
+              "title": "HR Annual Leave and Medical Insurance Management Guidelines",
+              "dept": "HR & Admin",
+              "score": 0.4066
+            }
+          ]
+        },
+        {
+          "query": "Which general policy note is shared across all departments?",
+          "expected": "General",
+          "got": "HR & Admin",
+          "top3": [
+            {
+              "title": "[HRA-097] HR Policy Updates and Reviews",
+              "dept": "HR & Admin",
+              "score": 0.4791
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "size": 100,
+      "pass": 86,
+      "fail": 14,
+      "pass_rate": 86.0,
+      "avg_vector_ms": 64.79,
+      "avg_rerank_ms": 0.06,
+      "total_ms": 6485.74,
+      "ram_start_mb": 486.754,
+      "ram_peak_mb": 488.133,
+      "failures": [
+        {
+          "query": "What controls apply to delinquency monitoring and follow-up?",
+          "expected": "Credit & Loans",
+          "got": "Risk & Compliance",
+          "top3": [
+            {
+              "title": "[RSK-097] Regulatory Compliance Monitoring Strategy 2026",
+              "dept": "Risk & Compliance",
+              "score": 0.3787
+            },
+            {
+              "title": "Internal Control and Regulatory Monitoring for Strategy 2026",
+              "dept": "Risk & Compliance",
+              "score": 0.3555
+            }
+          ]
+        },
+        {
+          "query": "What cyber-security controls are required for core banking systems?",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "top3": [
+            {
+              "title": "Internal Control and Regulatory Monitoring for Strategy 2026",
+              "dept": "Risk & Compliance",
+              "score": 0.4427
+            },
+            {
+              "title": "IT System Optimization and Security Review",
+              "dept": "IT & Digital",
+              "score": 0.4306
+            },
+            {
+              "title": "[ITD-040] IT Infrastructure and Security Review",
+              "dept": "IT & Digital",
+              "score": 0.399
+            }
+          ]
+        },
+        {
+          "query": "How are software release and rollback safeguards defined?",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "top3": [
+            {
+              "title": "[RSK-093] Compliance Check and Risk Assessment Update",
+              "dept": "Risk & Compliance",
+              "score": 0.4059
+            }
+          ]
+        },
+        {
+          "query": "Where are server patching and vulnerability review procedures listed?",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "top3": [
+            {
+              "title": "[RSK-093] Compliance Check and Risk Assessment Update",
+              "dept": "Risk & Compliance",
+              "score": 0.4262
+            }
+          ]
+        },
+        {
+          "query": "Which standards define change management for production systems?",
+          "expected": "IT & Digital",
+          "got": "Operations",
+          "top3": [
+            {
+              "title": "[OPS-024] Operations Service Standards and Performance Monitoring",
+              "dept": "Operations",
+              "score": 0.4429
+            }
+          ]
+        },
+        {
+          "query": "How are privileged-access reviews handled for infrastructure admins?",
+          "expected": "IT & Digital",
+          "got": "HR & Admin",
+          "top3": [
+            {
+              "title": "[HRA-014] HR Admin Audit and Monitoring Tasks",
+              "dept": "HR & Admin",
+              "score": 0.3946
+            }
+          ]
+        },
+        {
+          "query": "What is the policy for vulnerability remediation SLA tracking?",
+          "expected": "IT & Digital",
+          "got": "HR & Admin",
+          "top3": [
+            {
+              "title": "[HRA-068] HR Policy Updates and Monitoring Requirements",
+              "dept": "HR & Admin",
+              "score": 0.4585
+            }
+          ]
+        },
+        {
+          "query": "Where is backup and disaster recovery validation documented?",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "top3": [
+            {
+              "title": "[RSK-077] Compliance and Risk Monitoring Procedures",
+              "dept": "Risk & Compliance",
+              "score": 0.3749
+            }
+          ]
+        },
+        {
+          "query": "How are audit findings prioritized and remediated?",
+          "expected": "Risk & Compliance",
+          "got": "Operations",
+          "top3": [
+            {
+              "title": "[OPS-004] Branch Performance and Efficiency Audit",
+              "dept": "Operations",
+              "score": 0.4899
+            },
+            {
+              "title": "Risk and Compliance Audit Report 2026",
+              "dept": "Risk & Compliance",
+              "score": 0.4606
+            }
+          ]
+        },
+        {
+          "query": "Which document contains organization-wide schedule guidance?",
+          "expected": "General",
+          "got": "HR & Admin",
+          "top3": [
+            {
+              "title": "[HRA-041] HR Annual Planning and Review",
+              "dept": "HR & Admin",
+              "score": 0.4288
+            },
+            {
+              "title": "HR Annual Leave and Medical Insurance Management Guidelines",
+              "dept": "HR & Admin",
+              "score": 0.4066
+            }
+          ]
+        },
+        {
+          "query": "Which general policy note is shared across all departments?",
+          "expected": "General",
+          "got": "HR & Admin",
+          "top3": [
+            {
+              "title": "[HRA-097] HR Policy Updates and Reviews",
+              "dept": "HR & Admin",
+              "score": 0.4791
+            }
+          ]
+        },
+        {
+          "query": "How are branch fraud alerts escalated in operations workflows?",
+          "expected": "Operations",
+          "got": "Risk & Compliance",
+          "top3": [
+            {
+              "title": "[RSK-086] Fraud Analysis and Risk Management Update",
+              "dept": "Risk & Compliance",
+              "score": 0.5152
+            },
+            {
+              "title": "Branch Operations Efficiency Report",
+              "dept": "Operations",
+              "score": 0.4916
+            }
+          ]
+        },
+        {
+          "query": "Which document governs incident postmortem and corrective action in IT?",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "top3": [
+            {
+              "title": "[RSK-049] Legal Risk AML and Regulatory Review Memo",
+              "dept": "Risk & Compliance",
+              "score": 0.3254
+            }
+          ]
+        },
+        {
+          "query": "How are infrastructure configuration baselines controlled?",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "top3": [
+            {
+              "title": "[RSK-096] Compliance Check Internal Control Optimization Strategy 2026",
+              "dept": "Risk & Compliance",
+              "score": 0.3592
+            },
+            {
+              "title": "Internal Control and Regulatory Monitoring for Strategy 2026",
+              "dept": "Risk & Compliance",
+              "score": 0.341
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

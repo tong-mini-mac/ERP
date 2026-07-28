@@ -1,0 +1,211 @@
+{
+  "summary": {
+    "total": 20,
+    "pass": 19,
+    "fail": 1,
+    "pass_rate": 95.0,
+    "generated_at": "2026-04-26T18:31:32.419705"
+  },
+  "rows": [
+    {
+      "id": 1,
+      "query": "What collateral review controls are required before approving a loan?",
+      "expect_department": "Credit & Loans",
+      "hit_count": 1,
+      "top_department": "Credit & Loans",
+      "top_title": "[CRL-048] Loan Risk Assessment and Monitoring",
+      "top_doc_id": "N/A",
+      "status": "PASS"
+    },
+    {
+      "id": 2,
+      "query": "How do we assess borrower default risk before loan sign-off?",
+      "expect_department": "Credit & Loans",
+      "hit_count": 1,
+      "top_department": "Credit & Loans",
+      "top_title": "[CRL-064] Loan Collateral and Credit Risk Review",
+      "top_doc_id": "N/A",
+      "status": "PASS"
+    },
+    {
+      "id": 3,
+      "query": "Which lending policy points drive interest-rate decisions?",
+      "expect_department": "Credit & Loans",
+      "hit_count": 1,
+      "top_department": "Credit & Loans",
+      "top_title": "[CRL-035] Lending Policy Review and Monitoring Guidelines",
+      "top_doc_id": "N/A",
+      "status": "PASS"
+    },
+    {
+      "id": 4,
+      "query": "What evidence is required for credit appraisal and risk monitoring?",
+      "expect_department": "Credit & Loans",
+      "hit_count": 1,
+      "top_department": "Credit & Loans",
+      "top_title": "[CRL-048] Loan Risk Assessment and Monitoring",
+      "top_doc_id": "N/A",
+      "status": "PASS"
+    },
+    {
+      "id": 5,
+      "query": "How are loan contract risks tracked after disbursement?",
+      "expect_department": "Credit & Loans",
+      "hit_count": 1,
+      "top_department": "Credit & Loans",
+      "top_title": "[CRL-071] Loan Contract Collateral and Risk Management Guidelines",
+      "top_doc_id": "N/A",
+      "status": "PASS"
+    },
+    {
+      "id": 6,
+      "query": "Which employee support and welfare benefits are available for staff?",
+      "expect_department": "HR & Admin",
+      "hit_count": 2,
+      "top_department": "HR & Admin",
+      "top_title": "Employee Welfare and Benefits Summary (Demo)",
+      "top_doc_id": "HRA-DEMO-001",
+      "status": "PASS"
+    },
+    {
+      "id": 7,
+      "query": "What HR policy says about payroll and compensation support?",
+      "expect_department": "HR & Admin",
+      "hit_count": 1,
+      "top_department": "HR & Admin",
+      "top_title": "[HRA-029] HR Admin Payroll and Benefits Review",
+      "top_doc_id": "N/A",
+      "status": "PASS"
+    },
+    {
+      "id": 8,
+      "query": "Where can staff find benefits and allowance guidance?",
+      "expect_department": "HR & Admin",
+      "hit_count": 2,
+      "top_department": "HR & Admin",
+      "top_title": "Employee Welfare and Benefits Summary (Demo)",
+      "top_doc_id": "HRA-DEMO-001",
+      "status": "PASS"
+    },
+    {
+      "id": 9,
+      "query": "What are the core admin rules for employee welfare requests?",
+      "expect_department": "HR & Admin",
+      "hit_count": 2,
+      "top_department": "HR & Admin",
+      "top_title": "Employee Welfare and Benefits Summary (Demo)",
+      "top_doc_id": "HRA-DEMO-001",
+      "status": "PASS"
+    },
+    {
+      "id": 10,
+      "query": "Which document outlines people-policy support for employees?",
+      "expect_department": "HR & Admin",
+      "hit_count": 3,
+      "top_department": "HR & Admin",
+      "top_title": "[HRA-077] HR Policy Review and Optimization 2026",
+      "top_doc_id": "N/A",
+      "status": "PASS"
+    },
+    {
+      "id": 11,
+      "query": "How should branches handle urgent incident escalation and reporting?",
+      "expect_department": "Operations",
+      "hit_count": 3,
+      "top_department": "Operations",
+      "top_title": "Branch Escalation Thresholds — Management Brief (Demo)",
+      "top_doc_id": "OPS-DEMO-002",
+      "status": "PASS"
+    },
+    {
+      "id": 12,
+      "query": "What are branch-level escalation thresholds for critical events?",
+      "expect_department": "Operations",
+      "hit_count": 3,
+      "top_department": "Operations",
+      "top_title": "Branch Escalation Thresholds — Management Brief (Demo)",
+      "top_doc_id": "OPS-DEMO-002",
+      "status": "PASS"
+    },
+    {
+      "id": 13,
+      "query": "Which operations guidance covers branch cash handling controls?",
+      "expect_department": "Operations",
+      "hit_count": 3,
+      "top_department": "Operations",
+      "top_title": "Branch Cash Handling Overview (Demo)",
+      "top_doc_id": "OPS-DEMO-001",
+      "status": "PASS"
+    },
+    {
+      "id": 14,
+      "query": "How should frontline teams report service disruptions quickly?",
+      "expect_department": "Operations",
+      "hit_count": 1,
+      "top_department": "Operations",
+      "top_title": "[OPS-059] Branch Operations Efficiency and Customer Wait Time Report",
+      "top_doc_id": "N/A",
+      "status": "PASS"
+    },
+    {
+      "id": 15,
+      "query": "What operations policy explains management escalation workflow?",
+      "expect_department": "Operations",
+      "hit_count": 2,
+      "top_department": "Credit & Loans",
+      "top_title": "[CRL-073] Lending Policy Collateral and Interest Rate Management",
+      "top_doc_id": "N/A",
+      "status": "FAIL"
+    },
+    {
+      "id": 16,
+      "query": "What cyber-security controls are required for core banking systems?",
+      "expect_department": "IT & Digital",
+      "hit_count": 2,
+      "top_department": "IT & Digital",
+      "top_title": "แผนงานอัปเกรดความปลอดภัย Mobile App v5.0",
+      "top_doc_id": "ITS",
+      "status": "PASS"
+    },
+    {
+      "id": 17,
+      "query": "How should IT teams handle maintenance windows and risk checks?",
+      "expect_department": "IT & Digital",
+      "hit_count": 1,
+      "top_department": "IT & Digital",
+      "top_title": "[ITD-078] ITD Quarterly System Maintenance Tasks",
+      "top_doc_id": "N/A",
+      "status": "PASS"
+    },
+    {
+      "id": 18,
+      "query": "Where is digital platform incident response documented?",
+      "expect_department": "IT & Digital",
+      "hit_count": 1,
+      "top_department": "IT & Digital",
+      "top_title": "[ITD-084] IT System Standards Review and Monitoring",
+      "top_doc_id": "N/A",
+      "status": "PASS"
+    },
+    {
+      "id": 19,
+      "query": "Which compliance guidance covers fraud-risk investigation obligations?",
+      "expect_department": "Risk & Compliance",
+      "hit_count": 1,
+      "top_department": "Risk & Compliance",
+      "top_title": "[RSK-086] Fraud Analysis and Risk Management Update",
+      "top_doc_id": "N/A",
+      "status": "PASS"
+    },
+    {
+      "id": 20,
+      "query": "What regulatory-risk policy defines audit and control expectations?",
+      "expect_department": "Risk & Compliance",
+      "hit_count": 1,
+      "top_department": "Risk & Compliance",
+      "top_title": "[RSK-055] Legal Risk and Regulatory Control Review for Strategy 2026",
+      "top_doc_id": "N/A",
+      "status": "PASS"
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+Metadata-Version: 2.4
+Name: athena-os
+Version: 0.1.0
+Summary: ATHENA (Access-Tiered Hybrid Economic Navigation Architecture) — SAG + Centralize ai_cfo
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: python-dotenv>=1.0.0
+Provides-Extra: dev
+Requires-Dist: pytest>=8; extra == "dev"
+
+# Athena OS
+
+**ATHENA** — *Access-Tiered Hybrid Economic Navigation Architecture*
+
+- **Access-Tiered** — นโยบายและขอบเขตสิทธิ์ (RBAC / department scopes) ผ่าน SAG
+- **Hybrid** — retrieval แบบผสม (deterministic + vector / rerank) + การประกบบริบทจากชั้นเศรษฐศาสตร์การเงิน
+- **Economic** — ตัวเลข แนวโน้ม แผน และสรุปผู้บริหารจาก Centralize (`ai_cfo`)
+- **Navigation** — ลำดับ flow ที่นำทางคำถามผ่าน fusion ไปยัง GURU แบบมีแหล่งอ้างอิง
+
+โปรเจกต์นี้รวมสองรีโปในคนละบทบาท:
+
+| รีโป | บทบาท |
+|------|--------|
+| `D:\Myworkspace\SAG` | ดึงความรู้จาก vault, RBAC, hybrid retrieval, สังเคราะห์คำตอบ (GURU) |
+| `D:\Myworkspace\Centralize` | AI-CFO — พยากรณ์, anomaly, แผน under constraints, Communicator (สรุปผู้บริหาร) |
+
+**Athena** ใส่สรุป/บริบทจาก Centralize ต่อท้ายคำถาม แล้วส่งเข้า SAG — นโยบายและแหล่งอ้างอิงยังมาจาก vault ตาม SAG
+
+บริบท CFO ถูกห่อด้วย `<financial_context>` และมี `<guru_instructions>` แยกจากข้อความถามของผู้ใช้ (ดู `athena.prompts`) เพื่อให้ GURU แยกนโยบายกับ “ความตระหนักรู้ทางการเงิน” ชัดเจน — ผลลัพธ์มี `fusion_meta` (`prompt_version`, `framing`)
+
+แนว **Intent Router** (policy vs data vs knowledge) อยู่ที่ `athena.router` เป็น stub สำหรับต่อ classifier — Route B เรียก `run_athena_cfo_only`; Route C ใช้ `run_athena_fused` โดยไม่ใส่ `ml_input`
+
+## ติดตั้ง
+
+```powershell
+cd D:\Myworkspace\Centralize
+pip install -e .
+
+cd "D:\Myworkspace\Athena OS"
+pip install -e .
+```
+
+### API keys จาก ``Athena OS\.env``
+
+คัดลอก ``.env.example`` → ``.env`` แล้วใส่ ``GEMINI_API_KEY`` และ/หรือ ``OPENAI_API_KEY`` — โหลดก่อนรันคำสั่งผ่านตัวช่วยด้านล่าง (override คีย์ชื่อเดียวกันที่โหลดจาก ``Centralize\.env`` ทีหลัง)
+
+**รันคำสั่ง ``ai_cfo`` โดยใช้ key ชุดนี้ก่อน:**
+
+```powershell
+cd "D:\Myworkspace\Athena OS"
+python -m athena train-agents --llm
+python -m athena ml-stack
+```
+
+คำสั่งที่ delegate ได้: ``train-agents``, ``ml-stack``, ``pipeline``, ``macro-daily``, ``peak-events``, ``stress-test`` (cwd = รีโป Centralize เหมือนเดิม — รายงานเขียนที่ ``Centralize\data\``)
+
+ชั้น ``athena.fusion`` จะโหลด ``Athena OS\.env`` อัตโนมัติก่อนเรียก ``ai_cfo``
+
+**ทดสอบแบบ end-to-end (CFO + SAG GURU):** จากรากโปรเจกต์รัน ``python scripts/smoke_fusion.py`` (ต้องมี key ใน ``.env`` และ vault SAG ตามปกติ)
+
+ต้องตั้งค่า API key ตาม SAG (`SAG\config\.env`) และตาม Centralize สำหรับ Communicator (ดู `Centralize\.env.example`)
+
+## Raw data inbox (Athena OS)
+
+โฟลเดอร์ **`raw_data/`** ที่รากโปรเจกต์ Athena OS — ใช้วางไฟล์ดิบก่อนป้อน pipeline (คัดลอกไป `SAG\raw_data`, refine เป็น Markdown, ฯลฯ) — เนื้อหาที่แปะเข้ามาไม่ขึ้น git (เหลือแค่ `.gitkeep`)
+
+- พาธในโค้ด: `athena.paths.athena_raw_data_dir()`
+- กำหนดที่อื่นได้: `ATHENA_RAW_DATA_DIR`
+
+## ฐานข้อมูล / ข้อมูลจาก Centralize
+
+คัดลอกโฟลเดอร์ `Centralize\data` (เช่น `macro.sqlite`, `examples`, `ml_agents`) มาที่ Athena:
+
+```powershell
+cd "D:\Myworkspace\Athena OS"
+python -m athena.data_sync
+# หรือ
+.\scripts\sync_centralize_data.ps1
+```
+
+รันซ้ำได้หลังอัปเดตมหภาคใน Centralize — ไฟล์ปลายทางถูกเขียนทับจากซ้าย (`copy2`)
+
+| ตัวแปร | ความหมาย |
+|--------|----------|
+| `ATHENA_DATA_DIR` | ที่เก็บสำเนาข้อมูลใน Athena (default: `<Athena OS>\data`) |
+| พาธอ้างอิงในโค้ด | `athena.paths.athena_data_dir()`, `athena_macro_sqlite_path()` |
+
+คำสั่ง `ai_cfo` ที่ใช้ path แบบสัมพัทธ์ (เช่น `data/macro.sqlite`) ให้รันจากโฟลเดอร์ที่มี `data` ตรงกับที่ต้องการ หรือส่ง `--db` / metadata เป็น absolute path ชี้ไปที่ `Athena OS\data\macro.sqlite`
+
+## ตัวแปร environment (optional)
+
+| ตัวแปร | ความหมาย |
+|--------|----------|
+| `ATHENA_SAG_ROOT` | path รีโป SAG ถ้าไม่อยู่คู่กับ `Athena OS` |
+| `ATHENA_CENTRALIZE_ROOT` | รีโป Centralize (สำหรับ `data_sync` และ `default_centralize_root`) |
+| `ATHENA_DATA_DIR` | ปลายทางสำเนา `data/` ของ Athena (ดูหัวข้อด้านบน) |
+| `ATHENA_RAW_DATA_DIR` | inbox ไฟล์ดิบ (default: `<Athena OS>\raw_data`) |
+
+## ใช้งานใน Python
+
+```python
+from athena.fusion import run_athena_fused
+from ai_cfo.models.ml_stack_schemas import MLStackInput
+
+out = run_athena_fused(
+    "What is our travel approval policy for department heads?",
+    authorized_scope="ALL",  # หรือ scope ตาม SAG
+    ml_input=MLStackInput(
+        sales_history=[1.0, 1.1, 1.05],
+        transaction_features=[[0.0], [2.0], [0.1]],
+    ),
+)
+print(out["sag"]["answer"])
+print(out["cfo"] is not None)
+print(out["fusion_meta"])
+```
+
+รายละเอียด flow ดู `docs/ATHENA_ARCHITECTURE.md`

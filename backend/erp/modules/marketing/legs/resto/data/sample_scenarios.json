@@ -1,0 +1,22 @@
+[
+  {
+    "guest_name": "คุณมิก",
+    "guest_message": "สั่งกะเพราหมูกรอบใน Shopee Food รูปชิ้นใหญ่ ของจริงมีแค่ 4 ชิ้น ขอคืนเงินหรือส่วนลดได้มั้ย",
+    "interaction_type": "complaint",
+    "channel": "shopee_food",
+    "order_context": { "order_id": "SF-123", "menu_item": "กะเพราหมูกรอบ", "amount_thb": 89 }
+  },
+  {
+    "guest_name": "พี่บอล",
+    "guest_message": "สั่งต้มยำกุ้งน้ำข้นแต่ได้น้ำใส รสจืดมาก ขอคืนเงินครับ",
+    "interaction_type": "refund_request",
+    "channel": "foodpanda",
+    "order_context": { "menu_item": "ต้มยำกุ้งน้ำข้น", "amount_thb": 120 }
+  },
+  {
+    "guest_name": "แอน",
+    "guest_message": "ร้านนี้อร่อยมาก ส่งเร็ว จะสั่งประจำเลยค่ะ",
+    "interaction_type": "praise",
+    "channel": "lineman"
+  }
+]

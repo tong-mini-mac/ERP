@@ -1,0 +1,4203 @@
+{
+  "series_path": "D:\\Myworkspace\\Centralize\\data\\examples\\company_series_sample.csv",
+  "macro_db": "D:\\Myworkspace\\Centralize\\data\\macro.sqlite",
+  "context_country_iso3": "THA",
+  "overlay_windows": {
+    "before_years": 2,
+    "after_years": 2,
+    "game_theory_after_peak": true,
+    "description": "ก่อน peak: ย้อน 2 ปีปฏิทิน (ไม่รวมปี peak); หลัง peak: ไปข้างหน้า 2 ปีปฏิทิน"
+  },
+  "n_points": 15,
+  "peaks": [
+    {
+      "kind": "local_max",
+      "period": "2013",
+      "year": 2013,
+      "value": 122.0,
+      "context": [
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2013-01",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2013-02",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2013-03",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2013-04",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2013-05",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2013-06",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2013-07",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2013-08",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2013-09",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2013-10",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2013-11",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2013-12",
+          "value": 0.0
+        },
+        {
+          "source": "crisis_calendar",
+          "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+          "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+          "country_iso3": "WLD",
+          "period": "2013",
+          "value": 0.0
+        },
+        {
+          "source": "crisis_calendar",
+          "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+          "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+          "country_iso3": "WLD",
+          "period": "2013",
+          "value": 0.0
+        }
+      ],
+      "before_peak": {
+        "window_years": [
+          2011,
+          2012
+        ],
+        "window_note": "สัญญาณ/บริบทก่อนปี peak (2011–2012) เมื่อกำหนดย้อนหลัง 2 ปีปฏิทิน",
+        "crisis_context_by_year": {
+          "2011": [
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2011-01",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2011-02",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2011-03",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2011-04",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2011-05",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2011-06",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2011-07",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2011-08",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2011-09",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2011-10",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2011-11",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2011-12",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+              "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+              "country_iso3": "WLD",
+              "period": "2011",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+              "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+              "country_iso3": "WLD",
+              "period": "2011",
+              "value": 0.0
+            }
+          ],
+          "2012": [
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2012-01",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2012-02",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2012-03",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2012-04",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2012-05",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2012-06",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2012-07",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2012-08",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2012-09",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2012-10",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2012-11",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2012-12",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+              "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+              "country_iso3": "WLD",
+              "period": "2012",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+              "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+              "country_iso3": "WLD",
+              "period": "2012",
+              "value": 0.0
+            }
+          ]
+        },
+        "internal_series_in_window": [
+          {
+            "year": 2011,
+            "period": "2011",
+            "value": 105.0
+          },
+          {
+            "year": 2012,
+            "period": "2012",
+            "value": 118.0
+          }
+        ],
+        "observations": {
+          "internal_pct_change_last_two_points_in_window": 12.381,
+          "internal_yoy_pre_peak_last_pair": {
+            "from_year": 2011,
+            "to_year": 2012,
+            "from_value": 105.0,
+            "to_value": 118.0
+          },
+          "pandemic_calendar_flag_present": true
+        }
+      },
+      "after_peak": {
+        "window_years": [
+          2014,
+          2015
+        ],
+        "crisis_context_by_year": {
+          "2014": [
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2014-01",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2014-02",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2014-03",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2014-04",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2014-05",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2014-06",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2014-07",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2014-08",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2014-09",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2014-10",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2014-11",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2014-12",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+              "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+              "country_iso3": "WLD",
+              "period": "2014",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+              "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+              "country_iso3": "WLD",
+              "period": "2014",
+              "value": 0.0
+            }
+          ],
+          "2015": [
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2015-01",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2015-02",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2015-03",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2015-04",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2015-05",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2015-06",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2015-07",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2015-08",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2015-09",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2015-10",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2015-11",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2015-12",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+              "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+              "country_iso3": "WLD",
+              "period": "2015",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+              "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+              "country_iso3": "WLD",
+              "period": "2015",
+              "value": 0.0
+            }
+          ]
+        },
+        "internal_series_after_peak": [
+          {
+            "year": 2014,
+            "period": "2014",
+            "value": 115.0,
+            "delta_from_peak": -7.0,
+            "pct_change_from_peak": -5.7377
+          },
+          {
+            "year": 2015,
+            "period": "2015",
+            "value": 108.0,
+            "delta_from_peak": -14.0,
+            "pct_change_from_peak": -11.4754
+          }
+        ],
+        "summary": {
+          "n_years_with_data_after": 2,
+          "first_year_after_value": {
+            "year": 2014,
+            "period": "2014",
+            "value": 115.0,
+            "delta_from_peak": -7.0,
+            "pct_change_from_peak": -5.7377
+          }
+        },
+        "window_note": "ความเปลี่ยนแปลงหลังปี peak (2014–2015) เมื่อกำหนดหลัง 2 ปีปฏิทิน",
+        "game_theory": {
+          "model": "stylized_2x2_with_exogenous_state",
+          "disclaimer": "Reduced-form illustration only; not causal inference or equilibrium of real markets.",
+          "stress_index": 0.25,
+          "inferred_environment": {
+            "column_index": 0,
+            "label": "benign"
+          },
+          "firm_payoffs": {
+            "matrix": [
+              [
+                2.375,
+                4.125
+              ],
+              [
+                4.625,
+                1.375
+              ]
+            ],
+            "row_labels": [
+              "retrench",
+              "grow"
+            ],
+            "column_labels": [
+              "benign",
+              "adverse"
+            ]
+          },
+          "best_response_to_inferred_state": {
+            "action": "grow",
+            "payoff": 4.625
+          },
+          "pure_nash_equilibria_auxiliary": [
+            {
+              "firm_action": "grow",
+              "environment_column": 0,
+              "firm_payoff": 4.625
+            }
+          ],
+          "observed_path": {
+            "primary": "retrench",
+            "first_year_pct_from_peak": -5.7377,
+            "trend": "deteriorating",
+            "n_years": 2
+          },
+          "alignment": {
+            "predicted_rational_action": "grow",
+            "observed_primary": "retrench",
+            "consistent": false,
+            "score": 0.35
+          },
+          "notes": [
+            "Hold ถือว่าใกล้เคียง equilibrium ถ้าผลต่างผลประโยชน์ระหว่าง retrench/grow เล็กน้อยต่อสภาวะนั้น",
+            "ปรับ adverse_threshold / pct_threshold ได้เมื่อเรียกจากโค้ด"
+          ]
+        }
+      }
+    },
+    {
+      "kind": "local_min",
+      "period": "2015",
+      "year": 2015,
+      "value": 108.0,
+      "context": [
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2015-01",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2015-02",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2015-03",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2015-04",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2015-05",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2015-06",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2015-07",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2015-08",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2015-09",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2015-10",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2015-11",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2015-12",
+          "value": 0.0
+        },
+        {
+          "source": "crisis_calendar",
+          "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+          "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+          "country_iso3": "WLD",
+          "period": "2015",
+          "value": 0.0
+        },
+        {
+          "source": "crisis_calendar",
+          "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+          "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+          "country_iso3": "WLD",
+          "period": "2015",
+          "value": 0.0
+        }
+      ],
+      "before_peak": {
+        "window_years": [
+          2013,
+          2014
+        ],
+        "window_note": "สัญญาณ/บริบทก่อนปี peak (2013–2014) เมื่อกำหนดย้อนหลัง 2 ปีปฏิทิน",
+        "crisis_context_by_year": {
+          "2013": [
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2013-01",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2013-02",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2013-03",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2013-04",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2013-05",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2013-06",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2013-07",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2013-08",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2013-09",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2013-10",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2013-11",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2013-12",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+              "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+              "country_iso3": "WLD",
+              "period": "2013",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+              "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+              "country_iso3": "WLD",
+              "period": "2013",
+              "value": 0.0
+            }
+          ],
+          "2014": [
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2014-01",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2014-02",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2014-03",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2014-04",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2014-05",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2014-06",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2014-07",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2014-08",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2014-09",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2014-10",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2014-11",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2014-12",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+              "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+              "country_iso3": "WLD",
+              "period": "2014",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+              "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+              "country_iso3": "WLD",
+              "period": "2014",
+              "value": 0.0
+            }
+          ]
+        },
+        "internal_series_in_window": [
+          {
+            "year": 2013,
+            "period": "2013",
+            "value": 122.0
+          },
+          {
+            "year": 2014,
+            "period": "2014",
+            "value": 115.0
+          }
+        ],
+        "observations": {
+          "internal_pct_change_last_two_points_in_window": -5.7377,
+          "internal_yoy_pre_peak_last_pair": {
+            "from_year": 2013,
+            "to_year": 2014,
+            "from_value": 122.0,
+            "to_value": 115.0
+          },
+          "pandemic_calendar_flag_present": true
+        }
+      },
+      "after_peak": {
+        "window_years": [
+          2016,
+          2017
+        ],
+        "crisis_context_by_year": {
+          "2016": [
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-01",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-02",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-03",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-04",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-05",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-06",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-07",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-08",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-09",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-10",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-11",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-12",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+              "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+              "country_iso3": "WLD",
+              "period": "2016",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+              "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+              "country_iso3": "WLD",
+              "period": "2016",
+              "value": 0.0
+            }
+          ],
+          "2017": [
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-01",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-02",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-03",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-04",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-05",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-06",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-07",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-08",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-09",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-10",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-11",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-12",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+              "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+              "country_iso3": "WLD",
+              "period": "2017",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+              "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+              "country_iso3": "WLD",
+              "period": "2017",
+              "value": 0.0
+            }
+          ]
+        },
+        "internal_series_after_peak": [
+          {
+            "year": 2016,
+            "period": "2016",
+            "value": 112.0,
+            "delta_from_peak": 4.0,
+            "pct_change_from_peak": 3.7037
+          },
+          {
+            "year": 2017,
+            "period": "2017",
+            "value": 125.0,
+            "delta_from_peak": 17.0,
+            "pct_change_from_peak": 15.7407
+          }
+        ],
+        "summary": {
+          "n_years_with_data_after": 2,
+          "first_year_after_value": {
+            "year": 2016,
+            "period": "2016",
+            "value": 112.0,
+            "delta_from_peak": 4.0,
+            "pct_change_from_peak": 3.7037
+          }
+        },
+        "window_note": "ความเปลี่ยนแปลงหลังปี peak (2016–2017) เมื่อกำหนดหลัง 2 ปีปฏิทิน",
+        "game_theory": {
+          "model": "stylized_2x2_with_exogenous_state",
+          "disclaimer": "Reduced-form illustration only; not causal inference or equilibrium of real markets.",
+          "stress_index": 0.25,
+          "inferred_environment": {
+            "column_index": 0,
+            "label": "benign"
+          },
+          "firm_payoffs": {
+            "matrix": [
+              [
+                2.375,
+                4.125
+              ],
+              [
+                4.625,
+                1.375
+              ]
+            ],
+            "row_labels": [
+              "retrench",
+              "grow"
+            ],
+            "column_labels": [
+              "benign",
+              "adverse"
+            ]
+          },
+          "best_response_to_inferred_state": {
+            "action": "grow",
+            "payoff": 4.625
+          },
+          "pure_nash_equilibria_auxiliary": [
+            {
+              "firm_action": "grow",
+              "environment_column": 0,
+              "firm_payoff": 4.625
+            }
+          ],
+          "observed_path": {
+            "primary": "expand",
+            "first_year_pct_from_peak": 3.7037,
+            "trend": "recovering",
+            "n_years": 2
+          },
+          "alignment": {
+            "predicted_rational_action": "grow",
+            "observed_primary": "expand",
+            "consistent": true,
+            "score": 1.0
+          },
+          "notes": [
+            "Hold ถือว่าใกล้เคียง equilibrium ถ้าผลต่างผลประโยชน์ระหว่าง retrench/grow เล็กน้อยต่อสภาวะนั้น",
+            "ปรับ adverse_threshold / pct_threshold ได้เมื่อเรียกจากโค้ด"
+          ]
+        }
+      }
+    },
+    {
+      "kind": "local_max",
+      "period": "2018",
+      "year": 2018,
+      "value": 132.0,
+      "context": [
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2018-01",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2018-02",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2018-03",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2018-04",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2018-05",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2018-06",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2018-07",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2018-08",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2018-09",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2018-10",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2018-11",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2018-12",
+          "value": 0.0
+        },
+        {
+          "source": "crisis_calendar",
+          "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+          "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+          "country_iso3": "WLD",
+          "period": "2018",
+          "value": 0.0
+        },
+        {
+          "source": "crisis_calendar",
+          "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+          "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+          "country_iso3": "WLD",
+          "period": "2018",
+          "value": 1.0
+        }
+      ],
+      "before_peak": {
+        "window_years": [
+          2016,
+          2017
+        ],
+        "window_note": "สัญญาณ/บริบทก่อนปี peak (2016–2017) เมื่อกำหนดย้อนหลัง 2 ปีปฏิทิน",
+        "crisis_context_by_year": {
+          "2016": [
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-01",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-02",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-03",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-04",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-05",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-06",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-07",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-08",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-09",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-10",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-11",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-12",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+              "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+              "country_iso3": "WLD",
+              "period": "2016",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+              "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+              "country_iso3": "WLD",
+              "period": "2016",
+              "value": 0.0
+            }
+          ],
+          "2017": [
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-01",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-02",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-03",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-04",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-05",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-06",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-07",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-08",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-09",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-10",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-11",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-12",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+              "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+              "country_iso3": "WLD",
+              "period": "2017",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+              "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+              "country_iso3": "WLD",
+              "period": "2017",
+              "value": 0.0
+            }
+          ]
+        },
+        "internal_series_in_window": [
+          {
+            "year": 2016,
+            "period": "2016",
+            "value": 112.0
+          },
+          {
+            "year": 2017,
+            "period": "2017",
+            "value": 125.0
+          }
+        ],
+        "observations": {
+          "internal_pct_change_last_two_points_in_window": 11.6071,
+          "internal_yoy_pre_peak_last_pair": {
+            "from_year": 2016,
+            "to_year": 2017,
+            "from_value": 112.0,
+            "to_value": 125.0
+          },
+          "pandemic_calendar_flag_present": true
+        }
+      },
+      "after_peak": {
+        "window_years": [
+          2019,
+          2020
+        ],
+        "crisis_context_by_year": {
+          "2019": [
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-01",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-02",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-03",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-04",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-05",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-06",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-07",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-08",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-09",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-10",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-11",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-12",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+              "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+              "country_iso3": "WLD",
+              "period": "2019",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+              "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+              "country_iso3": "WLD",
+              "period": "2019",
+              "value": 1.0
+            }
+          ],
+          "2020": [
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2020-01",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2020-02",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2020-03",
+              "value": 1.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2020-04",
+              "value": 1.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2020-05",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2020-06",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2020-07",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2020-08",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2020-09",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2020-10",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2020-11",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2020-12",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+              "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+              "country_iso3": "WLD",
+              "period": "2020",
+              "value": 1.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+              "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+              "country_iso3": "WLD",
+              "period": "2020",
+              "value": 0.0
+            }
+          ]
+        },
+        "internal_series_after_peak": [
+          {
+            "year": 2019,
+            "period": "2019",
+            "value": 128.0,
+            "delta_from_peak": -4.0,
+            "pct_change_from_peak": -3.0303
+          },
+          {
+            "year": 2020,
+            "period": "2020",
+            "value": 95.0,
+            "delta_from_peak": -37.0,
+            "pct_change_from_peak": -28.0303
+          }
+        ],
+        "summary": {
+          "n_years_with_data_after": 2,
+          "first_year_after_value": {
+            "year": 2019,
+            "period": "2019",
+            "value": 128.0,
+            "delta_from_peak": -4.0,
+            "pct_change_from_peak": -3.0303
+          }
+        },
+        "window_note": "ความเปลี่ยนแปลงหลังปี peak (2019–2020) เมื่อกำหนดหลัง 2 ปีปฏิทิน",
+        "game_theory": {
+          "model": "stylized_2x2_with_exogenous_state",
+          "disclaimer": "Reduced-form illustration only; not causal inference or equilibrium of real markets.",
+          "stress_index": 0.7,
+          "inferred_environment": {
+            "column_index": 1,
+            "label": "adverse"
+          },
+          "firm_payoffs": {
+            "matrix": [
+              [
+                2.15,
+                5.25
+              ],
+              [
+                3.95,
+                1.15
+              ]
+            ],
+            "row_labels": [
+              "retrench",
+              "grow"
+            ],
+            "column_labels": [
+              "benign",
+              "adverse"
+            ]
+          },
+          "best_response_to_inferred_state": {
+            "action": "retrench",
+            "payoff": 5.25
+          },
+          "pure_nash_equilibria_auxiliary": [
+            {
+              "firm_action": "grow",
+              "environment_column": 0,
+              "firm_payoff": 3.95
+            }
+          ],
+          "observed_path": {
+            "primary": "retrench",
+            "first_year_pct_from_peak": -3.0303,
+            "trend": "deteriorating",
+            "n_years": 2
+          },
+          "alignment": {
+            "predicted_rational_action": "retrench",
+            "observed_primary": "retrench",
+            "consistent": true,
+            "score": 1.0
+          },
+          "notes": [
+            "Hold ถือว่าใกล้เคียง equilibrium ถ้าผลต่างผลประโยชน์ระหว่าง retrench/grow เล็กน้อยต่อสภาวะนั้น",
+            "ปรับ adverse_threshold / pct_threshold ได้เมื่อเรียกจากโค้ด"
+          ]
+        }
+      }
+    },
+    {
+      "kind": "global_max",
+      "period": "2018",
+      "year": 2018,
+      "value": 132.0,
+      "context": [
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2018-01",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2018-02",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2018-03",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2018-04",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2018-05",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2018-06",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2018-07",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2018-08",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2018-09",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2018-10",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2018-11",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2018-12",
+          "value": 0.0
+        },
+        {
+          "source": "crisis_calendar",
+          "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+          "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+          "country_iso3": "WLD",
+          "period": "2018",
+          "value": 0.0
+        },
+        {
+          "source": "crisis_calendar",
+          "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+          "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+          "country_iso3": "WLD",
+          "period": "2018",
+          "value": 1.0
+        }
+      ],
+      "before_peak": {
+        "window_years": [
+          2016,
+          2017
+        ],
+        "window_note": "สัญญาณ/บริบทก่อนปี peak (2016–2017) เมื่อกำหนดย้อนหลัง 2 ปีปฏิทิน",
+        "crisis_context_by_year": {
+          "2016": [
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-01",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-02",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-03",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-04",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-05",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-06",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-07",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-08",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-09",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-10",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-11",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2016-12",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+              "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+              "country_iso3": "WLD",
+              "period": "2016",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+              "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+              "country_iso3": "WLD",
+              "period": "2016",
+              "value": 0.0
+            }
+          ],
+          "2017": [
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-01",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-02",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-03",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-04",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-05",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-06",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-07",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-08",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-09",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-10",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-11",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2017-12",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+              "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+              "country_iso3": "WLD",
+              "period": "2017",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+              "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+              "country_iso3": "WLD",
+              "period": "2017",
+              "value": 0.0
+            }
+          ]
+        },
+        "internal_series_in_window": [
+          {
+            "year": 2016,
+            "period": "2016",
+            "value": 112.0
+          },
+          {
+            "year": 2017,
+            "period": "2017",
+            "value": 125.0
+          }
+        ],
+        "observations": {
+          "internal_pct_change_last_two_points_in_window": 11.6071,
+          "internal_yoy_pre_peak_last_pair": {
+            "from_year": 2016,
+            "to_year": 2017,
+            "from_value": 112.0,
+            "to_value": 125.0
+          },
+          "pandemic_calendar_flag_present": true
+        }
+      },
+      "after_peak": {
+        "window_years": [
+          2019,
+          2020
+        ],
+        "crisis_context_by_year": {
+          "2019": [
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-01",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-02",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-03",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-04",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-05",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-06",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-07",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-08",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-09",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-10",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-11",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-12",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+              "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+              "country_iso3": "WLD",
+              "period": "2019",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+              "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+              "country_iso3": "WLD",
+              "period": "2019",
+              "value": 1.0
+            }
+          ],
+          "2020": [
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2020-01",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2020-02",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2020-03",
+              "value": 1.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2020-04",
+              "value": 1.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2020-05",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2020-06",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2020-07",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2020-08",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2020-09",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2020-10",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2020-11",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2020-12",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+              "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+              "country_iso3": "WLD",
+              "period": "2020",
+              "value": 1.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+              "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+              "country_iso3": "WLD",
+              "period": "2020",
+              "value": 0.0
+            }
+          ]
+        },
+        "internal_series_after_peak": [
+          {
+            "year": 2019,
+            "period": "2019",
+            "value": 128.0,
+            "delta_from_peak": -4.0,
+            "pct_change_from_peak": -3.0303
+          },
+          {
+            "year": 2020,
+            "period": "2020",
+            "value": 95.0,
+            "delta_from_peak": -37.0,
+            "pct_change_from_peak": -28.0303
+          }
+        ],
+        "summary": {
+          "n_years_with_data_after": 2,
+          "first_year_after_value": {
+            "year": 2019,
+            "period": "2019",
+            "value": 128.0,
+            "delta_from_peak": -4.0,
+            "pct_change_from_peak": -3.0303
+          }
+        },
+        "window_note": "ความเปลี่ยนแปลงหลังปี peak (2019–2020) เมื่อกำหนดหลัง 2 ปีปฏิทิน",
+        "game_theory": {
+          "model": "stylized_2x2_with_exogenous_state",
+          "disclaimer": "Reduced-form illustration only; not causal inference or equilibrium of real markets.",
+          "stress_index": 0.7,
+          "inferred_environment": {
+            "column_index": 1,
+            "label": "adverse"
+          },
+          "firm_payoffs": {
+            "matrix": [
+              [
+                2.15,
+                5.25
+              ],
+              [
+                3.95,
+                1.15
+              ]
+            ],
+            "row_labels": [
+              "retrench",
+              "grow"
+            ],
+            "column_labels": [
+              "benign",
+              "adverse"
+            ]
+          },
+          "best_response_to_inferred_state": {
+            "action": "retrench",
+            "payoff": 5.25
+          },
+          "pure_nash_equilibria_auxiliary": [
+            {
+              "firm_action": "grow",
+              "environment_column": 0,
+              "firm_payoff": 3.95
+            }
+          ],
+          "observed_path": {
+            "primary": "retrench",
+            "first_year_pct_from_peak": -3.0303,
+            "trend": "deteriorating",
+            "n_years": 2
+          },
+          "alignment": {
+            "predicted_rational_action": "retrench",
+            "observed_primary": "retrench",
+            "consistent": true,
+            "score": 1.0
+          },
+          "notes": [
+            "Hold ถือว่าใกล้เคียง equilibrium ถ้าผลต่างผลประโยชน์ระหว่าง retrench/grow เล็กน้อยต่อสภาวะนั้น",
+            "ปรับ adverse_threshold / pct_threshold ได้เมื่อเรียกจากโค้ด"
+          ]
+        }
+      }
+    },
+    {
+      "kind": "local_min",
+      "period": "2020",
+      "year": 2020,
+      "value": 95.0,
+      "context": [
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2020-01",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2020-02",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2020-03",
+          "value": 1.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2020-04",
+          "value": 1.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2020-05",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2020-06",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2020-07",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2020-08",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2020-09",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2020-10",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2020-11",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2020-12",
+          "value": 0.0
+        },
+        {
+          "source": "crisis_calendar",
+          "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+          "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+          "country_iso3": "WLD",
+          "period": "2020",
+          "value": 1.0
+        },
+        {
+          "source": "crisis_calendar",
+          "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+          "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+          "country_iso3": "WLD",
+          "period": "2020",
+          "value": 0.0
+        }
+      ],
+      "before_peak": {
+        "window_years": [
+          2018,
+          2019
+        ],
+        "window_note": "สัญญาณ/บริบทก่อนปี peak (2018–2019) เมื่อกำหนดย้อนหลัง 2 ปีปฏิทิน",
+        "crisis_context_by_year": {
+          "2018": [
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2018-01",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2018-02",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2018-03",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2018-04",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2018-05",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2018-06",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2018-07",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2018-08",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2018-09",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2018-10",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2018-11",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2018-12",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+              "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+              "country_iso3": "WLD",
+              "period": "2018",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+              "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+              "country_iso3": "WLD",
+              "period": "2018",
+              "value": 1.0
+            }
+          ],
+          "2019": [
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-01",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-02",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-03",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-04",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-05",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-06",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-07",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-08",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-09",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-10",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-11",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-12",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+              "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+              "country_iso3": "WLD",
+              "period": "2019",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+              "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+              "country_iso3": "WLD",
+              "period": "2019",
+              "value": 1.0
+            }
+          ]
+        },
+        "internal_series_in_window": [
+          {
+            "year": 2018,
+            "period": "2018",
+            "value": 132.0
+          },
+          {
+            "year": 2019,
+            "period": "2019",
+            "value": 128.0
+          }
+        ],
+        "observations": {
+          "internal_pct_change_last_two_points_in_window": -3.0303,
+          "internal_yoy_pre_peak_last_pair": {
+            "from_year": 2018,
+            "to_year": 2019,
+            "from_value": 132.0,
+            "to_value": 128.0
+          },
+          "pandemic_calendar_flag_present": true
+        }
+      },
+      "after_peak": {
+        "window_years": [
+          2021,
+          2022
+        ],
+        "crisis_context_by_year": {
+          "2021": [
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2021-01",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2021-02",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2021-03",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2021-04",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2021-05",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2021-06",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2021-07",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2021-08",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2021-09",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2021-10",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2021-11",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2021-12",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+              "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+              "country_iso3": "WLD",
+              "period": "2021",
+              "value": 1.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+              "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+              "country_iso3": "WLD",
+              "period": "2021",
+              "value": 0.0
+            }
+          ],
+          "2022": [
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2022-01",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2022-02",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2022-03",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2022-04",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2022-05",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2022-06",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2022-07",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2022-08",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2022-09",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2022-10",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2022-11",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2022-12",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+              "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+              "country_iso3": "WLD",
+              "period": "2022",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+              "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+              "country_iso3": "WLD",
+              "period": "2022",
+              "value": 0.0
+            }
+          ]
+        },
+        "internal_series_after_peak": [
+          {
+            "year": 2021,
+            "period": "2021",
+            "value": 102.0,
+            "delta_from_peak": 7.0,
+            "pct_change_from_peak": 7.3684
+          },
+          {
+            "year": 2022,
+            "period": "2022",
+            "value": 118.0,
+            "delta_from_peak": 23.0,
+            "pct_change_from_peak": 24.2105
+          }
+        ],
+        "summary": {
+          "n_years_with_data_after": 2,
+          "first_year_after_value": {
+            "year": 2021,
+            "period": "2021",
+            "value": 102.0,
+            "delta_from_peak": 7.0,
+            "pct_change_from_peak": 7.3684
+          }
+        },
+        "window_note": "ความเปลี่ยนแปลงหลังปี peak (2021–2022) เมื่อกำหนดหลัง 2 ปีปฏิทิน",
+        "game_theory": {
+          "model": "stylized_2x2_with_exogenous_state",
+          "disclaimer": "Reduced-form illustration only; not causal inference or equilibrium of real markets.",
+          "stress_index": 0.4,
+          "inferred_environment": {
+            "column_index": 0,
+            "label": "benign"
+          },
+          "firm_payoffs": {
+            "matrix": [
+              [
+                2.3,
+                4.5
+              ],
+              [
+                4.4,
+                1.3
+              ]
+            ],
+            "row_labels": [
+              "retrench",
+              "grow"
+            ],
+            "column_labels": [
+              "benign",
+              "adverse"
+            ]
+          },
+          "best_response_to_inferred_state": {
+            "action": "grow",
+            "payoff": 4.4
+          },
+          "pure_nash_equilibria_auxiliary": [
+            {
+              "firm_action": "grow",
+              "environment_column": 0,
+              "firm_payoff": 4.4
+            }
+          ],
+          "observed_path": {
+            "primary": "expand",
+            "first_year_pct_from_peak": 7.3684,
+            "trend": "recovering",
+            "n_years": 2
+          },
+          "alignment": {
+            "predicted_rational_action": "grow",
+            "observed_primary": "expand",
+            "consistent": true,
+            "score": 1.0
+          },
+          "notes": [
+            "Hold ถือว่าใกล้เคียง equilibrium ถ้าผลต่างผลประโยชน์ระหว่าง retrench/grow เล็กน้อยต่อสภาวะนั้น",
+            "ปรับ adverse_threshold / pct_threshold ได้เมื่อเรียกจากโค้ด"
+          ]
+        }
+      }
+    },
+    {
+      "kind": "global_min",
+      "period": "2020",
+      "year": 2020,
+      "value": 95.0,
+      "context": [
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2020-01",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2020-02",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2020-03",
+          "value": 1.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2020-04",
+          "value": 1.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2020-05",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2020-06",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2020-07",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2020-08",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2020-09",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2020-10",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2020-11",
+          "value": 0.0
+        },
+        {
+          "source": "fred",
+          "indicator_id": "USREC",
+          "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+          "country_iso3": "USA",
+          "period": "2020-12",
+          "value": 0.0
+        },
+        {
+          "source": "crisis_calendar",
+          "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+          "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+          "country_iso3": "WLD",
+          "period": "2020",
+          "value": 1.0
+        },
+        {
+          "source": "crisis_calendar",
+          "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+          "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+          "country_iso3": "WLD",
+          "period": "2020",
+          "value": 0.0
+        }
+      ],
+      "before_peak": {
+        "window_years": [
+          2018,
+          2019
+        ],
+        "window_note": "สัญญาณ/บริบทก่อนปี peak (2018–2019) เมื่อกำหนดย้อนหลัง 2 ปีปฏิทิน",
+        "crisis_context_by_year": {
+          "2018": [
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2018-01",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2018-02",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2018-03",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2018-04",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2018-05",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2018-06",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2018-07",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2018-08",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2018-09",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2018-10",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2018-11",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2018-12",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+              "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+              "country_iso3": "WLD",
+              "period": "2018",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+              "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+              "country_iso3": "WLD",
+              "period": "2018",
+              "value": 1.0
+            }
+          ],
+          "2019": [
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-01",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-02",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-03",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-04",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-05",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-06",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-07",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-08",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-09",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-10",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-11",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2019-12",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+              "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+              "country_iso3": "WLD",
+              "period": "2019",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+              "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+              "country_iso3": "WLD",
+              "period": "2019",
+              "value": 1.0
+            }
+          ]
+        },
+        "internal_series_in_window": [
+          {
+            "year": 2018,
+            "period": "2018",
+            "value": 132.0
+          },
+          {
+            "year": 2019,
+            "period": "2019",
+            "value": 128.0
+          }
+        ],
+        "observations": {
+          "internal_pct_change_last_two_points_in_window": -3.0303,
+          "internal_yoy_pre_peak_last_pair": {
+            "from_year": 2018,
+            "to_year": 2019,
+            "from_value": 132.0,
+            "to_value": 128.0
+          },
+          "pandemic_calendar_flag_present": true
+        }
+      },
+      "after_peak": {
+        "window_years": [
+          2021,
+          2022
+        ],
+        "crisis_context_by_year": {
+          "2021": [
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2021-01",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2021-02",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2021-03",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2021-04",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2021-05",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2021-06",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2021-07",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2021-08",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2021-09",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2021-10",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2021-11",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2021-12",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+              "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+              "country_iso3": "WLD",
+              "period": "2021",
+              "value": 1.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+              "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+              "country_iso3": "WLD",
+              "period": "2021",
+              "value": 0.0
+            }
+          ],
+          "2022": [
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2022-01",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2022-02",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2022-03",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2022-04",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2022-05",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2022-06",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2022-07",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2022-08",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2022-09",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2022-10",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2022-11",
+              "value": 0.0
+            },
+            {
+              "source": "fred",
+              "indicator_id": "USREC",
+              "indicator_name": "NBER recession indicator USA (1=recession month, 0=expansion)",
+              "country_iso3": "USA",
+              "period": "2022-12",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_PANDEMIC_COVID19_HEURISTIC",
+              "indicator_name": "Heuristic COVID-19 shock (1 for 2020-2021, annual global tag)",
+              "country_iso3": "WLD",
+              "period": "2022",
+              "value": 0.0
+            },
+            {
+              "source": "crisis_calendar",
+              "indicator_id": "FLAG_US_CN_TRADE_WAR_HEURISTIC",
+              "indicator_name": "Heuristic US-China trade war intensity window (1 for 2018-2019)",
+              "country_iso3": "WLD",
+              "period": "2022",
+              "value": 0.0
+            }
+          ]
+        },
+        "internal_series_after_peak": [
+          {
+            "year": 2021,
+            "period": "2021",
+            "value": 102.0,
+            "delta_from_peak": 7.0,
+            "pct_change_from_peak": 7.3684
+          },
+          {
+            "year": 2022,
+            "period": "2022",
+            "value": 118.0,
+            "delta_from_peak": 23.0,
+            "pct_change_from_peak": 24.2105
+          }
+        ],
+        "summary": {
+          "n_years_with_data_after": 2,
+          "first_year_after_value": {
+            "year": 2021,
+            "period": "2021",
+            "value": 102.0,
+            "delta_from_peak": 7.0,
+            "pct_change_from_peak": 7.3684
+          }
+        },
+        "window_note": "ความเปลี่ยนแปลงหลังปี peak (2021–2022) เมื่อกำหนดหลัง 2 ปีปฏิทิน",
+        "game_theory": {
+          "model": "stylized_2x2_with_exogenous_state",
+          "disclaimer": "Reduced-form illustration only; not causal inference or equilibrium of real markets.",
+          "stress_index": 0.4,
+          "inferred_environment": {
+            "column_index": 0,
+            "label": "benign"
+          },
+          "firm_payoffs": {
+            "matrix": [
+              [
+                2.3,
+                4.5
+              ],
+              [
+                4.4,
+                1.3
+              ]
+            ],
+            "row_labels": [
+              "retrench",
+              "grow"
+            ],
+            "column_labels": [
+              "benign",
+              "adverse"
+            ]
+          },
+          "best_response_to_inferred_state": {
+            "action": "grow",
+            "payoff": 4.4
+          },
+          "pure_nash_equilibria_auxiliary": [
+            {
+              "firm_action": "grow",
+              "environment_column": 0,
+              "firm_payoff": 4.4
+            }
+          ],
+          "observed_path": {
+            "primary": "expand",
+            "first_year_pct_from_peak": 7.3684,
+            "trend": "recovering",
+            "n_years": 2
+          },
+          "alignment": {
+            "predicted_rational_action": "grow",
+            "observed_primary": "expand",
+            "consistent": true,
+            "score": 1.0
+          },
+          "notes": [
+            "Hold ถือว่าใกล้เคียง equilibrium ถ้าผลต่างผลประโยชน์ระหว่าง retrench/grow เล็กน้อยต่อสภาวะนั้น",
+            "ปรับ adverse_threshold / pct_threshold ได้เมื่อเรียกจากโค้ด"
+          ]
+        }
+      }
+    }
+  ],
+  "notes": []
+}

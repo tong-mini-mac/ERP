@@ -1,0 +1,146 @@
+Metadata-Version: 2.4
+Name: athena
+Version: 0.1.0
+Summary: ATHENA standalone platform — vendored knowledge + economic engines
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: python-dotenv>=1.0.0
+Provides-Extra: dev
+Requires-Dist: pytest>=8; extra == "dev"
+Requires-Dist: psutil>=5.9; extra == "dev"
+
+# Athena
+
+**ATHENA** — *Access-Tiered Hybrid Economic Navigation Architecture*
+
+Athena is a **platform composed from two reference codebases** — not merely a script that joins two repos:
+
+| Plane | Role | On-disk engine (current phase) |
+|--------|------|--------------------------------|
+| **Knowledge** | Rights, vault, retrieval, synthesis | `vendor/sag` (vendored copy in this repo) |
+| **Economic** | Forecasting, risk, planning, executive summary | `vendor/centralize` (`ai_cfo`) |
+| **Orchestration** | env, prompts, extension points — **owned by Athena** | `athena` package (`Athena`, `get_athena`) |
+
+Main API: `from athena import get_athena` → `get_athena().unified_query(...)` (canonical result keys `knowledge` / `economic`). The `run_athena_fused` helper remains for compatibility (maps to legacy `sag` / `cfo` keys).
+
+Full conceptual overview: `docs/PLATFORM.md`
+
+Letters in ATHENA:
+
+- **Access-Tiered** — permission and document boundaries
+- **Hybrid** — mixed retrieval plus economic context from the Economic plane
+- **Economic** — numeric outputs and CFO-style summaries
+- **Navigation** — orchestration through the `Athena` runtime
+
+CFO context is wrapped in `<financial_context>` and `<guru_instructions>` stays separate from the user question (see `athena.prompts`) so GURU can distinguish policy-grounded facts from financial *awareness*. Results include `fusion_meta` (`prompt_version`, `framing`).
+
+**Intent router** (policy vs data vs knowledge) lives in `athena.router` as a stub for a future classifier — Route B calls `run_athena_cfo_only`; Route C uses `run_athena_fused` without `ml_input`.
+
+## Setup (single project — no separate `../SAG` or `../Centralize`)
+
+```powershell
+cd D:\Myworkspace\Athena
+pip install -e vendor/centralize
+pip install -e .
+```
+
+### API keys in project-root `.env`
+
+Copy `.env.example` → `.env` and set `GEMINI_API_KEY` / `OPENAI_API_KEY` as needed.
+
+**LM Studio (e.g. DeepSeek-R1-Distill-Qwen-14B):** configure **this project’s `.env`** — see `.env.example` (`OPENAI_BASE_URL`, `OPENAI_MODEL`, `COMMUNICATOR_LLM_PROVIDER=openai`). Applies only to engines under `vendor/centralize` and `vendor/sag`; do not modify standalone Centralize/SAG repos outside Athena.
+
+**Run `ai_cfo` through Athena’s wrapper (cwd = `vendor/centralize`):**
+
+```powershell
+cd D:\Myworkspace\Athena
+python -m athena train-agents --llm
+python -m athena ml-stack
+```
+
+Delegated commands: `train-agents`, `ml-stack`, `pipeline`, `macro-daily`, `peak-events`, `stress-test` — reports/data land under `vendor/centralize/data/` per the engine defaults.
+
+The `athena` package loads this project’s `.env` first.
+
+### Macro refresh (World Bank, FRED, IMF, OECD, …) on startup
+
+By default **`macro-daily` runs automatically** when:
+
+- you run `python -m athena ...` (any command except when the command itself is `macro-daily`, to avoid duplication), or
+- you construct `Athena()` / `get_athena()` for the first time in the process.
+
+Disable with `ATHENA_MACRO_REFRESH_ON_START=0` in `.env` — logs go to `data/macro_refresh_bootstrap.log`.
+
+Force a heavy refresh every time (watch API quotas): `ATHENA_MACRO_DAILY_FORCE=1`.
+
+### SAG (knowledge engine)
+
+See `vendor/sag/config/.env` (or the Streamlit UI) — knowledge paths live under `vendor/sag/`.
+
+**End-to-end smoke (CFO + SAG GURU):** `python scripts/smoke_fusion.py` from the repo root.
+
+**Unit tests + summary:** `reports/TEST_REPORT.md` — install dev deps `pip install -e ".[dev]"` then `python -m pytest tests -v`.
+
+**Paraphrase-50 benchmark (knowledge + latency + RAM):** `python scripts/paraphrase_50_benchmark.py` → writes `reports/paraphrase_50_<timestamp>.json` and `.md`.
+
+**Mock CFO grounded** (system prompt + `raw_data` bundle, 100 paraphrases — production-like): `python scripts/paraphrase_100_cfo_benchmark.py` — uses `config/cfo_grounded_system_prompt.txt` + `GEMINI_API_KEY` (or OpenAI); writes `reports/cfo_paraphrase_100_<ts>.json` / `.md` and **`reports/CFO_GROUNDED_TEST_REPORT_<ts>.md`** plus `CFO_GROUNDED_TEST_REPORT_LATEST.md`. By default text per file is truncated per question to reduce Gemini 429 TPM risk (see `ATHENA_CFO_BUNDLE_*` in `.env.example`).
+
+## Raw data inbox
+
+Project-root **`raw_data/`** — contents are not committed (except scaffold under `company/`).
+
+| Location | Purpose |
+|----------|---------|
+| **`raw_data/company/`** | **Company raw documents** (PDF, Office, scans, etc.) on disk — see `raw_data/company/README.txt` |
+| Publish toward the knowledge engine | Run `scripts\publish_company_raw_to_sag.ps1` (→ `vendor\sag\raw_data`) |
+
+Code paths: `athena.paths.athena_raw_data_dir()`, `athena_company_raw_dir()`  
+Override raw root: `ATHENA_RAW_DATA_DIR`
+
+## Economic-engine database / mirror
+
+`data_sync` copies `vendor/centralize/data` → `<Athena>/data` for convenient paths under the project root.
+
+```powershell
+cd D:\Myworkspace\Athena
+python -m athena.data_sync
+```
+
+Update the engine under `vendor/centralize` first, then re-run sync.
+
+| Variable | Meaning |
+|----------|---------|
+| `ATHENA_DATA_DIR` | Mirror data directory (default: `<project>\data`) |
+| Code helpers | `athena.paths.athena_data_dir()`, `athena_macro_sqlite_path()` |
+
+For `ai_cfo` commands that use relative paths, run from `vendor/centralize` or pass absolute paths.
+
+## Environment variables (optional)
+
+| Variable | Meaning |
+|----------|---------|
+| `ATHENA_SAG_ROOT` | Override knowledge engine root (default: `vendor/sag`) |
+| `ATHENA_CENTRALIZE_ROOT` | Override `ai_cfo` root (default: `vendor/centralize`) |
+| `ATHENA_DATA_DIR` | Project data mirror (default: `<project>/data`) |
+| `ATHENA_RAW_DATA_DIR` | Raw inbox root (default: `<project>/raw_data`) |
+
+## Python usage
+
+```python
+from athena.fusion import run_athena_fused
+from ai_cfo.models.ml_stack_schemas import MLStackInput
+
+out = run_athena_fused(
+    "What is our travel approval policy for department heads?",
+    authorized_scope="ALL",  # or an SAG-specific scope
+    ml_input=MLStackInput(
+        sales_history=[1.0, 1.1, 1.05],
+        transaction_features=[[0.0], [2.0], [0.1]],
+    ),
+)
+print(out["sag"]["answer"])
+print(out["cfo"] is not None)
+print(out["fusion_meta"])
+```
+
+Flow details: `docs/ATHENA_ARCHITECTURE.md`

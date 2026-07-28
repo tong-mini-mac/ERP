@@ -1,0 +1,507 @@
+{
+  "generated_at": "2026-04-27 00:31:56",
+  "mode": "vector_only_pipeline_with_llm_keywords",
+  "pipeline": "LLM keywords -> VectorIndex.query() -> HybridSearch.rerank()",
+  "llm_model": "gemini-2.5-flash",
+  "results": [
+    {
+      "size": 20,
+      "pass": 18,
+      "fail": 2,
+      "pass_rate": 90.0,
+      "elapsed_ms": 448.145,
+      "elapsed_sec": 0.448,
+      "avg_ms_per_query": 22.41,
+      "timing_breakdown_ms": {
+        "llm_keyword_gen": 0.47,
+        "vector_search": 439.88,
+        "hybrid_rerank": 3.51
+      },
+      "avg_stage_ms": {
+        "llm_keyword": 0.02,
+        "vector_search": 21.99,
+        "hybrid_rerank": 0.18
+      },
+      "ram_start_mb": 104.402,
+      "ram_end_mb": 110.785,
+      "ram_peak_mb": 110.785,
+      "ram_delta_mb": 6.383,
+      "failures": [
+        {
+          "query": "What controls apply to delinquency monitoring and follow-up?",
+          "expected": "Credit & Loans",
+          "got": "IT & Digital",
+          "llm_keywords": [
+            "delinquency",
+            "monitoring",
+            "follow-up",
+            "controls",
+            "overdue"
+          ],
+          "selected_keywords": [
+            "delinquency",
+            "monitoring",
+            "follow-up",
+            "controls",
+            "overdue"
+          ]
+        },
+        {
+          "query": "Which document outlines people-policy support for employees?",
+          "expected": "HR & Admin",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "HR policy",
+            "human resources",
+            "employee policy",
+            "employee support",
+            "staff support"
+          ],
+          "selected_keywords": [
+            "HR policy",
+            "human resources",
+            "employee policy",
+            "employee support",
+            "staff support"
+          ]
+        }
+      ]
+    },
+    {
+      "size": 50,
+      "pass": 46,
+      "fail": 4,
+      "pass_rate": 92.0,
+      "elapsed_ms": 1223.42,
+      "elapsed_sec": 1.223,
+      "avg_ms_per_query": 24.47,
+      "timing_breakdown_ms": {
+        "llm_keyword_gen": 0.97,
+        "vector_search": 1203.01,
+        "hybrid_rerank": 9.02
+      },
+      "avg_stage_ms": {
+        "llm_keyword": 0.02,
+        "vector_search": 24.06,
+        "hybrid_rerank": 0.18
+      },
+      "ram_start_mb": 108.805,
+      "ram_end_mb": 110.523,
+      "ram_peak_mb": 110.895,
+      "ram_delta_mb": 2.09,
+      "failures": [
+        {
+          "query": "What controls apply to delinquency monitoring and follow-up?",
+          "expected": "Credit & Loans",
+          "got": "IT & Digital",
+          "llm_keywords": [
+            "delinquency",
+            "monitoring",
+            "follow-up",
+            "controls",
+            "overdue"
+          ],
+          "selected_keywords": [
+            "delinquency",
+            "monitoring",
+            "follow-up",
+            "controls",
+            "overdue"
+          ]
+        },
+        {
+          "query": "Which document outlines people-policy support for employees?",
+          "expected": "HR & Admin",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "HR policy",
+            "human resources",
+            "employee policy",
+            "employee support",
+            "staff support"
+          ],
+          "selected_keywords": [
+            "HR policy",
+            "human resources",
+            "employee policy",
+            "employee support",
+            "staff support"
+          ]
+        },
+        {
+          "query": "What guidance defines cash operations risk controls at branc",
+          "expected": "Operations",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "cash operations",
+            "risk control",
+            "branch",
+            "guidance",
+            "policy"
+          ],
+          "selected_keywords": [
+            "cash operations",
+            "risk control",
+            "branch",
+            "guidance",
+            "policy"
+          ]
+        },
+        {
+          "query": "How should IT teams handle maintenance windows and risk chec",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "IT",
+            "information technology",
+            "maintenance",
+            "maintenance window",
+            "scheduled maintenance"
+          ],
+          "selected_keywords": [
+            "information technology",
+            "maintenance",
+            "maintenance window",
+            "scheduled maintenance",
+            "risk assessment"
+          ]
+        }
+      ]
+    },
+    {
+      "size": 80,
+      "pass": 73,
+      "fail": 7,
+      "pass_rate": 91.25,
+      "elapsed_ms": 1809.13,
+      "elapsed_sec": 1.809,
+      "avg_ms_per_query": 22.61,
+      "timing_breakdown_ms": {
+        "llm_keyword_gen": 1.55,
+        "vector_search": 1777.54,
+        "hybrid_rerank": 14.0
+      },
+      "avg_stage_ms": {
+        "llm_keyword": 0.02,
+        "vector_search": 22.22,
+        "hybrid_rerank": 0.17
+      },
+      "ram_start_mb": 109.387,
+      "ram_end_mb": 110.672,
+      "ram_peak_mb": 110.672,
+      "ram_delta_mb": 1.285,
+      "failures": [
+        {
+          "query": "What controls apply to delinquency monitoring and follow-up?",
+          "expected": "Credit & Loans",
+          "got": "IT & Digital",
+          "llm_keywords": [
+            "delinquency",
+            "monitoring",
+            "follow-up",
+            "controls",
+            "overdue"
+          ],
+          "selected_keywords": [
+            "delinquency",
+            "monitoring",
+            "follow-up",
+            "controls",
+            "overdue"
+          ]
+        },
+        {
+          "query": "Which document outlines people-policy support for employees?",
+          "expected": "HR & Admin",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "HR policy",
+            "human resources",
+            "employee policy",
+            "employee support",
+            "staff support"
+          ],
+          "selected_keywords": [
+            "HR policy",
+            "human resources",
+            "employee policy",
+            "employee support",
+            "staff support"
+          ]
+        },
+        {
+          "query": "What guidance defines cash operations risk controls at branc",
+          "expected": "Operations",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "cash operations",
+            "risk control",
+            "branch",
+            "guidance",
+            "policy"
+          ],
+          "selected_keywords": [
+            "cash operations",
+            "risk control",
+            "branch",
+            "guidance",
+            "policy"
+          ]
+        },
+        {
+          "query": "How should IT teams handle maintenance windows and risk chec",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "IT",
+            "information technology",
+            "maintenance",
+            "maintenance window",
+            "scheduled maintenance"
+          ],
+          "selected_keywords": [
+            "information technology",
+            "maintenance",
+            "maintenance window",
+            "scheduled maintenance",
+            "risk assessment"
+          ]
+        },
+        {
+          "query": "Which standards define change management for production syst",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "change management",
+            "change control",
+            "production systems",
+            "IT systems",
+            "operational changes"
+          ],
+          "selected_keywords": [
+            "change management",
+            "change control",
+            "production systems",
+            "IT systems",
+            "operational changes"
+          ]
+        },
+        {
+          "query": "What is the policy for vulnerability remediation SLA trackin",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "vulnerability",
+            "remediation",
+            "SLA",
+            "service level agreement",
+            "tracking"
+          ],
+          "selected_keywords": [
+            "vulnerability",
+            "remediation",
+            "SLA",
+            "service level agreement",
+            "tracking"
+          ]
+        },
+        {
+          "query": "Which document contains organization-wide schedule guidance?",
+          "expected": "General",
+          "got": "Operations",
+          "llm_keywords": [
+            "schedule",
+            "scheduling",
+            "guidance",
+            "policy",
+            "company"
+          ],
+          "selected_keywords": [
+            "schedule",
+            "scheduling",
+            "guidance",
+            "policy",
+            "company"
+          ]
+        }
+      ]
+    },
+    {
+      "size": 100,
+      "pass": 92,
+      "fail": 8,
+      "pass_rate": 92.0,
+      "elapsed_ms": 2388.704,
+      "elapsed_sec": 2.389,
+      "avg_ms_per_query": 23.89,
+      "timing_breakdown_ms": {
+        "llm_keyword_gen": 1.96,
+        "vector_search": 2348.3,
+        "hybrid_rerank": 18.07
+      },
+      "avg_stage_ms": {
+        "llm_keyword": 0.02,
+        "vector_search": 23.48,
+        "hybrid_rerank": 0.18
+      },
+      "ram_start_mb": 109.84,
+      "ram_end_mb": 113.008,
+      "ram_peak_mb": 113.008,
+      "ram_delta_mb": 3.168,
+      "failures": [
+        {
+          "query": "What controls apply to delinquency monitoring and follow-up?",
+          "expected": "Credit & Loans",
+          "got": "IT & Digital",
+          "llm_keywords": [
+            "delinquency",
+            "monitoring",
+            "follow-up",
+            "controls",
+            "overdue"
+          ],
+          "selected_keywords": [
+            "delinquency",
+            "monitoring",
+            "follow-up",
+            "controls",
+            "overdue"
+          ]
+        },
+        {
+          "query": "Which document outlines people-policy support for employees?",
+          "expected": "HR & Admin",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "HR policy",
+            "human resources",
+            "employee policy",
+            "employee support",
+            "staff support"
+          ],
+          "selected_keywords": [
+            "HR policy",
+            "human resources",
+            "employee policy",
+            "employee support",
+            "staff support"
+          ]
+        },
+        {
+          "query": "What guidance defines cash operations risk controls at branc",
+          "expected": "Operations",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "cash operations",
+            "risk control",
+            "branch",
+            "guidance",
+            "policy"
+          ],
+          "selected_keywords": [
+            "cash operations",
+            "risk control",
+            "branch",
+            "guidance",
+            "policy"
+          ]
+        },
+        {
+          "query": "How should IT teams handle maintenance windows and risk chec",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "IT",
+            "information technology",
+            "maintenance",
+            "maintenance window",
+            "scheduled maintenance"
+          ],
+          "selected_keywords": [
+            "information technology",
+            "maintenance",
+            "maintenance window",
+            "scheduled maintenance",
+            "risk assessment"
+          ]
+        },
+        {
+          "query": "Which standards define change management for production syst",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "change management",
+            "change control",
+            "production systems",
+            "IT systems",
+            "operational changes"
+          ],
+          "selected_keywords": [
+            "change management",
+            "change control",
+            "production systems",
+            "IT systems",
+            "operational changes"
+          ]
+        },
+        {
+          "query": "What is the policy for vulnerability remediation SLA trackin",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "vulnerability",
+            "remediation",
+            "SLA",
+            "service level agreement",
+            "tracking"
+          ],
+          "selected_keywords": [
+            "vulnerability",
+            "remediation",
+            "SLA",
+            "service level agreement",
+            "tracking"
+          ]
+        },
+        {
+          "query": "Which document contains organization-wide schedule guidance?",
+          "expected": "General",
+          "got": "Operations",
+          "llm_keywords": [
+            "schedule",
+            "scheduling",
+            "guidance",
+            "policy",
+            "company"
+          ],
+          "selected_keywords": [
+            "schedule",
+            "scheduling",
+            "guidance",
+            "policy",
+            "company"
+          ]
+        },
+        {
+          "query": "Which document governs incident postmortem and corrective ac",
+          "expected": "IT & Digital",
+          "got": "Operations",
+          "llm_keywords": [
+            "incident",
+            "postmortem",
+            "corrective action",
+            "IT",
+            "root cause analysis"
+          ],
+          "selected_keywords": [
+            "incident",
+            "postmortem",
+            "corrective action",
+            "root cause analysis",
+            "problem management"
+          ]
+        }
+      ]
+    }
+  ]
+}

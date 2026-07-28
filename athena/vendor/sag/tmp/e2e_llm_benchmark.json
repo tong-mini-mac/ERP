@@ -1,0 +1,36 @@
+{
+  "generated_at": "2026-04-26 22:30:25",
+  "mode": "e2e_full_pipeline_with_llm_keyword_gen",
+  "llm_model": "gemini-2.5-flash",
+  "results": [
+    {
+      "size": 20,
+      "pass": 20,
+      "fail": 0,
+      "pass_rate": 100.0,
+      "llm_errors": 0,
+      "elapsed_ms": 49484.347,
+      "elapsed_sec": 49.484,
+      "avg_ms_per_query": 2474.22,
+      "timing_breakdown_ms": {
+        "llm_keyword_gen": 46242.16,
+        "keyword_expand_dept": 0.0,
+        "lexical_parallel_search": 2770.68,
+        "subset_selection": 2.27,
+        "vector_search": 461.56,
+        "hybrid_rerank": 3.22
+      },
+      "avg_stage_ms": {
+        "llm_keyword": 2312.11,
+        "lexical_search": 138.53,
+        "vector": 23.08,
+        "rerank": 0.16
+      },
+      "ram_start_mb": 96.23,
+      "ram_end_mb": 104.734,
+      "ram_peak_mb": 104.734,
+      "ram_delta_mb": 8.504,
+      "failures": []
+    }
+  ]
+}

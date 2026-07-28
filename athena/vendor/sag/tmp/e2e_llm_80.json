@@ -1,0 +1,121 @@
+{
+  "generated_at": "2026-04-26 22:33:53",
+  "mode": "e2e_full_pipeline_with_llm_keyword_gen",
+  "llm_model": "gemini-2.5-flash",
+  "results": [
+    {
+      "size": 80,
+      "pass": 73,
+      "fail": 7,
+      "pass_rate": 91.25,
+      "llm_errors": 0,
+      "elapsed_ms": 194656.273,
+      "elapsed_sec": 194.656,
+      "avg_ms_per_query": 2433.2,
+      "timing_breakdown_ms": {
+        "llm_keyword_gen": 180861.2,
+        "keyword_expand_dept": 0.0,
+        "lexical_parallel_search": 11726.77,
+        "subset_selection": 10.12,
+        "vector_search": 2026.44,
+        "hybrid_rerank": 13.62
+      },
+      "avg_stage_ms": {
+        "llm_keyword": 2260.77,
+        "lexical_search": 146.58,
+        "vector": 25.33,
+        "rerank": 0.17
+      },
+      "ram_start_mb": 96.648,
+      "ram_end_mb": 106.566,
+      "ram_peak_mb": 106.727,
+      "ram_delta_mb": 10.078,
+      "failures": [
+        {
+          "query": "What operations policy explains management escalation workfl",
+          "expected": "Operations",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "operations policy",
+            "management escalation",
+            "workflow",
+            "process",
+            "procedure"
+          ]
+        },
+        {
+          "query": "How should IT teams handle maintenance windows and risk chec",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "IT maintenance",
+            "maintenance window",
+            "system downtime",
+            "risk assessment",
+            "risk management"
+          ]
+        },
+        {
+          "query": "Where are server patching and vulnerability review procedure",
+          "expected": "IT & Digital",
+          "got": "Credit & Loans",
+          "llm_keywords": [
+            "server patching",
+            "patch management",
+            "vulnerability review",
+            "vulnerability assessment",
+            "security procedures"
+          ]
+        },
+        {
+          "query": "Which IT standards define access control for critical system",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "access control",
+            "IT security",
+            "information security",
+            "standards",
+            "compliance"
+          ]
+        },
+        {
+          "query": "How are digital-service outages escalated by the technology ",
+          "expected": "IT & Digital",
+          "got": "Operations",
+          "llm_keywords": [
+            "digital service",
+            "outage",
+            "escalation",
+            "technology team",
+            "incident"
+          ]
+        },
+        {
+          "query": "Which standards define change management for production syst",
+          "expected": "IT & Digital",
+          "got": "HR & Admin",
+          "llm_keywords": [
+            "change management",
+            "production systems",
+            "standards",
+            "ITIL",
+            "ISO"
+          ]
+        },
+        {
+          "query": "What is the policy for vulnerability remediation SLA trackin",
+          "expected": "IT & Digital",
+          "got": "Risk & Compliance",
+          "llm_keywords": [
+            "vulnerability",
+            "remediation",
+            "SLA",
+            "service level agreement",
+            "tracking"
+          ]
+        }
+      ]
+    }
+  ]
+}

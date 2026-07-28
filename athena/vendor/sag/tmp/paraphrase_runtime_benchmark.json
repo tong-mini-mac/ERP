@@ -1,0 +1,54 @@
+{
+  "generated_at": "2026-04-26 21:50:44",
+  "mode": "hybrid_lexical+vector+rerank_with_dept_filter_and_boost",
+  "results": [
+    {
+      "size": 20,
+      "pass": 18,
+      "fail": 2,
+      "pass_rate": 90.0,
+      "elapsed_ms": 457.55,
+      "elapsed_sec": 0.458,
+      "ram_start_mb": 21.047,
+      "ram_end_mb": 25.656,
+      "ram_peak_mb": 25.766,
+      "ram_delta_mb": 4.719
+    },
+    {
+      "size": 50,
+      "pass": 45,
+      "fail": 5,
+      "pass_rate": 90.0,
+      "elapsed_ms": 1262.409,
+      "elapsed_sec": 1.262,
+      "ram_start_mb": 25.684,
+      "ram_end_mb": 26.441,
+      "ram_peak_mb": 26.465,
+      "ram_delta_mb": 0.781
+    },
+    {
+      "size": 80,
+      "pass": 71,
+      "fail": 9,
+      "pass_rate": 88.75,
+      "elapsed_ms": 1777.778,
+      "elapsed_sec": 1.778,
+      "ram_start_mb": 26.441,
+      "ram_end_mb": 28.574,
+      "ram_peak_mb": 29.008,
+      "ram_delta_mb": 2.566
+    },
+    {
+      "size": 100,
+      "pass": 90,
+      "fail": 10,
+      "pass_rate": 90.0,
+      "elapsed_ms": 2393.252,
+      "elapsed_sec": 2.393,
+      "ram_start_mb": 28.574,
+      "ram_end_mb": 28.398,
+      "ram_peak_mb": 29.012,
+      "ram_delta_mb": 0.438
+    }
+  ]
+}

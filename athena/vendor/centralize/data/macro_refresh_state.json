@@ -1,0 +1,10 @@
+{
+  "sources": {
+    "world_bank": 2025,
+    "fred": 2025,
+    "oecd": 2025,
+    "crisis": 2025
+  },
+  "updated_at": "2026-05-03T07:11:08.420911+00:00",
+  "migrated_from": "data\\wb_refresh_state.json"
+}
