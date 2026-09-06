@@ -7,17 +7,37 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <title>ERP Demo — IN Z Trial</title>
     <script>
+      // Kill stale service workers / Cache Storage that pinned the old Platform login UI.
+      (function () {
+        try {
+          if (!("serviceWorker" in navigator)) return;
+          navigator.serviceWorker.getRegistrations().then(function (regs) {
+            regs.forEach(function (r) {
+              r.unregister();
+            });
+          });
+          if (window.caches && caches.keys) {
+            caches.keys().then(function (keys) {
+              keys.forEach(function (k) {
+                caches.delete(k);
+              });
+            });
+          }
+          // Install a one-shot cleaner SW as well.
+          navigator.serviceWorker.register("/sw.js").catch(function () {});
+        } catch (e) {}
+      })();
+    </script>
+    <script>
       /**
-       * ERP-Demo is a public synth-data sandbox.
-       * Always enter with a local demo JWT when no session exists so
-       * inz.lol/demo (iframe) never shows a second login wall.
-       * Optional: ?inz_sso= platform handoff still preferred when present.
-       * Never talks to ATLAS.
+       * Public synth sandbox: always mint a local demo JWT when none exists
+       * so inz.lol/demo iframe never shows a second login wall.
        */
       (function () {
         var TOKEN_KEY = "erp_access_token";
         var DEMO_EMAIL = "demo@erp.demo";
         var DEMO_PASSWORD = "demo-erp-2026";
+        var BOOT_FLAG = "erp_demo_boot_v3";
 
         function hasToken() {
           try {
@@ -31,23 +51,6 @@
           try {
             localStorage.setItem(TOKEN_KEY, token);
           } catch (e) {}
-        }
-
-        function stripParams(names) {
-          var params = new URLSearchParams(window.location.search);
-          var changed = false;
-          names.forEach(function (name) {
-            if (params.has(name)) {
-              params.delete(name);
-              changed = true;
-            }
-          });
-          if (!changed) return;
-          var next =
-            window.location.pathname +
-            (params.toString() ? "?" + params.toString() : "") +
-            window.location.hash;
-          window.history.replaceState({}, "", next);
         }
 
         function postJson(url, body) {
@@ -66,17 +69,14 @@
         try {
           var params = new URLSearchParams(window.location.search);
           var sso = params.get("inz_sso");
-
           if (sso) {
             var exchanged =
               postJson("/api/auth/inz-sso", { token: sso }) ||
               postJson("/api/auth/product-handoff", { token: sso });
             if (exchanged && exchanged.access_token) {
               saveToken(exchanged.access_token);
-              stripParams(["inz_sso"]);
             }
           }
-
           if (!hasToken()) {
             var loggedIn = postJson("/api/stock/auth/login", {
               email: DEMO_EMAIL,
@@ -86,22 +86,29 @@
               saveToken(loggedIn.access_token);
             }
           }
-
-          stripParams(["demo_auto"]);
-        } catch (e) {
-          // Fall through to SPA login UI only if bootstrap fails.
-        }
+          // One forced reload after first successful boot to drop any
+          // previously-cached SPA modules from the old Platform login build.
+          if (hasToken() && !sessionStorage.getItem(BOOT_FLAG)) {
+            sessionStorage.setItem(BOOT_FLAG, "1");
+            var clean =
+              window.location.pathname +
+              (window.location.search || "") +
+              window.location.hash;
+            window.location.replace(clean);
+            return;
+          }
+        } catch (e) {}
       })();
     </script>
     <script
       type="module"
       crossorigin
-      src="/assets/index-erpdemo-20260906171855.js"
+      src="/assets/index-erpdemo-v3-20260906181500.js"
     ></script>
     <link
       rel="stylesheet"
       crossorigin
-      href="/assets/index-erpdemo-20260906171855.css"
+      href="/assets/index-erpdemo-v3-20260906181500.css"
     />
   </head>
   <body>

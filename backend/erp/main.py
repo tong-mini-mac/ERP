@@ -843,13 +843,14 @@ def _mount_frontend() -> None:
         index = dist / "index.html"
         if not index.is_file():
             raise HTTPException(status_code=404, detail="Frontend not found")
-        # Always revalidate shell so inz.lol iframe picks up auth bootstrap.
+        # Bust sticky browser/SW caches that still showed the old Platform login.
         return FileResponse(
             index,
             headers={
                 "Cache-Control": "no-cache, no-store, must-revalidate",
                 "Pragma": "no-cache",
                 "Expires": "0",
+                "Clear-Site-Data": '"cache", "storage"',
             },
         )
 
