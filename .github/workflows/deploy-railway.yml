@@ -20,12 +20,34 @@ jobs:
       - name: Deploy
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+          RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID }}
         run: |
-          if [ -z "$RAILWAY_TOKEN" ]; then
-            echo "RAILWAY_TOKEN secret is missing. Add it in GitHub repo secrets, then re-run."
+          set -euo pipefail
+          # Trim accidental whitespace/newlines from the secret paste
+          TOKEN="$(printf '%s' "${RAILWAY_TOKEN:-}" | tr -d '\r\n[:space:]')"
+          if [ -z "$TOKEN" ]; then
+            echo "RAILWAY_TOKEN secret is missing."
             exit 1
           fi
-          railway up --ci --service "${RAILWAY_SERVICE:-}"
-        # Optional repo secrets:
-        #   RAILWAY_TOKEN   (required)
-        #   RAILWAY_SERVICE (optional service name)
+          export RAILWAY_TOKEN="$TOKEN"
+          echo "RAILWAY_TOKEN length: ${#TOKEN}"
+
+          if [ -n "${RAILWAY_PROJECT_ID:-}" ]; then
+            echo "Using RAILWAY_PROJECT_ID=${RAILWAY_PROJECT_ID}"
+            export RAILWAY_PROJECT_ID
+          fi
+          if [ -n "${RAILWAY_SERVICE_ID:-}" ]; then
+            echo "Using RAILWAY_SERVICE_ID=${RAILWAY_SERVICE_ID}"
+            export RAILWAY_SERVICE_ID
+          fi
+
+          # Validate token before upload
+          if ! railway whoami; then
+            echo "Railway rejected RAILWAY_TOKEN. Recreate Account Token at:"
+            echo "https://railway.app/account/tokens"
+            echo "Then update GitHub secret RAILWAY_TOKEN (no spaces)."
+            exit 1
+          fi
+
+          railway up --ci --detach
