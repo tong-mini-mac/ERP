@@ -843,7 +843,15 @@ def _mount_frontend() -> None:
         index = dist / "index.html"
         if not index.is_file():
             raise HTTPException(status_code=404, detail="Frontend not found")
-        return FileResponse(index)
+        # Always revalidate shell so inz.lol iframe picks up auth bootstrap.
+        return FileResponse(
+            index,
+            headers={
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0",
+            },
+        )
 
 
 _mount_frontend()
