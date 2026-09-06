@@ -19,8 +19,9 @@ jobs:
 
       - name: Deploy
         env:
+          # Project Token from Railway → Project → Settings → Tokens
+          # (UUID form). Do NOT use Account/Workspace tokens here.
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
           RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID }}
         run: |
           set -euo pipefail
@@ -28,26 +29,28 @@ jobs:
           TOKEN="$(printf '%s' "${RAILWAY_TOKEN:-}" | tr -d '\r\n[:space:]')"
           if [ -z "$TOKEN" ]; then
             echo "RAILWAY_TOKEN secret is missing."
+            echo "Create a Project Token: Railway project → Settings → Tokens"
+            echo "Then set GitHub Actions secret RAILWAY_TOKEN to that value."
             exit 1
           fi
           export RAILWAY_TOKEN="$TOKEN"
           echo "RAILWAY_TOKEN length: ${#TOKEN}"
 
-          if [ -n "${RAILWAY_PROJECT_ID:-}" ]; then
-            echo "Using RAILWAY_PROJECT_ID=${RAILWAY_PROJECT_ID}"
-            export RAILWAY_PROJECT_ID
-          fi
+          # Project tokens are scoped to one environment and only support
+          # deploy commands (up / redeploy / logs). Do NOT call whoami/link —
+          # those require RAILWAY_API_TOKEN (account scope) and will 401 a
+          # valid project token.
+
+          DEPLOY_ARGS=(up --ci --detach)
           if [ -n "${RAILWAY_SERVICE_ID:-}" ]; then
             echo "Using RAILWAY_SERVICE_ID=${RAILWAY_SERVICE_ID}"
-            export RAILWAY_SERVICE_ID
+            DEPLOY_ARGS+=(--service "$RAILWAY_SERVICE_ID")
           fi
 
-          # Validate token before upload
-          if ! railway whoami; then
-            echo "Railway rejected RAILWAY_TOKEN. Recreate Account Token at:"
-            echo "https://railway.app/account/tokens"
-            echo "Then update GitHub secret RAILWAY_TOKEN (no spaces)."
+          if ! railway "${DEPLOY_ARGS[@]}"; then
+            echo "railway up failed."
+            echo "RAILWAY_TOKEN must be a Project Token (not Account/Workspace):"
+            echo "  Railway → open ERP-Demo project → Settings → Tokens → Create"
+            echo "Paste that UUID into GitHub secret RAILWAY_TOKEN (no spaces)."
             exit 1
           fi
-
-          railway up --ci --detach
