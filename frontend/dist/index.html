@@ -3,13 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
     <title>ERP Demo — IN Z Trial</title>
     <script>
       /**
-       * Skip the second login when opened from inz.lol:
-       * 1) ?inz_sso= platform handoff → local demo JWT
-       * 2) iframe / referrer inz.lol → auto demo@erp.demo login
-       * Synthetic sandbox only — never ATLAS.
+       * ERP-Demo is a public synth-data sandbox.
+       * Always enter with a local demo JWT when no session exists so
+       * inz.lol/demo (iframe) never shows a second login wall.
+       * Optional: ?inz_sso= platform handoff still preferred when present.
+       * Never talks to ATLAS.
        */
       (function () {
         var TOKEN_KEY = "erp_access_token";
@@ -25,15 +28,9 @@
         }
 
         function saveToken(token) {
-          localStorage.setItem(TOKEN_KEY, token);
-        }
-
-        function embedded() {
           try {
-            return window.self !== window.top;
-          } catch (e) {
-            return true;
-          }
+            localStorage.setItem(TOKEN_KEY, token);
+          } catch (e) {}
         }
 
         function stripParams(names) {
@@ -77,33 +74,35 @@
             if (exchanged && exchanged.access_token) {
               saveToken(exchanged.access_token);
               stripParams(["inz_sso"]);
-              return;
             }
           }
 
-          if (hasToken()) return;
-
-          var fromInz =
-            embedded() ||
-            params.get("demo_auto") === "1" ||
-            /inz\.lol/i.test(document.referrer || "");
-          if (!fromInz) return;
-
-          var loggedIn = postJson("/api/stock/auth/login", {
-            email: DEMO_EMAIL,
-            password: DEMO_PASSWORD,
-          });
-          if (loggedIn && loggedIn.access_token) {
-            saveToken(loggedIn.access_token);
-            stripParams(["demo_auto"]);
+          if (!hasToken()) {
+            var loggedIn = postJson("/api/stock/auth/login", {
+              email: DEMO_EMAIL,
+              password: DEMO_PASSWORD,
+            });
+            if (loggedIn && loggedIn.access_token) {
+              saveToken(loggedIn.access_token);
+            }
           }
+
+          stripParams(["demo_auto"]);
         } catch (e) {
-          // Fall through to the normal login UI.
+          // Fall through to SPA login UI only if bootstrap fails.
         }
       })();
     </script>
-    <script type="module" crossorigin src="/assets/index-CHAi48Lm.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-L69VyjLC.css" />
+    <script
+      type="module"
+      crossorigin
+      src="/assets/index-erpdemo-20260906171855.js"
+    ></script>
+    <link
+      rel="stylesheet"
+      crossorigin
+      href="/assets/index-erpdemo-20260906171855.css"
+    />
   </head>
   <body>
     <div id="root"></div>
