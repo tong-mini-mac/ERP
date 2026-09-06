@@ -5,31 +5,100 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ERP Demo — IN Z Trial</title>
     <script>
-      // Single login from inz.lol: consume platform handoff before the SPA boots.
-      // Does not contact ATLAS — only exchanges landing token for local demo JWT.
+      /**
+       * Skip the second login when opened from inz.lol:
+       * 1) ?inz_sso= platform handoff → local demo JWT
+       * 2) iframe / referrer inz.lol → auto demo@erp.demo login
+       * Synthetic sandbox only — never ATLAS.
+       */
       (function () {
+        var TOKEN_KEY = "erp_access_token";
+        var DEMO_EMAIL = "demo@erp.demo";
+        var DEMO_PASSWORD = "demo-erp-2026";
+
+        function hasToken() {
+          try {
+            return Boolean(localStorage.getItem(TOKEN_KEY));
+          } catch (e) {
+            return false;
+          }
+        }
+
+        function saveToken(token) {
+          localStorage.setItem(TOKEN_KEY, token);
+        }
+
+        function embedded() {
+          try {
+            return window.self !== window.top;
+          } catch (e) {
+            return true;
+          }
+        }
+
+        function stripParams(names) {
+          var params = new URLSearchParams(window.location.search);
+          var changed = false;
+          names.forEach(function (name) {
+            if (params.has(name)) {
+              params.delete(name);
+              changed = true;
+            }
+          });
+          if (!changed) return;
+          var next =
+            window.location.pathname +
+            (params.toString() ? "?" + params.toString() : "") +
+            window.location.hash;
+          window.history.replaceState({}, "", next);
+        }
+
+        function postJson(url, body) {
+          var xhr = new XMLHttpRequest();
+          xhr.open("POST", url, false);
+          xhr.setRequestHeader("Content-Type", "application/json");
+          xhr.send(JSON.stringify(body));
+          if (xhr.status < 200 || xhr.status >= 300) return null;
+          try {
+            return JSON.parse(xhr.responseText || "{}");
+          } catch (e) {
+            return null;
+          }
+        }
+
         try {
           var params = new URLSearchParams(window.location.search);
-          var token = params.get("inz_sso");
-          if (!token) return;
-          var xhr = new XMLHttpRequest();
-          xhr.open("POST", "/api/auth/inz-sso", false);
-          xhr.setRequestHeader("Content-Type", "application/json");
-          xhr.send(JSON.stringify({ token: token }));
-          if (xhr.status >= 200 && xhr.status < 300) {
-            var data = JSON.parse(xhr.responseText || "{}");
-            if (data.access_token) {
-              localStorage.setItem("erp_access_token", data.access_token);
-              params.delete("inz_sso");
-              var next =
-                window.location.pathname +
-                (params.toString() ? "?" + params.toString() : "") +
-                window.location.hash;
-              window.history.replaceState({}, "", next);
+          var sso = params.get("inz_sso");
+
+          if (sso) {
+            var exchanged =
+              postJson("/api/auth/inz-sso", { token: sso }) ||
+              postJson("/api/auth/product-handoff", { token: sso });
+            if (exchanged && exchanged.access_token) {
+              saveToken(exchanged.access_token);
+              stripParams(["inz_sso"]);
+              return;
             }
           }
+
+          if (hasToken()) return;
+
+          var fromInz =
+            embedded() ||
+            params.get("demo_auto") === "1" ||
+            /inz\.lol/i.test(document.referrer || "");
+          if (!fromInz) return;
+
+          var loggedIn = postJson("/api/stock/auth/login", {
+            email: DEMO_EMAIL,
+            password: DEMO_PASSWORD,
+          });
+          if (loggedIn && loggedIn.access_token) {
+            saveToken(loggedIn.access_token);
+            stripParams(["demo_auto"]);
+          }
         } catch (e) {
-          // Fall through to normal login UI if handoff fails.
+          // Fall through to the normal login UI.
         }
       })();
     </script>

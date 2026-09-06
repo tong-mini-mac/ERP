@@ -1,57 +1,79 @@
-# Landing change: single login into ERP-Demo
+# Fix DemoHub double-login (apply on GitHub.com — agent has no push to landing)
 
-ERP-Demo accepts platform SSO from `inz.lol` and maps the user into **synthetic sandbox data**.
-It does **not** connect to ATLAS.
+Repo: `tong-mini-mac/in-z-landing`  
+File: `components/DemoHub.tsx`
 
-## Required change in `tong-mini-mac/in-z-landing`
+## Why
 
-`components/DemoHub.tsx` currently iframes the raw ERP-Demo URL, so a user who already
-signed in on the landing still sees a second login form.
+`/demo` iframes `offer.href` raw. Account page already uses `/api/auth/product-handoff`.
+ERP-Demo needs the handoff URL (`?inz_sso=...`) or iframe auto-login after ERP deploy.
 
-When opening **ERP-Demo**, if the user has a platform session, call product-handoff and
-use the returned URL (includes `?inz_sso=...`).
+## Minimal patch
 
-### Suggested logic
+1. Import session helper (same as ProductLauncher):
 
 ```tsx
-async function resolveDemoSrc(offer: DemoOffer, sessionEmail: string | null) {
-  if (offer.id !== "erp-demo" || !sessionEmail) {
-    return offer.href; // or redirect to /auth?next=/demo for erp-demo
-  }
-  const res = await fetch("/api/auth/product-handoff", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      email: sessionEmail,
-      productId: "erp-demo",
-      role: "trial",
-      kind: "complimentary",
-      allowedProducts: ["erp-demo"],
-    }),
-  });
-  const data = await res.json();
-  if (res.ok && data.url) return data.url;
-  return offer.href;
-}
+import { getSession } from "@/lib/auth-session";
 ```
 
-Then set `<iframe src={resolvedSrc} />`.
+2. Add state for iframe src:
 
-If there is no platform session, send the user to `/auth?next=/demo` first
-(so they log in once on the main site).
+```tsx
+const [frameSrc, setFrameSrc] = useState<string | null>(null);
+```
 
-### Env
+3. When `active` changes, resolve ERP-Demo via handoff:
 
-Landing and ERP-Demo must share the same HMAC secret:
+```tsx
+useEffect(() => {
+  let cancelled = false;
+  async function resolve() {
+    if (!active) {
+      setFrameSrc(null);
+      return;
+    }
+    if (active.id !== "erp-demo") {
+      setFrameSrc(active.href);
+      return;
+    }
+    const session = getSession();
+    if (!session?.user?.email) {
+      window.location.href = "/auth?next=/demo";
+      return;
+    }
+    try {
+      const res = await fetch("/api/auth/product-handoff", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: session.user.email,
+          productId: "erp-demo",
+          role: session.user.role || "trial",
+          kind: session.user.kind || "complimentary",
+          allowedProducts: session.user.allowedProducts || ["erp-demo"],
+        }),
+      });
+      const data = await res.json();
+      if (!cancelled) setFrameSrc(res.ok && data.url ? data.url : active.href);
+    } catch {
+      if (!cancelled) setFrameSrc(active.href);
+    }
+  }
+  void resolve();
+  return () => {
+    cancelled = true;
+  };
+}, [active]);
+```
 
-- Landing: `INZ_SSO_SECRET`
-- ERP-Demo: `PLATFORM_SSO_SECRET` or `INZ_SSO_SECRET`
+4. Replace iframe `src={active.href}` with `src={frameSrc || active.href}`.
 
-Do **not** reuse ATLAS production DB credentials for this.
+## Env (Railway ERP-Demo)
 
-## ERP-Demo behavior after handoff
+- `ACCEPT_PLATFORM_SSO=true`
+- `PLATFORM_SSO_SECRET` or `INZ_SSO_SECRET` = same value as landing `INZ_SSO_SECRET`
 
-1. `index.html` reads `?inz_sso=`
-2. `POST /api/auth/inz-sso` → local demo JWT
-3. Stores `erp_access_token` and enters the app
-4. Data remains synthetic seed data only
+## Fallback without landing change
+
+After ERP deploy of `frontend/dist/index.html`, iframe on inz.lol/demo auto-logs in as
+`demo@erp.demo` (synth data only). Handoff is still preferred.
