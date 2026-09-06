@@ -1,24 +1,32 @@
 # Universal ERP Demo
 
-**This repository is ERP-Demo only** — a sandbox with simulated data for IN Z trials (`inz.lol/demo` → ERP-Demo).
+**This repository is ERP-Demo only** — a customer trial sandbox with **synthetic data** for IN Z (`inz.lol/demo`).
 
-It is **not** company production ERP / ATLAS (`admin.inz.lol`). The two systems stay disconnected: separate deploy, separate JWT, no shared SSO, no shared database.
+It is **not** company ATLAS / live ERP. ATLAS stays untouched. Demo never shares ATLAS DB or production tenants.
 
 Private repo: [tong-mini-mac/ERP](https://github.com/tong-mini-mac/ERP)
 
 App version: **1.0.0-demo**. Default finance locale: **TH**.
 
-### Isolation
+### How login works
 
-| | ERP-Demo (this repo) | ERP production (ATLAS) |
+1. Customer signs in **once** on `inz.lol` (platform account / MY ACCOUNT)
+2. Landing opens ERP-Demo with `?inz_sso=...`
+3. Demo exchanges that token for a **local sandbox JWT** and enters the app
+4. No second login form; data is synthetic only
+
+### Isolation from ATLAS
+
+| | ERP-Demo (this repo) | ATLAS (company backend) |
 |--|----------------------|-------------------------|
-| Purpose | Public / trial sandbox | Company / paid tenants |
-| Auth | Local JWT `iss=erp-demo` | Production JWT + IN Z SSO |
-| Login | `demo@erp.demo` / `demo-erp-2026` | Real accounts |
-| SSO from `inz.lol` | **Rejected** (`/api/auth/inz-sso` → 409) | Allowed via product-handoff |
-| Data | In-memory seed | Production DB |
+| Purpose | Customer trial / synth data | Live company ERP |
+| Touched by this repo? | Yes | **No — leave alone** |
+| Auth | Platform SSO → local demo JWT | Separate production auth |
+| Database | In-memory seed | Production DB |
+| Shared session/DB with the other? | **No** | **No** |
 
-Details: [`docs/ERP_DEMO_ISOLATION.md`](docs/ERP_DEMO_ISOLATION.md).
+Landing iframe handoff notes: [`docs/LANDING_SINGLE_LOGIN.md`](docs/LANDING_SINGLE_LOGIN.md).  
+Isolation details: [`docs/ERP_DEMO_ISOLATION.md`](docs/ERP_DEMO_ISOLATION.md).
 
 ---
 
@@ -192,8 +200,8 @@ Full template: `.env.example`.
 
 ## Sync notes
 
-- This repo is **private ERP-Demo** and separate from company ATLAS / production ERP.
-- Keep JWT / SSO secrets distinct from production. Never enable `ACCEPT_INZ_SSO`.
-- `data/*.db` and secrets stay local.
-- Landing (`in-z-landing`) must open ERP-Demo as a raw sandbox URL — no `inz_sso` handoff. See `docs/ERP_DEMO_ISOLATION.md`.
+- This repo is **private ERP-Demo** (synth-data trial). Do not touch ATLAS.
+- Platform SSO from `inz.lol` is allowed for single login; ATLAS DB/tenants stay disconnected.
+- Landing must open ERP-Demo via product-handoff (`?inz_sso=`). See `docs/LANDING_SINGLE_LOGIN.md`.
+- `data/*.db` and secrets stay local. Share only `PLATFORM_SSO_SECRET` / `INZ_SSO_SECRET` with landing.
 - Clone / pull from `https://github.com/tong-mini-mac/ERP` to keep local and GitHub aligned.

@@ -1,67 +1,35 @@
-# ERP vs ERP-Demo isolation
+# ERP-Demo isolation (from ATLAS)
 
 ## Rule
 
-| System | Repo / deploy | Auth | Data |
-|--------|---------------|------|------|
-| **ERP (production / ATLAS)** | separate company stack (`admin.inz.lol` / atlas Railway) | production JWT + IN Z SSO | real tenant DB |
-| **ERP-Demo** | this repo `tong-mini-mac/ERP` | local sandbox JWT only (`iss=erp-demo`) | in-memory seed |
+ERP-Demo and ATLAS are different systems.
+
+| System | Role | This repo |
+|--------|------|-----------|
+| **ERP-Demo** | Customer trial with synthetic data | Yes — owned here |
+| **ATLAS** | Company / live ERP backend for IN Z | **Do not touch** |
 
 They must **not** share:
 
-- JWT / SSO secrets
 - databases
-- product-handoff sessions
-- entitlement grants that auto-open the other system
+- production JWT secrets
+- production tenant data
 
-## This repo (ERP-Demo) guarantees
+They **may** share only a **platform handoff HMAC** with `inz.lol` landing so customers
+sign in once on the main site and enter the demo without a second login form.
 
-- `PRODUCT_MODE=erp-demo` (startup fails otherwise)
-- `ACCEPT_INZ_SSO=false` (startup fails if enabled)
-- `/api/auth/inz-sso` and `/api/auth/product-handoff` return **409**
-- `/health` reports `isolated_from_production_erp: true`
-- Sandbox login: `demo@erp.demo` / `demo-erp-2026`
+That handoff is **not** ATLAS access. It only proves the visitor already signed in on
+`inz.lol`, then ERP-Demo issues its own local sandbox JWT.
 
-## Required landing changes (`tong-mini-mac/in-z-landing`)
+## ERP-Demo guarantees
 
-Agent token for this Cloud run cannot push that repo. Apply manually:
+- `PRODUCT_MODE=erp-demo`
+- `ACCEPT_PLATFORM_SSO=true` → accepts landing `?inz_sso=` / `POST /api/auth/inz-sso`
+- No outbound calls to ATLAS
+- Synthetic seed data only
+- Fallback local login still available for engineers: `demo@erp.demo` / `demo-erp-2026`
 
-### 1) Stop SSO handoff for `erp-demo`
+## Landing requirement
 
-In `lib/sso-handoff.ts` / `productBaseUrl()`:
-
-- Keep `erp` → production ATLAS URL
-- For `erp-demo`, either **omit** from the SSO map or return `null` so `/api/auth/product-handoff` returns `501`
-
-Demo hub already iframes the raw demo URL — that is correct. Do **not** append `?inz_sso=...` for ERP-Demo.
-
-### 2) Product launcher
-
-In `components/ProductLauncher.tsx` (or equivalent):
-
-- Opening **ERP-Demo** → `window.open(demoUrl)` / iframe raw URL only
-- Opening **ERP / ATLAS** → existing product-handoff SSO path only
-
-### 3) Copy
-
-Keep demo catalog text explicit, e.g.:
-
-- TH: `Universal ERP พร้อมข้อมูลจำลอง — แยกจาก ATLAS บริษัท (admin.inz.lol) และไม่ใช้บัญชี Platform ร่วม`
-- EN: `Simulated Universal ERP — isolated from company ATLAS; not linked to Platform SSO`
-
-### 4) Secrets on Railway
-
-| Deploy | Env |
-|--------|-----|
-| ERP-Demo | own `JWT_SECRET`, never set production `INZ_SSO_SECRET` / `ERP_SPECIAL_LOGIN_KEY` |
-| ATLAS | own secrets; never point `ERP_DEMO_URL` commerce fulfillment into demo DB |
-
-## Verify
-
-```bash
-curl -s https://<erp-demo-host>/health
-# expect: isolated_from_production_erp=true, accept_inz_sso=false
-
-curl -s -X POST https://<erp-demo-host>/api/auth/inz-sso
-# expect: HTTP 409 erp_demo_isolated
-```
+See `docs/LANDING_SINGLE_LOGIN.md` — DemoHub must open ERP-Demo via product-handoff URL
+when the platform session exists.

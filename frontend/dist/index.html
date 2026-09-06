@@ -1,13 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Universal ERP</title>
+    <title>ERP Demo — IN Z Trial</title>
+    <script>
+      // Single login from inz.lol: consume platform handoff before the SPA boots.
+      // Does not contact ATLAS — only exchanges landing token for local demo JWT.
+      (function () {
+        try {
+          var params = new URLSearchParams(window.location.search);
+          var token = params.get("inz_sso");
+          if (!token) return;
+          var xhr = new XMLHttpRequest();
+          xhr.open("POST", "/api/auth/inz-sso", false);
+          xhr.setRequestHeader("Content-Type", "application/json");
+          xhr.send(JSON.stringify({ token: token }));
+          if (xhr.status >= 200 && xhr.status < 300) {
+            var data = JSON.parse(xhr.responseText || "{}");
+            if (data.access_token) {
+              localStorage.setItem("erp_access_token", data.access_token);
+              params.delete("inz_sso");
+              var next =
+                window.location.pathname +
+                (params.toString() ? "?" + params.toString() : "") +
+                window.location.hash;
+              window.history.replaceState({}, "", next);
+            }
+          }
+        } catch (e) {
+          // Fall through to normal login UI if handoff fails.
+        }
+      })();
+    </script>
     <script type="module" crossorigin src="/assets/index-CHAi48Lm.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-L69VyjLC.css">
+    <link rel="stylesheet" crossorigin href="/assets/index-L69VyjLC.css" />
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root"></div>
   </body>
 </html>

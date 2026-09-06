@@ -1,18 +1,23 @@
 """
-Universal ERP Demo — isolated sandbox API (tong-mini-mac/ERP).
+Universal ERP Demo — customer trial sandbox (tong-mini-mac/ERP).
 
-This deployment is ERP-Demo only. It must stay disconnected from company /
-production ERP (ATLAS at admin.inz.lol or erp-atlas Railway):
+Purpose: let IN Z customers try ERP with synthetic data only.
+Not a live company ERP. Not ATLAS. No shared ATLAS database.
 
-- Own JWT issuer (`erp-demo`) and secret — never reuse production JWT/SSO keys
-- No IN Z product-handoff / inz_sso acceptance
-- In-memory seeded data only — no shared database with ATLAS
+Auth model:
+- Customers sign in once on inz.lol (platform account)
+- Landing opens ERP-Demo with ?inz_sso=... handoff
+- This app exchanges that token for a local demo JWT and never calls ATLAS
 
 SERVE_FRONTEND serves frontend/dist for monolith demo deploys.
 """
 
 from __future__ import annotations
 
+import base64
+import hashlib
+import hmac
+import json
 import os
 import time
 import uuid
@@ -33,8 +38,24 @@ JWT_ALG = "HS256"
 JWT_TTL_SEC = int(os.getenv("JWT_ACCESS_EXPIRE_MINUTES", "60")) * 60
 ENVIRONMENT = os.getenv("ENVIRONMENT", "demo")
 PRODUCT_MODE = os.getenv("PRODUCT_MODE", "erp-demo").strip().lower() or "erp-demo"
-# Hard isolation switch — demo must never verify production SSO handoffs.
-ACCEPT_INZ_SSO = os.getenv("ACCEPT_INZ_SSO", "false").lower() in {"1", "true", "yes"}
+# Platform SSO from inz.lol landing (trial) — NOT ATLAS ERP integration.
+ACCEPT_PLATFORM_SSO = os.getenv("ACCEPT_PLATFORM_SSO", "true").lower() in {
+    "1",
+    "true",
+    "yes",
+}
+# Shared with inz.lol landing product-handoff HMAC (demo trail only).
+PLATFORM_SSO_SECRET = (
+    os.getenv("PLATFORM_SSO_SECRET")
+    or os.getenv("INZ_SSO_SECRET")
+    or os.getenv("ERP_DEMO_SSO_SECRET")
+    or "dev-secret"
+).strip()
+ALLOWED_HANDOFF_PRODUCTS = {
+    p.strip()
+    for p in os.getenv("ALLOWED_HANDOFF_PRODUCTS", "erp-demo").split(",")
+    if p.strip()
+}
 SERVE_FRONTEND = os.getenv("SERVE_FRONTEND", "true").lower() in {"1", "true", "yes"}
 FRONTEND_DIST_DIR = Path(
     os.getenv(
@@ -47,12 +68,6 @@ if PRODUCT_MODE not in {"erp-demo", "demo"}:
     raise RuntimeError(
         f"This repository serves ERP-Demo only (PRODUCT_MODE={PRODUCT_MODE!r}). "
         "Production / ATLAS ERP must run from a separate codebase and deployment."
-    )
-
-if ACCEPT_INZ_SSO:
-    raise RuntimeError(
-        "ACCEPT_INZ_SSO must stay false for ERP-Demo. "
-        "Production SSO handoff must not connect into this sandbox."
     )
 
 
@@ -68,6 +83,62 @@ class RegisterBody(BaseModel):
     full_name: str = "Demo User"
 
 
+class PlatformSsoBody(BaseModel):
+    token: str = Field(min_length=10)
+
+
+def _b64url_decode(value: str) -> bytes:
+    padded = value.replace("-", "+").replace("_", "/")
+    pad = "=" * (-len(padded) % 4)
+    return base64.b64decode(padded + pad)
+
+
+def verify_platform_handoff(token: str) -> dict[str, Any]:
+    """Verify inz.lol landing handoff HMAC. Does not contact ATLAS."""
+    try:
+        body, sig = token.split(".", 1)
+    except ValueError as exc:
+        raise HTTPException(status_code=401, detail="invalid_token") from exc
+    expected = hmac.new(
+        PLATFORM_SSO_SECRET.encode("utf-8"),
+        body.encode("utf-8"),
+        hashlib.sha256,
+    ).digest()
+    given = _b64url_decode(sig)
+    if len(given) != len(expected) or not hmac.compare_digest(given, expected):
+        raise HTTPException(status_code=401, detail="bad_signature")
+    try:
+        claims = json.loads(_b64url_decode(body).decode("utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+        raise HTTPException(status_code=401, detail="invalid_claims") from exc
+    email = str(claims.get("email") or "").strip().lower()
+    product_id = str(claims.get("product_id") or "").strip()
+    if not email or "@" not in email:
+        raise HTTPException(status_code=401, detail="invalid_email")
+    if product_id not in ALLOWED_HANDOFF_PRODUCTS:
+        raise HTTPException(status_code=403, detail="product_not_allowed")
+    if int(time.time()) > int(claims.get("exp") or 0):
+        raise HTTPException(status_code=401, detail="expired")
+    return claims
+
+
+def ensure_trial_user(email: str, full_name: str | None = None) -> dict[str, Any]:
+    """Map any platform user into the local synth-data sandbox (not ATLAS)."""
+    existing = seed.USERS.get(email)
+    if existing:
+        return existing
+    user = {
+        "email": email,
+        "password": uuid.uuid4().hex,  # password login disabled for SSO trial users
+        "full_name": full_name or email.split("@")[0],
+        "shop_name": "ERP Demo Sandbox",
+        "role": "owner",
+        "source": "platform_sso",
+    }
+    seed.USERS[email] = user
+    return user
+
+
 def create_token(email: str) -> str:
     now = int(time.time())
     payload = {
@@ -76,6 +147,7 @@ def create_token(email: str) -> str:
         "exp": now + JWT_TTL_SEC,
         "iss": "erp-demo",
         "env": ENVIRONMENT,
+        "sandbox": True,
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALG)
 
@@ -132,30 +204,47 @@ def health() -> dict[str, Any]:
         "product": "erp-demo",
         "environment": ENVIRONMENT,
         "repo": "tong-mini-mac/ERP",
-        "isolated_from_production_erp": True,
-        "accept_inz_sso": False,
-        "note": "sandbox only — disconnected from company ATLAS / production ERP",
+        "isolated_from_atlas": True,
+        "accept_platform_sso": ACCEPT_PLATFORM_SSO,
+        "synth_data_only": True,
+        "note": (
+            "customer trial sandbox with synthetic data; "
+            "single login via inz.lol platform SSO; not linked to ATLAS"
+        ),
+    }
+
+
+@app.post("/api/auth/inz-sso")
+@app.post("/api/auth/product-handoff")
+def exchange_platform_sso(body: PlatformSsoBody) -> dict[str, Any]:
+    """Exchange inz.lol platform handoff for a local demo JWT.
+
+    Does not call ATLAS. Issues sandbox access only against synth seed data.
+    """
+    if not ACCEPT_PLATFORM_SSO:
+        raise HTTPException(status_code=409, detail="platform_sso_disabled")
+    claims = verify_platform_handoff(body.token)
+    email = str(claims["email"]).strip().lower()
+    user = ensure_trial_user(email)
+    return {
+        "access_token": create_token(user["email"]),
+        "token_type": "bearer",
+        "sandbox": True,
+        "email": user["email"],
+        "isolated_from_atlas": True,
     }
 
 
 @app.get("/api/auth/inz-sso")
-@app.post("/api/auth/inz-sso")
 @app.get("/api/auth/product-handoff")
-@app.post("/api/auth/product-handoff")
-def inz_sso_disabled() -> JSONResponse:
-    """Explicitly refuse IN Z landing SSO so Demo never shares sessions with ATLAS."""
-    return JSONResponse(
-        status_code=409,
-        content={
-            "ok": False,
-            "error": "erp_demo_isolated",
-            "message": (
-                "ERP-Demo does not accept IN Z SSO / product handoff. "
-                "Use sandbox login demo@erp.demo / demo-erp-2026. "
-                "Production ERP (ATLAS) is a separate system."
-            ),
-        },
-    )
+def platform_sso_info() -> dict[str, Any]:
+    return {
+        "ok": True,
+        "accept_platform_sso": ACCEPT_PLATFORM_SSO,
+        "method": "POST JSON { token }",
+        "isolated_from_atlas": True,
+        "note": "Use POST with landing handoff token to enter the synth-data demo",
+    }
 
 
 @app.get("/metrics")
@@ -655,9 +744,10 @@ def enterprise_sso(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
     return {
         "enabled": False,
         "demo": True,
-        "inz_sso": False,
-        "isolated_from_production_erp": True,
-        "note": "ERP-Demo auth is local sandbox JWT only",
+        "platform_sso": ACCEPT_PLATFORM_SSO,
+        "isolated_from_atlas": True,
+        "synth_data_only": True,
+        "note": "Trial sandbox JWT only — not ATLAS SSO",
     }
 
 
