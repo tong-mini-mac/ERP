@@ -1,10 +1,24 @@
-# Universal ERP
+# Universal ERP Demo
 
-Finance, HR, Stock, Procurement, and Marketing on one FastAPI backend, with optional Athena CFO intelligence. Industry legs cover restaurant, clinic, beauty, ecommerce, and trading.
+**This repository is ERP-Demo only** — a sandbox with simulated data for IN Z trials (`inz.lol/demo` → ERP-Demo).
+
+It is **not** company production ERP / ATLAS (`admin.inz.lol`). The two systems stay disconnected: separate deploy, separate JWT, no shared SSO, no shared database.
 
 Private repo: [tong-mini-mac/ERP](https://github.com/tong-mini-mac/ERP)
 
-App version: **1.0.0**. Default finance locale: **TH**.
+App version: **1.0.0-demo**. Default finance locale: **TH**.
+
+### Isolation
+
+| | ERP-Demo (this repo) | ERP production (ATLAS) |
+|--|----------------------|-------------------------|
+| Purpose | Public / trial sandbox | Company / paid tenants |
+| Auth | Local JWT `iss=erp-demo` | Production JWT + IN Z SSO |
+| Login | `demo@erp.demo` / `demo-erp-2026` | Real accounts |
+| SSO from `inz.lol` | **Rejected** (`/api/auth/inz-sso` → 409) | Allowed via product-handoff |
+| Data | In-memory seed | Production DB |
+
+Details: [`docs/ERP_DEMO_ISOLATION.md`](docs/ERP_DEMO_ISOLATION.md).
 
 ---
 
@@ -178,6 +192,8 @@ Full template: `.env.example`.
 
 ## Sync notes
 
-- This repo is **private** and separate from `contentfarm` (formerly Myworkspace-Core).
+- This repo is **private ERP-Demo** and separate from company ATLAS / production ERP.
+- Keep JWT / SSO secrets distinct from production. Never enable `ACCEPT_INZ_SSO`.
 - `data/*.db` and secrets stay local.
+- Landing (`in-z-landing`) must open ERP-Demo as a raw sandbox URL — no `inz_sso` handoff. See `docs/ERP_DEMO_ISOLATION.md`.
 - Clone / pull from `https://github.com/tong-mini-mac/ERP` to keep local and GitHub aligned.

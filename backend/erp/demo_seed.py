@@ -1,4 +1,7 @@
-"""Simulated tenant data for ERP-Demo sandbox only."""
+"""Simulated tenant data for ERP-Demo sandbox only.
+
+Not linked to company ATLAS / production ERP tenants.
+"""
 
 from __future__ import annotations
 
@@ -10,17 +13,18 @@ USERS: dict[str, dict] = {
         "email": DEMO_EMAIL,
         "password": DEMO_PASSWORD,
         "full_name": "ERP Demo User",
-        "shop_name": "IN Z Demo Shop",
+        "shop_name": "ERP Demo Sandbox",
         "role": "owner",
     }
 }
 
 TENANT = {
     "id": "tenant-demo-001",
-    "name": "IN Z Demo Shop",
+    "name": "ERP Demo Sandbox",
     "plan_tier": "micro",
     "country_code": "TH",
     "environment": "demo",
+    "isolated_from_production_erp": True,
 }
 
 TIERS = [

@@ -1,8 +1,14 @@
 """
-Universal ERP — sandbox demo API (tong-mini-mac/ERP).
+Universal ERP Demo — isolated sandbox API (tong-mini-mac/ERP).
 
-Not company ATLAS. Uses in-memory / seeded demo data so Railway can run
-without Postgres volume. SERVE_FRONTEND serves frontend/dist.
+This deployment is ERP-Demo only. It must stay disconnected from company /
+production ERP (ATLAS at admin.inz.lol or erp-atlas Railway):
+
+- Own JWT issuer (`erp-demo`) and secret — never reuse production JWT/SSO keys
+- No IN Z product-handoff / inz_sso acceptance
+- In-memory seeded data only — no shared database with ATLAS
+
+SERVE_FRONTEND serves frontend/dist for monolith demo deploys.
 """
 
 from __future__ import annotations
@@ -26,6 +32,9 @@ JWT_SECRET = os.getenv("JWT_SECRET", "erp-demo-dev-secret-change-me-32chars")
 JWT_ALG = "HS256"
 JWT_TTL_SEC = int(os.getenv("JWT_ACCESS_EXPIRE_MINUTES", "60")) * 60
 ENVIRONMENT = os.getenv("ENVIRONMENT", "demo")
+PRODUCT_MODE = os.getenv("PRODUCT_MODE", "erp-demo").strip().lower() or "erp-demo"
+# Hard isolation switch — demo must never verify production SSO handoffs.
+ACCEPT_INZ_SSO = os.getenv("ACCEPT_INZ_SSO", "false").lower() in {"1", "true", "yes"}
 SERVE_FRONTEND = os.getenv("SERVE_FRONTEND", "true").lower() in {"1", "true", "yes"}
 FRONTEND_DIST_DIR = Path(
     os.getenv(
@@ -33,6 +42,18 @@ FRONTEND_DIST_DIR = Path(
         str(Path(__file__).resolve().parents[2] / "frontend" / "dist"),
     )
 )
+
+if PRODUCT_MODE not in {"erp-demo", "demo"}:
+    raise RuntimeError(
+        f"This repository serves ERP-Demo only (PRODUCT_MODE={PRODUCT_MODE!r}). "
+        "Production / ATLAS ERP must run from a separate codebase and deployment."
+    )
+
+if ACCEPT_INZ_SSO:
+    raise RuntimeError(
+        "ACCEPT_INZ_SSO must stay false for ERP-Demo. "
+        "Production SSO handoff must not connect into this sandbox."
+    )
 
 
 class LoginBody(BaseModel):
@@ -108,10 +129,33 @@ def health() -> dict[str, Any]:
     return {
         "ok": True,
         "service": "universal-erp-demo",
+        "product": "erp-demo",
         "environment": ENVIRONMENT,
         "repo": "tong-mini-mac/ERP",
-        "note": "sandbox only — not company ATLAS",
+        "isolated_from_production_erp": True,
+        "accept_inz_sso": False,
+        "note": "sandbox only — disconnected from company ATLAS / production ERP",
     }
+
+
+@app.get("/api/auth/inz-sso")
+@app.post("/api/auth/inz-sso")
+@app.get("/api/auth/product-handoff")
+@app.post("/api/auth/product-handoff")
+def inz_sso_disabled() -> JSONResponse:
+    """Explicitly refuse IN Z landing SSO so Demo never shares sessions with ATLAS."""
+    return JSONResponse(
+        status_code=409,
+        content={
+            "ok": False,
+            "error": "erp_demo_isolated",
+            "message": (
+                "ERP-Demo does not accept IN Z SSO / product handoff. "
+                "Use sandbox login demo@erp.demo / demo-erp-2026. "
+                "Production ERP (ATLAS) is a separate system."
+            ),
+        },
+    )
 
 
 @app.get("/metrics")
@@ -608,7 +652,13 @@ async def cfo_query(
 
 @app.get("/api/enterprise/sso/config")
 def enterprise_sso(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
-    return {"enabled": False, "demo": True}
+    return {
+        "enabled": False,
+        "demo": True,
+        "inz_sso": False,
+        "isolated_from_production_erp": True,
+        "note": "ERP-Demo auth is local sandbox JWT only",
+    }
 
 
 @app.get("/api/enterprise/rules")
