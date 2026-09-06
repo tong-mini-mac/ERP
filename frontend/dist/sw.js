@@ -1,19 +1,21 @@
-/* Unregister any stale service workers and clear caches that pinned the old login UI. */
-self.addEventListener("install", (event) => {
+/* Legacy cleaner — index.html no longer registers this SW.
+ * Kept so any previously-registered worker uninstalls quietly without navigating. */
+self.addEventListener("install", function () {
   self.skipWaiting();
 });
 
-self.addEventListener("activate", (event) => {
+self.addEventListener("activate", function (event) {
   event.waitUntil(
-    (async () => {
-      const keys = await caches.keys();
-      await Promise.all(keys.map((k) => caches.delete(k)));
-      const regs = await self.registration.unregister();
-      const clientsList = await self.clients.matchAll({ type: "window" });
-      for (const client of clientsList) {
-        client.navigate(client.url);
-      }
-      return regs;
+    (async function () {
+      try {
+        var keys = await caches.keys();
+        await Promise.all(keys.map(function (k) {
+          return caches.delete(k);
+        }));
+      } catch (e) {}
+      try {
+        await self.registration.unregister();
+      } catch (e) {}
     })()
   );
 });

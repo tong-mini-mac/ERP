@@ -843,14 +843,15 @@ def _mount_frontend() -> None:
         index = dist / "index.html"
         if not index.is_file():
             raise HTTPException(status_code=404, detail="Frontend not found")
-        # Bust sticky browser/SW caches that still showed the old Platform login.
+        # Keep HTML uncached so iframe picks up the latest bootstrap.
+        # Do NOT send Clear-Site-Data: it wipes localStorage/sessionStorage on
+        # every document load and fights the auto-login bootstrap (blank iframe).
         return FileResponse(
             index,
             headers={
                 "Cache-Control": "no-cache, no-store, must-revalidate",
                 "Pragma": "no-cache",
                 "Expires": "0",
-                "Clear-Site-Data": '"cache", "storage"',
             },
         )
 

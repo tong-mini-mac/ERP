@@ -7,15 +7,17 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <title>ERP Demo — IN Z Trial</title>
     <script>
-      // Kill stale service workers / Cache Storage that pinned the old Platform login UI.
+      // Drop stale service workers/caches from older Platform-login builds.
+      // Do not register a new SW (that caused navigate loops in the iframe).
       (function () {
         try {
-          if (!("serviceWorker" in navigator)) return;
-          navigator.serviceWorker.getRegistrations().then(function (regs) {
-            regs.forEach(function (r) {
-              r.unregister();
+          if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function (regs) {
+              regs.forEach(function (r) {
+                r.unregister();
+              });
             });
-          });
+          }
           if (window.caches && caches.keys) {
             caches.keys().then(function (keys) {
               keys.forEach(function (k) {
@@ -23,21 +25,19 @@
               });
             });
           }
-          // Install a one-shot cleaner SW as well.
-          navigator.serviceWorker.register("/sw.js").catch(function () {});
         } catch (e) {}
       })();
     </script>
     <script>
       /**
-       * Public synth sandbox: always mint a local demo JWT when none exists
-       * so inz.lol/demo iframe never shows a second login wall.
+       * Public synth sandbox: mint a local demo JWT when none exists so the
+       * inz.lol/demo iframe never shows a second login wall.
+       * No forced reload — that looped when storage was cleared.
        */
       (function () {
         var TOKEN_KEY = "erp_access_token";
         var DEMO_EMAIL = "demo@erp.demo";
         var DEMO_PASSWORD = "demo-erp-2026";
-        var BOOT_FLAG = "erp_demo_boot_v3";
 
         function hasToken() {
           try {
@@ -85,17 +85,6 @@
             if (loggedIn && loggedIn.access_token) {
               saveToken(loggedIn.access_token);
             }
-          }
-          // One forced reload after first successful boot to drop any
-          // previously-cached SPA modules from the old Platform login build.
-          if (hasToken() && !sessionStorage.getItem(BOOT_FLAG)) {
-            sessionStorage.setItem(BOOT_FLAG, "1");
-            var clean =
-              window.location.pathname +
-              (window.location.search || "") +
-              window.location.hash;
-            window.location.replace(clean);
-            return;
           }
         } catch (e) {}
       })();
