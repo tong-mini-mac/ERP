@@ -20,37 +20,64 @@ jobs:
       - name: Deploy
         env:
           # Project Token from Railway → Project → Settings → Tokens
-          # (UUID form). Do NOT use Account/Workspace tokens here.
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID }}
         run: |
           set -euo pipefail
-          # Trim accidental whitespace/newlines from the secret paste
           TOKEN="$(printf '%s' "${RAILWAY_TOKEN:-}" | tr -d '\r\n[:space:]')"
           if [ -z "$TOKEN" ]; then
             echo "RAILWAY_TOKEN secret is missing."
             echo "Create a Project Token: Railway project → Settings → Tokens"
-            echo "Then set GitHub Actions secret RAILWAY_TOKEN to that value."
             exit 1
           fi
           export RAILWAY_TOKEN="$TOKEN"
           echo "RAILWAY_TOKEN length: ${#TOKEN}"
 
-          # Project tokens are scoped to one environment and only support
-          # deploy commands (up / redeploy / logs). Do NOT call whoami/link —
-          # those require RAILWAY_API_TOKEN (account scope) and will 401 a
-          # valid project token.
-
-          DEPLOY_ARGS=(up --ci --detach)
-          if [ -n "${RAILWAY_SERVICE_ID:-}" ]; then
-            echo "Using RAILWAY_SERVICE_ID=${RAILWAY_SERVICE_ID}"
-            DEPLOY_ARGS+=(--service "$RAILWAY_SERVICE_ID")
+          SERVICE="${RAILWAY_SERVICE_ID:-}"
+          if [ -z "$SERVICE" ]; then
+            echo "Resolving service (project has multiple services)..."
+            railway service list || true
+            LIST_JSON="$(railway service list --json 2>/dev/null || true)"
+            if [ -n "$LIST_JSON" ]; then
+              echo "$LIST_JSON" | head -c 2000 || true
+              SERVICE="$(python3 -c '
+          import json,re,sys
+          raw=sys.stdin.read().strip()
+          try:
+              data=json.loads(raw)
+          except Exception:
+              sys.exit(0)
+          services=data if isinstance(data,list) else (data.get("services") or data.get("data") or [])
+          names=[]
+          for s in services:
+              if isinstance(s,str):
+                  names.append(s); continue
+              if isinstance(s,dict):
+                  n=s.get("name") or s.get("serviceName") or s.get("id")
+                  if n: names.append(str(n))
+          if not names: sys.exit(0)
+          prefer=re.compile(r"erp|demo|web|app|api|fastapi|backend", re.I)
+          for n in names:
+              if prefer.search(n):
+                  print(n); sys.exit(0)
+          print(names[0])
+          ' <<<"$LIST_JSON")"
+            fi
+            if [ -z "$SERVICE" ]; then
+              SERVICE="$(railway service list 2>/dev/null | awk 'NF && $1 !~ /^(Name|ID|---)/ {print $1; exit}')"
+            fi
           fi
 
-          if ! railway "${DEPLOY_ARGS[@]}"; then
-            echo "railway up failed."
-            echo "RAILWAY_TOKEN must be a Project Token (not Account/Workspace):"
-            echo "  Railway → open ERP-Demo project → Settings → Tokens → Create"
-            echo "Paste that UUID into GitHub secret RAILWAY_TOKEN (no spaces)."
+          if [ -z "$SERVICE" ]; then
+            echo "Could not resolve Railway service. Set GitHub secret RAILWAY_SERVICE_ID"
+            echo "to the service name or ID (Railway → service → Settings)."
             exit 1
           fi
+
+          echo "Deploying to service: $SERVICE"
+          if ! railway up --ci --detach --service "$SERVICE"; then
+            echo "railway up failed for service=$SERVICE"
+            railway service list || true
+            exit 1
+          fi
+          echo "Deploy started."
