@@ -21,63 +21,30 @@ jobs:
         env:
           # Project Token from Railway → Project → Settings → Tokens
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          # Optional override; default target is the ERP-Demo service only.
           RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID }}
         run: |
           set -euo pipefail
           TOKEN="$(printf '%s' "${RAILWAY_TOKEN:-}" | tr -d '\r\n[:space:]')"
           if [ -z "$TOKEN" ]; then
             echo "RAILWAY_TOKEN secret is missing."
-            echo "Create a Project Token: Railway project → Settings → Tokens"
             exit 1
           fi
           export RAILWAY_TOKEN="$TOKEN"
           echo "RAILWAY_TOKEN length: ${#TOKEN}"
 
-          SERVICE="${RAILWAY_SERVICE_ID:-}"
-          if [ -z "$SERVICE" ]; then
-            echo "Resolving service (project has multiple services)..."
-            railway service list || true
-            LIST_JSON="$(railway service list --json 2>/dev/null || true)"
-            if [ -n "$LIST_JSON" ]; then
-              echo "$LIST_JSON" | head -c 2000 || true
-              SERVICE="$(python3 -c '
-          import json,re,sys
-          raw=sys.stdin.read().strip()
-          try:
-              data=json.loads(raw)
-          except Exception:
-              sys.exit(0)
-          services=data if isinstance(data,list) else (data.get("services") or data.get("data") or [])
-          names=[]
-          for s in services:
-              if isinstance(s,str):
-                  names.append(s); continue
-              if isinstance(s,dict):
-                  n=s.get("name") or s.get("serviceName") or s.get("id")
-                  if n: names.append(str(n))
-          if not names: sys.exit(0)
-          prefer=re.compile(r"erp|demo|web|app|api|fastapi|backend", re.I)
-          for n in names:
-              if prefer.search(n):
-                  print(n); sys.exit(0)
-          print(names[0])
-          ' <<<"$LIST_JSON")"
-            fi
-            if [ -z "$SERVICE" ]; then
-              SERVICE="$(railway service list 2>/dev/null | awk 'NF && $1 !~ /^(Name|ID|---)/ {print $1; exit}')"
-            fi
-          fi
+          # NEVER deploy this repo to the company ERP/ATLAS service.
+          # Target is the customer trial sandbox only.
+          SERVICE="${RAILWAY_SERVICE_ID:-ERP-Demo}"
 
-          if [ -z "$SERVICE" ]; then
-            echo "Could not resolve Railway service. Set GitHub secret RAILWAY_SERVICE_ID"
-            echo "to the service name or ID (Railway → service → Settings)."
-            exit 1
-          fi
+          echo "Listing services:"
+          railway service list || true
 
-          echo "Deploying to service: $SERVICE"
+          echo "Deploying to service: $SERVICE (sandbox only — not ATLAS)"
           if ! railway up --ci --detach --service "$SERVICE"; then
             echo "railway up failed for service=$SERVICE"
-            railway service list || true
+            echo "If the name differs, set GitHub secret RAILWAY_SERVICE_ID"
+            echo "to the service that serves https://erp-demo-production-9ab8.up.railway.app"
             exit 1
           fi
-          echo "Deploy started."
+          echo "Deploy started for $SERVICE"
