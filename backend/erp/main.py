@@ -778,6 +778,7 @@ def documents_health(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any
         "ocr": "mock",
         "vision_available": False,
         "manual_entry": True,
+        "manual_entry_note": "Failover when scanner/OCR is broken — not a replacement for scanning.",
         "demo": True,
     }
 

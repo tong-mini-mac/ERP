@@ -21,8 +21,8 @@ It is **not** company ATLAS / live ERP. ATLAS stays untouched. Demo never shares
 3. Explore modules on **synthetic** data only
 
 ### UX notes (demo)
-- Stock barcode: type the code and press Enter if you have no scanner
-- Documents: use **Manual document entry** when OCR/scanner is unavailable
+- Stock barcode: scanner is primary; if hardware is broken, type code + Enter (failover)
+- Documents: Scan & extract is primary; **Manual entry** is the failover when scanner/OCR is down
 - Marketing includes **Present-campaign** (mock live pulse); Clinic/Beauty/Ecommerce/Trading remain pending
 - Admin forms avoid raw JSON where possible (payload fields accept plain notes)
 - UI English overlay + **Home · inz.lol** link (SPA ships as built `frontend/dist`)

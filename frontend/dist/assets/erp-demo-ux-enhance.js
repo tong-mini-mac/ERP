@@ -28,7 +28,7 @@
     "จ่ายออก (-1)": "Stock out (-1)",
     "นับสต็อก (-1)": "Stocktake (-1)",
     "— ยังไม่มีคลัง —": "— No warehouse yet —",
-    "ทดสอบ / พิมพ์ Barcode แล้ว Enter": "Type barcode then press Enter (no scanner needed)",
+    "ทดสอบ / พิมพ์ Barcode แล้ว Enter": "Failover: type barcode + Enter if scanner is broken",
     "ถาม CFO": "Ask CFO",
     "คำถาม CFO": "CFO question",
     "คำถาม": "Question",
@@ -168,7 +168,7 @@
         hint.id = "erp-demo-barcode-hint";
         hint.style.cssText = "font-size:0.85rem;color:#94a3b8;margin:0.35rem 0 0.75rem";
         hint.textContent =
-          "No USB/Bluetooth scanner? Type the barcode in the field below and press Enter — manual entry is fully supported.";
+          "Primary: USB/Bluetooth scanner (HID). Failover: if the scanner is broken or offline, type the barcode below and press Enter — operations must not stop.";
         labels[i].parentElement.insertBefore(hint, labels[i].nextSibling);
         break;
       }
@@ -220,8 +220,8 @@
     card.className = "card";
     card.style.cssText = "margin:1rem 0;padding:1rem;border:1px dashed #64748b;border-radius:8px";
     card.innerHTML =
-      "<h3 style='margin-top:0'>Manual document entry</h3>" +
-      "<p style='color:#94a3b8;font-size:0.85rem'>Scanner or OCR unavailable? Enter invoice / TOR / contract details here.</p>" +
+      "<h3 style='margin-top:0'>Manual entry (scanner / OCR failover)</h3>" +
+      "<p style='color:#94a3b8;font-size:0.85rem'>Keep using Scan &amp; extract when hardware works. If the scanner or OCR is broken, enter invoice / TOR / contract details here so work continues.</p>" +
       "<label>Document type</label>" +
       "<select data-f='doc_type'><option value='invoice'>Invoice</option><option value='tor'>TOR</option><option value='contract'>Contract</option></select>" +
       "<label>Vendor</label><input data-f='vendor' required placeholder='Vendor name' />" +
