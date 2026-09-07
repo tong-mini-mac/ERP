@@ -81,12 +81,26 @@
 
   function findAnchor() {
     var path = (location.pathname || "").replace(/\/+$/, "") || "/";
-    // Prefer main page header areas on home / marketing / resto-menu.
-    if (path === "/" || path === "/dashboard" || path === "/marketing" || path === "/resto-menu") {
-      var h1 = document.querySelector("main h1, main h2, .page-header h1, h1");
-      if (h1) return h1;
-      var at = document.querySelector("main .card, main");
-      if (at) return at;
+    var allow =
+      path === "/" ||
+      path === "/dashboard" ||
+      path === "/marketing" ||
+      path === "/resto-menu" ||
+      path.indexOf("/marketing") === 0;
+    if (!allow) return null;
+    var selectors = [
+      "main h1",
+      "main h2",
+      ".page-header h1",
+      "h1",
+      "main .card",
+      "main",
+      "#root > div > main",
+      "#root",
+    ];
+    for (var i = 0; i < selectors.length; i++) {
+      var el = document.querySelector(selectors[i]);
+      if (el) return el;
     }
     return null;
   }
