@@ -2,18 +2,34 @@
 
 **This repository is ERP-Demo only** — a customer trial sandbox with **synthetic data** for IN Z (`inz.lol/demo`).
 
-It is **not** company ATLAS / live ERP. ATLAS stays untouched. Demo never shares ATLAS DB or production tenants.
+It is **not** company ATLAS / live ERP. ATLAS stays untouched. Demo never shares ATLAS DB, production tenants, or production JWT secrets.
 
-Private repo: [tong-mini-mac/ERP](https://github.com/tong-mini-mac/ERP)
+| | |
+|--|--|
+| Private repo | [tong-mini-mac/ERP](https://github.com/tong-mini-mac/ERP) |
+| Live sandbox | https://erp-demo-production-9ab8.up.railway.app |
+| Demo hub | https://inz.lol/demo → **ERP-Demo** |
+| App version | **1.0.0-demo** |
+| Default finance locale | **TH** |
 
-App version: **1.0.0-demo**. Default finance locale: **TH**.
+---
 
-### How login works
+## What customers see today
 
-1. Customer signs in **once** on `inz.lol` (platform account / MY ACCOUNT)
-2. Landing opens ERP-Demo with `?inz_sso=...`
-3. Demo exchanges that token for a **local sandbox JWT** and enters the app
-4. No second login form; data is synthetic only
+1. Open **inz.lol/demo** → choose **ERP-Demo** (iframe), or open the live URL / **OPEN IN NEW TAB**
+2. Enter the sandbox **without a second Platform login wall**
+3. Explore modules on **synthetic** data only
+
+### Auth paths (in order)
+
+| Path | When | Result |
+|------|------|--------|
+| Platform SSO `?inz_sso=...` | Landing product-handoff after inz.lol sign-in | Local sandbox JWT for that email |
+| Auto demo login | Iframe / public trial with no SSO token | Signs in as `demo@erp.demo` |
+| Manual demo login | Engineers / fallback | `demo@erp.demo` / `demo-erp-2026` |
+
+Landing handoff notes: [`docs/LANDING_SINGLE_LOGIN.md`](docs/LANDING_SINGLE_LOGIN.md).  
+Admin Account launcher (all products): [`docs/LANDING_ADMIN_UNLIMITED.md`](docs/LANDING_ADMIN_UNLIMITED.md) (landing repo change).
 
 ### Isolation from ATLAS
 
@@ -21,12 +37,24 @@ App version: **1.0.0-demo**. Default finance locale: **TH**.
 |--|----------------------|-------------------------|
 | Purpose | Customer trial / synth data | Live company ERP |
 | Touched by this repo? | Yes | **No — leave alone** |
-| Auth | Platform SSO → local demo JWT | Separate production auth |
-| Database | In-memory seed | Production DB |
+| Auth | Platform SSO → local demo JWT, or auto `demo@erp.demo` | Separate production auth |
+| Database | Demo seed / in-memory style sandbox | Production DB |
 | Shared session/DB with the other? | **No** | **No** |
 
-Landing iframe handoff notes: [`docs/LANDING_SINGLE_LOGIN.md`](docs/LANDING_SINGLE_LOGIN.md).  
-Isolation details: [`docs/ERP_DEMO_ISOLATION.md`](docs/ERP_DEMO_ISOLATION.md).
+Details: [`docs/ERP_DEMO_ISOLATION.md`](docs/ERP_DEMO_ISOLATION.md).
+
+### Planned: timed free trial (not built yet)
+
+Goal (product): every registered inz.lol user can try ERP-Demo for a limited window (e.g. **10 minutes**).
+
+| Need | Status |
+|------|--------|
+| Open ERP-Demo sandbox | **Live** |
+| Register → enter demo | Needs landing entitlement / handoff for all new accounts |
+| Hard **10-minute** cutoff | **Not implemented** (needs timer + session revoke) |
+| Per-user isolated data | Optional; today the public auto-login shares the demo sandbox user |
+
+Until the timer ships, treat the live URL / `/demo` iframe as an open synth sandbox, not a metered trial.
 
 ---
 
@@ -35,16 +63,14 @@ Isolation details: [`docs/ERP_DEMO_ISOLATION.md`](docs/ERP_DEMO_ISOLATION.md).
 | Layer | Tech |
 |-------|------|
 | API | FastAPI (`erp.main:app`), Pydantic Settings |
-| Auth | JWT (`/auth/register`, `/auth/login`, `/auth/me`) |
-| Primary DB | PostgreSQL (`DATABASE_URL`) |
-| Cache / jobs | Redis |
+| Auth | Local JWT + optional platform SSO handoff |
+| Primary DB | PostgreSQL (`DATABASE_URL`) when configured; demo can run seeded without ATLAS |
+| Cache / jobs | Redis (optional for demo) |
 | Module DBs | SQLite under `data/` (HR, procurement, finance audit) |
-| Migrations | Alembic (`backend/alembic`) |
-| Frontend | React 19 + Vite 6 + React Router 7 (`erp-frontend` 0.1.0) |
-| Billing | Stripe (plan tiers: Solo / Micro / Small / Medium / Large) |
-| CFO | Athena (`athena/`) — knowledge vault + economic engine |
+| Frontend | React + Vite (`frontend/`, shipped `frontend/dist/`) |
+| Deploy | Railway service **ERP-Demo** only (never ATLAS) |
 
-Use **Python >= 3.11** and **Node.js 18+**.
+Use **Python >= 3.11**. Frontend dist is committed for monolith deploys.
 
 ---
 
@@ -52,156 +78,67 @@ Use **Python >= 3.11** and **Node.js 18+**.
 
 ```
 ERP/
-├── .env.example              # copy to .env — do not commit secrets
-├── backend/
-│   └── erp/                  # FastAPI app package
-│       ├── modules/          # finance, hr, marketing, procurement, stock
-│       └── ...
-├── frontend/                 # Vite SPA (dev: :5173)
-│   ├── dist/                 # production build
-│   └── .env.example          # VITE_API_BASE_URL
-├── athena/                   # optional CFO brain (vendored SAG + ai_cfo)
-└── data/                     # local sqlite / uploads (*.db gitignored)
+├── .env.example
+├── backend/erp/           # FastAPI app
+├── frontend/              # Vite SPA + dist/
+├── docs/                  # isolation + landing handoff notes
+├── athena/                # optional CFO brain
+└── data/                  # local sqlite / uploads (*.db gitignored)
 ```
 
 ---
 
-## Modules
+## Modules (sandbox)
 
-| Area | What it covers |
-|------|----------------|
-| **Core** | Multi-tenant platform, feature gating, departments/RBAC, approval workflows, Stripe billing |
-| **Finance** | GL / localization (TH default), payroll journal templates, audit |
-| **HR** | Employees, attendance, leave, payroll |
-| **Stock** | SKU, barcode, lots |
-| **Procurement** | PR → vendor reply → PO / receive; optional LLM |
-| **Marketing** | Campaigns + vertical legs: resto, clinic, ecommerce, trading, beauty |
-| **Resto** | Menus, recipe cost, dine-in, table sessions, delivery platforms |
-| **Clinic** | Appointments, pets, mode (pet/dental) |
-| **Beauty** | Clients, rooms, appointments, media upload |
-| **Ecommerce** | Catalog, channel orders, marketplace ingest |
-| **Trading** | Customers, price lists, quotations, payment reminders |
-| **Documents** | OCR (GCP Vision / Azure Document Intelligence) |
-| **CFO** | `/api/cfo/*` via Athena |
-| **Feeds** | MOC / BOT open data + internal KPIs |
-
-Frontend routes in the current Vite build include `/`, `/login`, `/finance`, `/hr`, `/stock`, `/procurement`, `/marketing`, `/resto-menu`, `/cfo`, `/documents`, `/accounting-docs`, `/organization`, `/platform`, `/enterprise`, `/workflows`.
+Finance, accounting docs, HR, Stock, Procurement, Marketing, Documents (OCR), CFO/Athena, Organization / Enterprise / Platform, Workflows — all against **demo data**.
 
 ---
 
-## Setup
+## Local setup
 
-```powershell
-cd D:\Myworkspace\ERP   # or clone path
-copy .env.example .env
-copy frontend\.env.example frontend\.env
+```bash
+cp .env.example .env
+python3 -m venv --upgrade-deps .venv
+.venv/bin/pip install -r backend/requirements.txt
 ```
 
-Minimum `.env` for local API:
+Minimum demo-oriented env:
 
 ```
-DATABASE_URL=postgresql+psycopg://erp:erp@localhost:5432/erp
-REDIS_URL=redis://localhost:6379/0
+PRODUCT_MODE=erp-demo
+ACCEPT_PLATFORM_SSO=true
+SERVE_FRONTEND=1
+FRONTEND_DIST_DIR=frontend/dist
 JWT_SECRET=<at-least-32-chars>
-CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
-ATHENA_MACRO_REFRESH_ON_START=0
+# Same HMAC as landing when testing SSO:
+# PLATFORM_SSO_SECRET=...   # or INZ_SSO_SECRET
 ```
 
-Backend:
+Run monolith:
 
-```powershell
-cd backend
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install fastapi uvicorn pydantic pydantic-settings psycopg redis alembic python-dotenv
-alembic upgrade head
+```bash
+export PYTHONPATH=backend
+.venv/bin/uvicorn erp.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Frontend:
+- Health: `GET /health` (reports `isolated_from_atlas`, `synth_data_only`, etc.)
+- App: `http://127.0.0.1:8000/`
 
-```powershell
-cd frontend
-npm install
-```
-
-Do not commit `.env`. `.gitignore` excludes `.env`, `__pycache__`, `node_modules`, and `*.db`.
+Cloud Agent install/start uses the same venv + uvicorn pattern on port **8000**.
 
 ---
 
-## Run
+## Deploy (Railway)
 
-**API:**
-
-```powershell
-cd backend
-uvicorn erp.main:app --reload --port 8000
-```
-
-- Health: `GET /health`
-- Metrics: `GET /metrics`
-- API routers under `/api`
-
-**Frontend:**
-
-```powershell
-cd frontend
-npm run dev
-```
-
-Open `http://localhost:5173`. Leave `VITE_API_BASE_URL` empty for same-origin / monolith.
-
-**Monolith** (FastAPI serves `frontend/dist`):
-
-```
-SERVE_FRONTEND=true
-FRONTEND_DIST_DIR=/app/static/dist
-```
+- GitHub Action `.github/workflows/deploy-railway.yml` deploys **only** service `ERP-Demo` on push to `main`
+- `RAILWAY_TOKEN` must be a **Railway Project Token** (not account/workspace token)
+- Do **not** deploy this repo to the company ATLAS / `admin.inz.lol` service
 
 ---
 
-## Athena CFO
+## Ops notes
 
-`athena/` vendors the Athena platform (knowledge = `vendor/sag`, economic = `vendor/centralize` / `ai_cfo`). ERP exposes it at `/api/cfo/*` when API keys are set.
-
-```powershell
-pip install -e athena/vendor/centralize
-pip install -e athena
-```
-
-Set `GEMINI_API_KEY` and/or `OPENAI_API_KEY` in the root `.env`. Keep `ATHENA_MACRO_REFRESH_ON_START=0` unless you want a macro pull on process start.
-
----
-
-## Tests
-
-```powershell
-cd backend
-python -m pytest tests -v
-```
-
----
-
-## Environment (short)
-
-Full template: `.env.example`.
-
-| Variable | Role |
-|----------|------|
-| `DATABASE_URL` | Postgres (stock, auth, tenant) |
-| `REDIS_URL` | Redis |
-| `ERP_HR_DATABASE_PATH` | HR sqlite |
-| `JWT_SECRET` | Auth signing key |
-| `STRIPE_*` / `STRIPE_PRICE_*` | Billing + webhook |
-| `GCP_VISION_ENABLED` / Azure DI | Document OCR |
-| `BOT_API_TOKEN` / `MOC_API_BASE_URL` | Vertical feeds |
-| `SERVE_FRONTEND` | Serve Vite dist from FastAPI |
-
----
-
-## Sync notes
-
-- This repo is **private ERP-Demo** (synth-data trial). Do not touch ATLAS.
-- Platform SSO from `inz.lol` is allowed for single login; ATLAS DB/tenants stay disconnected.
-- Landing must open ERP-Demo via product-handoff (`?inz_sso=`). See `docs/LANDING_SINGLE_LOGIN.md`.
-- `data/*.db` and secrets stay local. Share only `PLATFORM_SSO_SECRET` / `INZ_SSO_SECRET` with landing.
-- Clone / pull from `https://github.com/tong-mini-mac/ERP` to keep local and GitHub aligned.
+- Do not send `Clear-Site-Data: storage` on HTML — it wipes the demo JWT and blanks the inz.lol iframe
+- Keep `Cache-Control: no-cache` on `index.html` so iframe clients pick up auth bootstrap
+- Share only `PLATFORM_SSO_SECRET` / `INZ_SSO_SECRET` with landing — never ATLAS DB URLs
+- Engineer fallback: `demo@erp.demo` / `demo-erp-2026`

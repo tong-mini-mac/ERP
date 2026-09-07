@@ -1,0 +1,140 @@
+diff --git a/app/api/auth/product-handoff/route.ts b/app/api/auth/product-handoff/route.ts
+index 5b46bf7..96068cf 100644
+--- a/app/api/auth/product-handoff/route.ts
++++ b/app/api/auth/product-handoff/route.ts
+@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
+ import { isDemoAdminEmail } from "@/lib/demo-access";
+ import { listAtlasEntitlements } from "@/lib/atlas-commerce";
+ import {
+-  CHECKOUT_PRODUCT_IDS,
+-  COMMERCIAL_PRODUCT_IDS,
++  ADMIN_LAUNCHER_PRODUCT_IDS,
++  HANDOFF_PRODUCT_IDS,
+   normalizeProductId,
+   type ProductId,
+ } from "@/lib/products";
+@@ -38,7 +38,7 @@ export async function POST(request: Request) {
+     if (!email || !email.includes("@")) {
+       return NextResponse.json({ error: "email" }, { status: 400 });
+     }
+-    if (!CHECKOUT_PRODUCT_IDS.includes(productId)) {
++    if (!HANDOFF_PRODUCT_IDS.includes(productId)) {
+       return NextResponse.json({ error: "product" }, { status: 400 });
+     }
+ 
+@@ -103,7 +103,7 @@ export async function POST(request: Request) {
+       unlimited,
+       package: pkg,
+       allowed_products: unlimited
+-        ? [...COMMERCIAL_PRODUCT_IDS]
++        ? [...ADMIN_LAUNCHER_PRODUCT_IDS]
+         : entitledProducts,
+       plan_id: planId,
+       sku_id: skuId,
+diff --git a/app/api/auth/special-signin/route.ts b/app/api/auth/special-signin/route.ts
+index 69b3f36..7e461fc 100644
+--- a/app/api/auth/special-signin/route.ts
++++ b/app/api/auth/special-signin/route.ts
+@@ -1,6 +1,7 @@
+ import { NextResponse } from "next/server";
+ import { isDemoAdminEmail } from "@/lib/demo-access";
+ import { isValidDemoAdmin } from "@/lib/demo-admin-server";
++import { ADMIN_LAUNCHER_PRODUCT_IDS } from "@/lib/products";
+ 
+ const ERP_BASE =
+   process.env.ERP_SPECIAL_LOGIN_URL?.replace(/\/$/, "") ||
+@@ -45,7 +46,8 @@ export async function POST(request: Request) {
+         username,
+         email: username,
+         product_id: undefined,
+-        allowedProducts: [],
++        // Explicit full product list so Account + handoff treat admin as unlimited everywhere.
++        allowedProducts: [...ADMIN_LAUNCHER_PRODUCT_IDS],
+         expiresAt: undefined,
+         revenue: false,
+         role: "admin",
+diff --git a/components/AuthForm.tsx b/components/AuthForm.tsx
+index 4a345c8..9922560 100644
+--- a/components/AuthForm.tsx
++++ b/components/AuthForm.tsx
+@@ -12,6 +12,7 @@ import { useSiteLang } from "@/lib/use-site-lang";
+ import {
+   isDemoAdminEmail,
+ } from "@/lib/demo-access";
++import { ADMIN_LAUNCHER_PRODUCT_IDS } from "@/lib/products";
+ import {
+   clearRememberedCredentials,
+   combinePhoneNumber,
+@@ -201,7 +202,11 @@ export function AuthForm() {
+             createdAt: new Date().toISOString(),
+             role: isAdmin ? "admin" : "trial",
+             unlimited: isAdmin,
+-            allowedProducts: isAdmin ? undefined : data.allowedProducts || [],
++            allowedProducts: isAdmin
++              ? data.allowedProducts?.length
++                ? data.allowedProducts
++                : [...ADMIN_LAUNCHER_PRODUCT_IDS]
++              : data.allowedProducts || [],
+             expiresAt: data.expiresAt,
+             revenue: false,
+             kind: data.kind || (isAdmin ? "demo_admin" : "complimentary"),
+diff --git a/lib/products.ts b/lib/products.ts
+index 6ceeb70..2082562 100644
+--- a/lib/products.ts
++++ b/lib/products.ts
+@@ -154,6 +154,30 @@ export const CHECKOUT_PRODUCT_IDS: ProductId[] = [
+   "prism",
+ ];
+ 
++/**
++ * Account launcher for admin@inz.lol / unlimited — every product needed to
++ * check systems (commercial trials + demos + internal tools).
++ * Company ATLAS (`erp`) is included for admin ops only; customer trials use erp-demo.
++ */
++export const ADMIN_LAUNCHER_PRODUCT_IDS: ProductId[] = [
++  ...COMMERCIAL_PRODUCT_IDS,
++  "prism",
++  "erp-demo",
++  "ai-marketing",
++  "admin-portal",
++  "prism-api",
++  "erp",
++];
++
++/** SSO handoff-capable product ids (must match productBaseUrl keys). */
++export const HANDOFF_PRODUCT_IDS: ProductId[] = [
++  ...COMMERCIAL_PRODUCT_IDS,
++  "prism",
++  "prism-api",
++  "erp",
++  "erp-demo",
++];
++
+ /** Normalize legacy product ids from older ERP / trial grants. */
+ export function normalizeProductId(id: string): string {
+   if (id === "podcast") return "content-creator";
+@@ -167,17 +191,21 @@ export function productsForAccess(
+   const commercial = PRODUCTS.filter((product) =>
+     COMMERCIAL_PRODUCT_IDS.includes(product.id),
+   );
++  const adminPool = PRODUCTS.filter((product) =>
++    ADMIN_LAUNCHER_PRODUCT_IDS.includes(product.id),
++  );
+ 
+   if (allowedProducts && allowedProducts.length > 0) {
+     const allowed = new Set(allowedProducts.map(normalizeProductId));
+-    return commercial
++    const pool = isAdmin ? adminPool : commercial;
++    return pool
+       .filter((product) => allowed.has(product.id))
+       .map((product) => ({ ...product, available: true }));
+   }
+ 
+-  // Admin trial unlocks every commercial product — still excludes internal tools.
++  // Demo admin / unlimited: unlock every launcher product for system checks.
+   if (isAdmin) {
+-    return commercial.map((product) => ({ ...product, available: true }));
++    return adminPool.map((product) => ({ ...product, available: true }));
+   }
+ 
+   return commercial;
