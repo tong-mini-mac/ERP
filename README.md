@@ -54,7 +54,8 @@ Audience is **portfolio reviewers** (CTO / Senior AI who got a job-application l
 | **No signup required** | Auto / shared login `demo@erp.demo` — open from `/demo` or the live URL |
 | **No metered trial system** | Do not block shipping on per-user timers or entitlements |
 
-Optional later (not a ship blocker): nightly reseed / reset of mutable demo data so the sandbox stays tidy. Process restart already reloads seed for in-memory state.
+Story-driven seed data: **ThaiTrade Solutions Co., Ltd.** — see [`docs/SYNTHETIC_DATA.md`](docs/SYNTHETIC_DATA.md) and `backend/erp/seeds/`.  
+Optional later: nightly `POST /api/demo/reset` (header `X-Demo-Reset-Key`) — not a ship blocker.
 
 ---
 

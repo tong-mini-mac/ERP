@@ -203,12 +203,19 @@ def health() -> dict[str, Any]:
         "service": "universal-erp-demo",
         "product": "erp-demo",
         "environment": ENVIRONMENT,
+        "company": getattr(seed, "COMPANY", {}).get("legal_name"),
         "repo": "tong-mini-mac/ERP",
         "isolated_from_atlas": True,
         "accept_platform_sso": ACCEPT_PLATFORM_SSO,
         "synth_data_only": True,
+        "seed": {
+            "skus": len(seed.SKUS),
+            "employees": len(seed.EMPLOYEES),
+            "invoices": len(getattr(seed, "INVOICES", [])),
+            "customers": len(getattr(seed, "CUSTOMERS", [])),
+        },
         "note": (
-            "customer trial sandbox with synthetic data; "
+            "ThaiTrade Solutions synth sandbox; "
             "single login via inz.lol platform SSO; not linked to ATLAS"
         ),
     }
@@ -408,67 +415,31 @@ def hr_employees(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, An
 
 @app.get("/api/hr-platform/dashboard")
 def hr_dashboard(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
-    return {
-        "headcount": len(seed.EMPLOYEES),
-        "on_leave_today": 0,
-        "pending_leave": 1,
-        "payroll_status": "ready",
-    }
+    return seed.HR_DASHBOARD
 
 
 @app.get("/api/hr-platform/leave")
 def hr_leave(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
-    return [
-        {
-            "id": "leave-1",
-            "employee": "สมชาย ใจดี",
-            "type": "annual",
-            "days": 2,
-            "status": "pending",
-        }
-    ]
+    return seed.LEAVE_REQUESTS
 
 
 @app.get("/api/hr-platform/leave/pending")
 def hr_leave_pending(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
-    return [
-        {
-            "id": "leave-1",
-            "employee": "สมชาย ใจดี",
-            "type": "annual",
-            "days": 2,
-            "status": "pending",
-        }
-    ]
+    return seed.LEAVE_PENDING
 
 
 @app.get("/api/hr-platform/payroll")
 def hr_payroll(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
-    return [
-        {
-            "id": "pay-2026-09",
-            "period": "2026-09",
-            "status": "draft",
-            "total": 87000,
-            "currency": "THB",
-        }
-    ]
+    return [{k: v for k, v in row.items() if k != "lines"} for row in seed.PAYROLL_RUNS]
 
 
 @app.get("/api/hr-platform/payroll/{payroll_id}")
 def hr_payroll_one(payroll_id: str, _: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
-    return {
-        "id": payroll_id,
-        "period": "2026-09",
-        "status": "draft",
-        "total": 87000,
-        "currency": "THB",
-        "lines": [
-            {"employee": "สมชาย ใจดี", "net": 32000},
-            {"employee": "สมหญิง บัญชี", "net": 28000},
-            {"employee": "วิชัย สต็อก", "net": 27000},
-        ],
-    }
+    for row in seed.PAYROLL_RUNS:
+        if row["id"] == payroll_id:
+            return row
+    raise HTTPException(status_code=404, detail="payroll_not_found")
+
 
 
 @app.post("/api/hr-platform/payroll/run")
@@ -701,17 +672,66 @@ def documents_create_pr(scan_id: str, _: dict[str, Any] = Depends(current_user))
 
 @app.get("/api/accounting-docs/types")
 def accounting_types(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
-    return [{"id": "invoice", "name": "Invoice"}, {"id": "receipt", "name": "Receipt"}]
+    return seed.ACCOUNTING_TYPES
 
 
 @app.get("/api/accounting-docs/templates")
 def accounting_templates(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
-    return [{"id": "tpl-1", "name": "ใบแจ้งหนี้ TH", "type": "invoice"}]
+    return seed.ACCOUNTING_TEMPLATES
 
 
 @app.get("/api/accounting-docs/documents")
 def accounting_documents(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
-    return [{"id": "doc-1", "title": "INV-DEMO-001", "status": "draft"}]
+    return seed.ACCOUNTING_DOCUMENTS
+
+
+@app.get("/api/finance/invoices")
+def finance_invoices(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
+    return seed.INVOICES
+
+
+@app.get("/api/finance/statements/income")
+def finance_income(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
+    return seed.INCOME_STATEMENTS
+
+
+@app.get("/api/finance/statements/balance-sheet")
+def finance_balance(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    return seed.BALANCE_SHEET
+
+
+@app.get("/api/procurement/po")
+def procurement_po(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
+    return seed.PURCHASE_ORDERS
+
+
+@app.get("/api/stock/alerts")
+def stock_alerts(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    return seed.STOCK_ALERTS
+
+
+@app.get("/api/demo/scenarios")
+def demo_scenarios(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    return seed.DEMO_SCENARIOS
+
+
+@app.get("/api/demo/company")
+def demo_company(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    return seed.COMPANY
+
+
+@app.post("/api/demo/reset")
+def demo_reset(
+    request: Request,
+    _: dict[str, Any] = Depends(current_user),
+) -> dict[str, Any]:
+    """Reload ThaiTrade synth seed in-memory (shared sandbox tidy-up)."""
+    expected = os.getenv("DEMO_RESET_KEY", "demo-reset")
+    key = request.headers.get("X-Demo-Reset-Key", "")
+    if key != expected:
+        raise HTTPException(status_code=403, detail="reset_forbidden")
+    counts = seed.reset_seed()
+    return {"ok": True, "reset": True, "counts": counts}
 
 
 @app.get("/api/cfo/health")
@@ -721,9 +741,14 @@ def cfo_health(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
 
 @app.get("/api/cfo/brief")
 def cfo_brief(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    overdue = len([i for i in seed.INVOICES if i.get("status") == "overdue"])
     return {
-        "summary": "กระแสเงินสด Demo อยู่ในเกณฑ์ปกติ — ข้อมูลจำลองสำหรับทดสอบระบบ",
+        "summary": (
+            f"ThaiTrade Demo: มีใบแจ้งหนี้ค้างชำระ {overdue} รายการ, "
+            f"SKU ใกล้จุดสั่งซื้อ {len(seed.STOCK_ALERTS.get('low_stock', []))} รายการ — ข้อมูลจำลองสำหรับทดสอบ"
+        ),
         "demo": True,
+        "scenarios": seed.DEMO_SCENARIOS.get("headline", []),
     }
 
 
