@@ -43,18 +43,18 @@ Admin Account launcher (all products): [`docs/LANDING_ADMIN_UNLIMITED.md`](docs/
 
 Details: [`docs/ERP_DEMO_ISOLATION.md`](docs/ERP_DEMO_ISOLATION.md).
 
-### Planned: timed free trial (not built yet)
+### Product decision: open portfolio sandbox (no time limit)
 
-Goal (product): every registered inz.lol user can try ERP-Demo for a limited window (e.g. **10 minutes**).
+Audience is **portfolio reviewers** (CTO / Senior AI who got a job-application link) — not paying customers. Volume is low.
 
-| Need | Status |
-|------|--------|
-| Open ERP-Demo sandbox | **Live** |
-| Register → enter demo | Needs landing entitlement / handoff for all new accounts |
-| Hard **10-minute** cutoff | **Not implemented** (needs timer + session revoke) |
-| Per-user isolated data | Optional; today the public auto-login shares the demo sandbox user |
+| Choice | Why |
+|--------|-----|
+| **No time limit** | Reviewers look ~10–15 minutes; a trial clock adds complexity without value |
+| **Shared sandbox** | One synth tenant; cost is the server you already run |
+| **No signup required** | Auto / shared login `demo@erp.demo` — open from `/demo` or the live URL |
+| **No metered trial system** | Do not block shipping on per-user timers or entitlements |
 
-Until the timer ships, treat the live URL / `/demo` iframe as an open synth sandbox, not a metered trial.
+Optional later (not a ship blocker): nightly reseed / reset of mutable demo data so the sandbox stays tidy. Process restart already reloads seed for in-memory state.
 
 ---
 

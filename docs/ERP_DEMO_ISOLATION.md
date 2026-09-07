@@ -27,7 +27,14 @@ That handoff is **not** ATLAS access. It only proves the visitor already signed 
 - `ACCEPT_PLATFORM_SSO=true` → accepts landing `?inz_sso=` / `POST /api/auth/inz-sso`
 - No outbound calls to ATLAS
 - Synthetic seed data only
-- Fallback local login still available for engineers: `demo@erp.demo` / `demo-erp-2026`
+- Public / iframe auto-login and engineer fallback: `demo@erp.demo` / `demo-erp-2026`
+- **Portfolio use:** open shared sandbox, **no timed trial** — reviewers share one synth tenant
+
+## Not in scope (do not block ship)
+
+- Per-user 10-minute trial clocks
+- Per-visitor isolated tenants for every link open
+- Complex entitlement gating for free portfolio demos
 
 ## Landing requirement
 
