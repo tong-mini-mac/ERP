@@ -27,11 +27,12 @@ from typing import Any
 import jwt
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, EmailStr, Field
 
 from erp import demo_seed as seed
+from erp import accounting_docs_demo as ac_docs
 
 JWT_SECRET = os.getenv("JWT_SECRET", "erp-demo-dev-secret-change-me-32chars")
 JWT_ALG = "HS256"
@@ -671,18 +672,95 @@ def documents_create_pr(scan_id: str, _: dict[str, Any] = Depends(current_user))
 
 
 @app.get("/api/accounting-docs/types")
-def accounting_types(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
-    return seed.ACCOUNTING_TYPES
+def accounting_types(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    return ac_docs.list_types()
 
 
 @app.get("/api/accounting-docs/templates")
-def accounting_templates(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
-    return seed.ACCOUNTING_TEMPLATES
+def accounting_templates(
+    doc_type: str | None = None,
+    _: dict[str, Any] = Depends(current_user),
+) -> dict[str, Any]:
+    return ac_docs.list_templates(doc_type)
+
+
+@app.post("/api/accounting-docs/templates")
+async def accounting_create_template(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    body = await request.json()
+    return ac_docs.create_template(body if isinstance(body, dict) else {})
+
+
+@app.get("/api/accounting-docs/templates/{template_id}")
+def accounting_get_template(
+    template_id: str, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    try:
+        return ac_docs.get_template(template_id)
+    except KeyError:
+        raise HTTPException(status_code=404, detail="template_not_found") from None
+
+
+@app.post("/api/accounting-docs/templates/{template_id}/preview")
+async def accounting_preview(
+    template_id: str, request: Request, _: dict[str, Any] = Depends(current_user)
+) -> HTMLResponse:
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    payload = body.get("payload") if isinstance(body, dict) else None
+    try:
+        html = ac_docs.render_preview_html(template_id, payload if isinstance(payload, dict) else None)
+    except KeyError:
+        raise HTTPException(status_code=404, detail="template_not_found") from None
+    return HTMLResponse(content=html)
+
+
+@app.post("/api/accounting-docs/templates/{template_id}/bot/chat")
+async def accounting_bot_chat(
+    template_id: str, request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    body = await request.json()
+    message = str((body or {}).get("message") or "")
+    try:
+        return ac_docs.bot_chat(template_id, message)
+    except KeyError:
+        raise HTTPException(status_code=404, detail="template_not_found") from None
 
 
 @app.get("/api/accounting-docs/documents")
-def accounting_documents(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
-    return seed.ACCOUNTING_DOCUMENTS
+def accounting_documents(
+    doc_type: str | None = None,
+    _: dict[str, Any] = Depends(current_user),
+) -> dict[str, Any]:
+    return ac_docs.list_documents(doc_type)
+
+
+@app.post("/api/accounting-docs/documents")
+async def accounting_issue_document(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    body = await request.json()
+    return ac_docs.issue_document(body if isinstance(body, dict) else {})
+
+
+@app.get("/api/accounting-docs/documents/{doc_id}/html")
+def accounting_doc_html(doc_id: str, _: dict[str, Any] = Depends(current_user)) -> HTMLResponse:
+    docs = ac_docs.list_documents()["items"]
+    doc = next((d for d in docs if d["id"] == doc_id), None)
+    if not doc:
+        raise HTTPException(status_code=404, detail="document_not_found")
+    tpl_id = doc.get("template_id") or ac_docs.list_templates(doc.get("doc_type"))["items"][0]["id"]
+    html = ac_docs.render_preview_html(tpl_id, doc.get("payload"))
+    return HTMLResponse(content=html)
+
+
+@app.get("/api/accounting-docs/documents/{doc_id}/pdf")
+def accounting_doc_pdf(doc_id: str, _: dict[str, Any] = Depends(current_user)) -> HTMLResponse:
+    # Demo: return printable HTML (browser can Save as PDF).
+    return accounting_doc_html(doc_id, _)
 
 
 @app.get("/api/finance/invoices")
@@ -731,6 +809,7 @@ def demo_reset(
     if key != expected:
         raise HTTPException(status_code=403, detail="reset_forbidden")
     counts = seed.reset_seed()
+    ac_docs.reset_runtime()
     return {"ok": True, "reset": True, "counts": counts}
 
 
