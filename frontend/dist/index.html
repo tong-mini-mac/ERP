@@ -47,9 +47,23 @@
           }
         }
 
+        function getToken() {
+          try {
+            return localStorage.getItem(TOKEN_KEY) || "";
+          } catch (e) {
+            return "";
+          }
+        }
+
         function saveToken(token) {
           try {
             localStorage.setItem(TOKEN_KEY, token);
+          } catch (e) {}
+        }
+
+        function clearToken() {
+          try {
+            localStorage.removeItem(TOKEN_KEY);
           } catch (e) {}
         }
 
@@ -66,6 +80,26 @@
           }
         }
 
+        function tokenIsValid() {
+          var token = getToken();
+          if (!token) return false;
+          var xhr = new XMLHttpRequest();
+          xhr.open("GET", "/api/stock/auth/me", false);
+          xhr.setRequestHeader("Authorization", "Bearer " + token);
+          xhr.send();
+          return xhr.status >= 200 && xhr.status < 300;
+        }
+
+        function ensureDemoLogin() {
+          var loggedIn = postJson("/api/stock/auth/login", {
+            email: DEMO_EMAIL,
+            password: DEMO_PASSWORD,
+          });
+          if (loggedIn && loggedIn.access_token) {
+            saveToken(loggedIn.access_token);
+          }
+        }
+
         try {
           var params = new URLSearchParams(window.location.search);
           var sso = params.get("inz_sso");
@@ -77,14 +111,11 @@
               saveToken(exchanged.access_token);
             }
           }
-          if (!hasToken()) {
-            var loggedIn = postJson("/api/stock/auth/login", {
-              email: DEMO_EMAIL,
-              password: DEMO_PASSWORD,
-            });
-            if (loggedIn && loggedIn.access_token) {
-              saveToken(loggedIn.access_token);
-            }
+          // Re-mint when missing OR stale (JWT secret / redeploy) so warehouse
+          // and ingredients tabs do not show "Invalid token" / empty lists.
+          if (!hasToken() || !tokenIsValid()) {
+            clearToken();
+            ensureDemoLogin();
           }
         } catch (e) {}
       })();
@@ -99,6 +130,7 @@
       crossorigin
       href="/assets/index-erpdemo-v3-20260906181500.css"
     />
+    <script src="/assets/erp-demo-ux-enhance.js" defer></script>
   </head>
   <body>
     <div id="root"></div>

@@ -54,8 +54,10 @@ FINANCE_COUNTRIES = _ns.FINANCE_COUNTRIES
 MENUS = _ns.MENUS
 INGREDIENTS = _ns.INGREDIENTS
 CAMPAIGNS_PRE = _ns.CAMPAIGNS_PRE
+CAMPAIGNS_PRESENT = _ns.CAMPAIGNS_PRESENT
 CAMPAIGNS_POST = _ns.CAMPAIGNS_POST
 ONBOARDING = _ns.ONBOARDING
+DOCUMENT_SCANS = _ns.DOCUMENT_SCANS
 
 
 def reset_seed() -> dict[str, int]:
@@ -68,7 +70,8 @@ def reset_seed() -> dict[str, int]:
     global PROCUREMENT_PRS, PURCHASE_ORDERS, WORKFLOW_INBOX
     global ATTENDANCE, LEAVE_REQUESTS, LEAVE_PENDING, PAYROLL_RUNS, HR_DASHBOARD
     global DEMO_SCENARIOS, FINANCE_COUNTRIES, MENUS, INGREDIENTS
-    global CAMPAIGNS_PRE, CAMPAIGNS_POST, ONBOARDING, DEMO_EMAIL, DEMO_PASSWORD
+    global CAMPAIGNS_PRE, CAMPAIGNS_PRESENT, CAMPAIGNS_POST, ONBOARDING
+    global DOCUMENT_SCANS, DEMO_EMAIL, DEMO_PASSWORD
 
     data = build_all()
     DEMO_PASSWORD = data["DEMO_PASSWORD"]
@@ -113,12 +116,17 @@ def reset_seed() -> dict[str, int]:
     MENUS = data["MENUS"]
     INGREDIENTS = data["INGREDIENTS"]
     CAMPAIGNS_PRE = data["CAMPAIGNS_PRE"]
+    CAMPAIGNS_PRESENT = data["CAMPAIGNS_PRESENT"]
     CAMPAIGNS_POST = data["CAMPAIGNS_POST"]
     ONBOARDING = data["ONBOARDING"]
+    DOCUMENT_SCANS = data["DOCUMENT_SCANS"]
     return {
         "users": len(USERS),
         "skus": len(SKUS),
         "employees": len(EMPLOYEES),
         "invoices": len(INVOICES),
         "prs": len(PROCUREMENT_PRS),
+        "ingredients": len(INGREDIENTS),
+        "menus": len(MENUS),
+        "document_scans": len(DOCUMENT_SCANS),
     }

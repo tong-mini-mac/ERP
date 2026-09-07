@@ -6,56 +6,16 @@ from types import SimpleNamespace
 from typing import Any
 
 from erp.seeds.catalog import build_catalog
+from erp.seeds.documents_seed import build_documents
 from erp.seeds.finance import build_finance
 from erp.seeds.hr import build_hr
+from erp.seeds.marketing import build_marketing
 from erp.seeds.master import build_master
 from erp.seeds.people import build_people
 from erp.seeds.procurement import build_procurement
+from erp.seeds.resto import build_resto
 from erp.seeds.scenarios import build_scenarios
 from erp.seeds.stock import build_stock
-
-# Keep resto/marketing stubs so older UI routes still resolve.
-_LEGACY = {
-    "MENUS": [
-        {
-            "id": "menu-1",
-            "name": "เมนูทดสอบร้านอาหาร (ThaiTrade cafe corner)",
-            "items": [
-                {"id": "mi-1", "name": "ข้าวผัดกุ้ง", "price": 89},
-                {"id": "mi-2", "name": "ต้มยำกุ้ง", "price": 129},
-            ],
-        }
-    ],
-    "INGREDIENTS": [
-        {"id": "ing-1", "name": "ข้าวสวย", "unit": "kg", "on_hand": 40},
-        {"id": "ing-2", "name": "กุ้ง", "unit": "kg", "on_hand": 8},
-    ],
-    "CAMPAIGNS_PRE": [
-        {
-            "id": "camp-1",
-            "name": "โปรเปิดสาขาอโศก",
-            "status": "draft",
-            "channel": "facebook",
-        }
-    ],
-    "CAMPAIGNS_POST": [
-        {
-            "id": "camp-2",
-            "name": "รีวิวหลังส่งของ",
-            "status": "scheduled",
-            "channel": "line",
-        }
-    ],
-    "ONBOARDING": {
-        "completed": True,
-        "items": [
-            {"key": "shop", "label": "ตั้งค่าบริษัท ThaiTrade", "done": True},
-            {"key": "sku", "label": "โหลด 50 SKU จำลอง", "done": True},
-            {"key": "warehouse", "label": "คลัง HQ + Asok", "done": True},
-            {"key": "finance", "label": "ใบแจ้งหนี้ + overdue scenarios", "done": True},
-        ],
-    },
-}
 
 
 def build_all() -> dict[str, Any]:
@@ -66,6 +26,9 @@ def build_all() -> dict[str, Any]:
     finance = build_finance(catalog["CUSTOMERS"])
     procurement = build_procurement(catalog["VENDORS"], catalog["SKUS"])
     hr = build_hr(people["EMPLOYEES"])
+    resto = build_resto(catalog["SKUS"], stock["WAREHOUSES"])
+    marketing = build_marketing()
+    documents = build_documents()
     scenarios = build_scenarios(
         finance["INVOICES"],
         stock["STOCK_ALERTS"],
@@ -81,8 +44,10 @@ def build_all() -> dict[str, Any]:
     out.update(finance)
     out.update(procurement)
     out.update(hr)
+    out.update(resto)
+    out.update(marketing)
+    out.update(documents)
     out.update(scenarios)
-    out.update(_LEGACY)
     return out
 
 

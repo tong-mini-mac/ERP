@@ -214,6 +214,9 @@ def health() -> dict[str, Any]:
             "employees": len(seed.EMPLOYEES),
             "invoices": len(getattr(seed, "INVOICES", [])),
             "customers": len(getattr(seed, "CUSTOMERS", [])),
+            "ingredients": len(getattr(seed, "INGREDIENTS", [])),
+            "menus": len(getattr(seed, "MENUS", [])),
+            "document_scans": len(getattr(seed, "DOCUMENT_SCANS", [])),
         },
         "note": (
             "ThaiTrade Solutions synth sandbox; "
@@ -363,8 +366,9 @@ def stock_skus(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]
 
 
 @app.get("/api/stock/warehouses")
-def stock_warehouses(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
-    return seed.WAREHOUSES
+def stock_warehouses(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    # SPA reads `response.warehouses` (not a bare array).
+    return {"warehouses": seed.WAREHOUSES}
 
 
 @app.get("/api/stock/settings/shop")
@@ -410,8 +414,18 @@ async def stock_scan(
 # --- HR -----------------------------------------------------------------------
 
 @app.get("/api/hr-platform/employees")
-def hr_employees(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
-    return seed.EMPLOYEES
+def hr_employees(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    # SPA: `const data = await employees(); setList(data.items || [])`
+    items = []
+    for e in seed.EMPLOYEES:
+        items.append(
+            {
+                **e,
+                "name": e.get("name") or e.get("full_name"),
+                "employment_type": str(e.get("employment_type") or "full-time").replace("_", "-"),
+            }
+        )
+    return {"items": items}
 
 
 @app.get("/api/hr-platform/dashboard")
@@ -425,13 +439,46 @@ def hr_leave(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
 
 
 @app.get("/api/hr-platform/leave/pending")
-def hr_leave_pending(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
-    return seed.LEAVE_PENDING
+def hr_leave_pending(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    items = []
+    for row in seed.LEAVE_PENDING:
+        items.append(
+            {
+                **row,
+                "emp_name": row.get("emp_name") or row.get("employee"),
+                "leave_type": row.get("leave_type") or row.get("type"),
+                "start_date": row.get("start_date") or "",
+                "end_date": row.get("end_date") or "",
+            }
+        )
+    return {"items": items}
 
 
 @app.get("/api/hr-platform/payroll")
-def hr_payroll(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
-    return [{k: v for k, v in row.items() if k != "lines"} for row in seed.PAYROLL_RUNS]
+def hr_payroll(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    items = []
+    for row in seed.PAYROLL_RUNS:
+        period = str(row.get("period") or "")
+        year, month = row.get("year"), row.get("month")
+        if (year is None or month is None) and "-" in period:
+            try:
+                year_s, month_s = period.split("-", 1)
+                year, month = int(year_s), int(month_s)
+            except ValueError:
+                pass
+        items.append(
+            {
+                "id": row.get("id"),
+                "period": period,
+                "year": year,
+                "month": month,
+                "status": row.get("status"),
+                "total": row.get("total"),
+                "total_net": row.get("total_net", row.get("total")),
+                "currency": row.get("currency") or "THB",
+            }
+        )
+    return {"items": items}
 
 
 @app.get("/api/hr-platform/payroll/{payroll_id}")
@@ -519,13 +566,80 @@ async def procurement_pr_status(
 
 
 @app.get("/api/marketing/campaigns/pre")
-def marketing_pre(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
-    return seed.CAMPAIGNS_PRE
+def marketing_pre(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    return {"items": seed.CAMPAIGNS_PRE}
+
+
+@app.post("/api/marketing/campaigns/pre")
+async def marketing_pre_run(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    body = await request.json()
+    return {
+        "ok": True,
+        "demo": True,
+        "phase": "pre",
+        "summary": (
+            f"Pre-campaign plan for {body.get('product_name') or 'product'}: "
+            f"audience={body.get('target_audience')}, goal={body.get('campaign_goal')}, "
+            f"budget={body.get('budget') or 0}."
+        ),
+        "recommendations": [
+            "Lead with social proof on Facebook + LINE OA",
+            "Test 3 creatives in week 1",
+            "Keep CTA to store visit / QR",
+        ],
+        "echo": body,
+    }
+
+
+@app.get("/api/marketing/campaigns/present")
+def marketing_present_list(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    return {"items": getattr(seed, "CAMPAIGNS_PRESENT", [])}
+
+
+@app.post("/api/marketing/campaigns/present")
+async def marketing_present_run(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    body = await request.json()
+    live = getattr(seed, "CAMPAIGNS_PRESENT", [])[:5]
+    return {
+        "ok": True,
+        "demo": True,
+        "phase": "present",
+        "summary": "Live campaign pulse (mock): CTR and spend for the last 7 days.",
+        "live_campaigns": live,
+        "alerts": [
+            "Budget pacing 92% — consider pause on low-CTR creative",
+            "LINE OA reply SLA within target",
+        ],
+        "echo": body,
+    }
 
 
 @app.get("/api/marketing/campaigns/post")
-def marketing_post(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
-    return seed.CAMPAIGNS_POST
+def marketing_post(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    return {"items": seed.CAMPAIGNS_POST}
+
+
+@app.post("/api/marketing/campaigns/post")
+async def marketing_post_run(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    body = await request.json()
+    return {
+        "ok": True,
+        "demo": True,
+        "phase": "post",
+        "summary": "Post-campaign review (mock): sentiment and follow-up tasks.",
+        "followups": [
+            "Thank responders on LINE",
+            "Retarget clickers who did not convert",
+            "Share NPS snapshot with store managers",
+        ],
+        "echo": body,
+    }
 
 
 @app.get("/api/marketing/legs/resto/health")
@@ -584,6 +698,26 @@ def resto_ingredients(_: dict[str, Any] = Depends(current_user)) -> list[dict[st
     return seed.INGREDIENTS
 
 
+@app.post("/api/resto/ingredients")
+async def resto_create_ingredient(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    body = await request.json()
+    item = {
+        "id": f"ing-{uuid.uuid4().hex[:6]}",
+        "name": body.get("name") or "New ingredient",
+        "unit": body.get("unit") or "kg",
+        "on_hand": float(body.get("on_hand") or 0),
+        "yield_pct": float(body.get("yield_pct") or 100),
+        "purchase_price": float(body.get("purchase_price") or 0),
+        "erp_sku_id": body.get("erp_sku_id") or "",
+        "erp_warehouse_id": body.get("erp_warehouse_id") or "",
+        "notes": body.get("notes") or "",
+    }
+    seed.INGREDIENTS.insert(0, item)
+    return item
+
+
 @app.get("/api/resto/ingredients/{ing_id}")
 def resto_ingredient(ing_id: str, _: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
     for item in seed.INGREDIENTS:
@@ -594,7 +728,13 @@ def resto_ingredient(ing_id: str, _: dict[str, Any] = Depends(current_user)) -> 
 
 @app.get("/api/resto/catalog")
 def resto_catalog(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
-    return {"menus": seed.MENUS, "ingredients": seed.INGREDIENTS}
+    # Ingredients tab crashes if `skus` / `warehouses` are missing (`x.skus.map`).
+    return {
+        "menus": seed.MENUS,
+        "ingredients": seed.INGREDIENTS,
+        "skus": seed.SKUS,
+        "warehouses": seed.WAREHOUSES,
+    }
 
 
 @app.get("/api/resto/ml/models")
@@ -633,37 +773,81 @@ async def resto_platform_order(
 
 @app.get("/api/documents/health")
 def documents_health(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
-    return {"ok": True, "ocr": "mock", "demo": True}
+    return {
+        "ok": True,
+        "ocr": "mock",
+        "vision_available": False,
+        "manual_entry": True,
+        "manual_entry_note": "Failover when scanner/OCR is broken — not a replacement for scanning.",
+        "demo": True,
+    }
 
 
 @app.get("/api/documents/scans")
-def documents_scans(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
-    return [
-        {
-            "id": "scan-1",
-            "filename": "invoice-demo.pdf",
-            "status": "parsed",
-            "vendor": "Demo Supplier Co.",
-            "total": 5500,
-        }
-    ]
+def documents_scans(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    # SPA: `list(); setItems(data.items || [])`
+    return {"items": list(getattr(seed, "DOCUMENT_SCANS", []))}
 
 
 @app.get("/api/documents/scans/{scan_id}")
 def documents_scan(scan_id: str, _: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
-    return {
-        "id": scan_id,
-        "filename": "invoice-demo.pdf",
-        "status": "parsed",
-        "vendor": "Demo Supplier Co.",
-        "total": 5500,
-        "lines": [{"desc": "น้ำดื่ม", "amount": 5500}],
-    }
+    for row in getattr(seed, "DOCUMENT_SCANS", []):
+        if row["id"] == scan_id:
+            return row
+    raise HTTPException(status_code=404, detail="scan_not_found")
 
 
 @app.post("/api/documents/scan")
-async def documents_scan_upload(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
-    return {"id": f"scan-{uuid.uuid4().hex[:8]}", "status": "parsed", "demo": True}
+async def documents_scan_upload(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    # Multipart upload is mocked — still create a usable history row.
+    row = {
+        "id": f"scan-{uuid.uuid4().hex[:8]}",
+        "filename": "uploaded-document.pdf",
+        "doc_type": "invoice",
+        "status": "parsed",
+        "vendor": "Uploaded Vendor",
+        "total": 0,
+        "currency": "THB",
+        "source": "upload",
+        "lines": [],
+        "demo": True,
+    }
+    getattr(seed, "DOCUMENT_SCANS").insert(0, row)
+    return row
+
+
+@app.post("/api/documents/manual")
+async def documents_manual_entry(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    """Manual document entry when scanner/OCR is unavailable."""
+    body = await request.json()
+    row = {
+        "id": f"scan-{uuid.uuid4().hex[:8]}",
+        "filename": body.get("filename") or "manual-entry",
+        "doc_type": body.get("doc_type") or "invoice",
+        "status": "parsed",
+        "vendor": body.get("vendor") or "Manual vendor",
+        "vendor_tax_id": body.get("vendor_tax_id") or "",
+        "invoice_number": body.get("invoice_number") or "",
+        "total": float(body.get("total") or 0),
+        "currency": body.get("currency") or "THB",
+        "source": "manual",
+        "notes": body.get("notes") or "",
+        "lines": body.get("lines")
+        or [
+            {
+                "desc": body.get("line_desc") or "Manual line",
+                "qty": float(body.get("qty") or 1),
+                "amount": float(body.get("total") or 0),
+            }
+        ],
+        "demo": True,
+    }
+    getattr(seed, "DOCUMENT_SCANS").insert(0, row)
+    return row
 
 
 @app.post("/api/documents/scans/{scan_id}/create-pr")
@@ -819,15 +1003,30 @@ def cfo_health(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
 
 
 @app.get("/api/cfo/brief")
-def cfo_brief(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+@app.post("/api/cfo/brief")
+async def cfo_brief(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    body: dict[str, Any] = {}
+    if request.method == "POST":
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
     overdue = len([i for i in seed.INVOICES if i.get("status") == "overdue"])
     return {
         "summary": (
-            f"ThaiTrade Demo: มีใบแจ้งหนี้ค้างชำระ {overdue} รายการ, "
-            f"SKU ใกล้จุดสั่งซื้อ {len(seed.STOCK_ALERTS.get('low_stock', []))} รายการ — ข้อมูลจำลองสำหรับทดสอบ"
+            f"ThaiTrade Demo: {overdue} overdue invoices, "
+            f"{len(seed.STOCK_ALERTS.get('low_stock', []))} SKUs near reorder. "
+            "Synthetic data for portfolio review."
+        ),
+        "answer": (
+            "Executive brief (demo): prioritize collections on overdue tax invoices, "
+            "raise PRs for low-stock SKUs, and keep resto food-cost under 35%."
         ),
         "demo": True,
         "scenarios": seed.DEMO_SCENARIOS.get("headline", []),
+        "echo": body,
     }
 
 
@@ -836,10 +1035,26 @@ async def cfo_query(
     request: Request, _: dict[str, Any] = Depends(current_user)
 ) -> dict[str, Any]:
     body = await request.json()
+    question = body.get("query") or body.get("question") or body.get("q") or ""
+    sales = body.get("sales_history") or []
+    if isinstance(sales, str):
+        sales = [s.strip() for s in sales.split(",") if s.strip()]
+    scope = body.get("scope") or "ALL"
+    role = body.get("role") or "CFO"
+    department = body.get("department") or "Finance"
     return {
-        "answer": "นี่คือคำตอบจำลองจาก CFO demo (ไม่ได้เชื่อม Athena จริง)",
-        "question": body.get("question") or body.get("q"),
+        "answer": (
+            f"Demo CFO answer for [{role} / {department} / scope={scope}]: "
+            f"Based on sales series {sales or 'n/a'}, "
+            f"cash collection and food-cost control are the top levers. "
+            f"Question: {question}"
+        ),
+        "question": question,
+        "scope": scope,
+        "role": role,
+        "department": department,
         "demo": True,
+        "athena": False,
     }
 
 

@@ -10,15 +10,21 @@ def build_stock(skus: list[dict], branches: list[dict]) -> dict[str, Any]:
     warehouses = [
         {
             "id": "wh-hq",
-            "name": "คลังใหญ่ สีลม",
+            "name": "HQ Warehouse Silom",
             "code": "WH-HQ",
             "branch_id": "branch-hq",
         },
         {
             "id": "wh-ask",
-            "name": "คลังสาขาอโศก",
+            "name": "Asok Branch Warehouse",
             "code": "WH-ASK",
             "branch_id": "branch-asok",
+        },
+        {
+            "id": "wh-cold",
+            "name": "Cold Storage Bangna",
+            "code": "WH-COLD",
+            "branch_id": "branch-hq",
         },
     ]
     today = date(2026, 9, 7)
@@ -35,10 +41,10 @@ def build_stock(skus: list[dict], branches: list[dict]) -> dict[str, Any]:
                 "lot_code": f"L{today.year}{i + 1:03d}",
                 "qty": max(sku["qty_on_hand"], 1),
                 "expiry_date": exp.isoformat(),
-                "warehouse_id": "wh-hq" if i % 2 == 0 else "wh-ask",
+                "warehouse_id": warehouses[i % len(warehouses)]["id"],
             }
         )
-    for d in range(30):
+    for d in range(50):
         day = today - timedelta(days=d)
         sku = skus[d % len(skus)]
         movements.append(
@@ -48,7 +54,7 @@ def build_stock(skus: list[dict], branches: list[dict]) -> dict[str, Any]:
                 "sku_id": sku["id"],
                 "type": ["in", "out", "adjust"][d % 3],
                 "qty": 2 + (d % 9),
-                "warehouse_id": "wh-hq",
+                "warehouse_id": warehouses[d % len(warehouses)]["id"],
                 "note": "synth movement",
             }
         )

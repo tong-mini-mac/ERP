@@ -20,7 +20,13 @@ It is **not** company ATLAS / live ERP. ATLAS stays untouched. Demo never shares
 2. Enter the sandbox **without a second Platform login wall**
 3. Explore modules on **synthetic** data only
 
-### Auth paths (in order)
+### UX notes (demo)
+- Stock barcode: scanner is primary; if hardware is broken, type code + Enter (failover)
+- Documents: Scan & extract is primary; **Manual entry** is the failover when scanner/OCR is down
+- Marketing includes **Present-campaign** (mock live pulse); Clinic/Beauty/Ecommerce/Trading remain pending
+- Admin forms avoid raw JSON where possible (payload fields accept plain notes)
+- UI English overlay + **Home · inz.lol** link (SPA ships as built `frontend/dist`)
+
 
 | Path | When | Result |
 |------|------|--------|
