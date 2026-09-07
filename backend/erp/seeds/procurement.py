@@ -7,18 +7,16 @@ from typing import Any
 
 def build_procurement(vendors: list[dict], skus: list[dict]) -> dict[str, Any]:
     prs = []
-    statuses = (
-        ["approved"] * 6
-        + ["pending"] * 3
-        + ["rejected"]
-    )
-    for i, status in enumerate(statuses):
+    for i in range(50):
+        status = (
+            "pending" if i < 8 else "rejected" if i == 8 else "approved"
+        )
         ven = vendors[i % len(vendors)]
         sku = skus[i % len(skus)]
         prs.append(
             {
                 "id": f"pr-{1001 + i}",
-                "title": f"ขอซื้อ {sku['name']} — {ven['name']}",
+                "title": f"PR {sku['name']} — {ven['name']}",
                 "status": status,
                 "vendor": ven["name"],
                 "vendor_id": ven["id"],
@@ -30,12 +28,8 @@ def build_procurement(vendors: list[dict], skus: list[dict]) -> dict[str, Any]:
         )
 
     pos = []
-    po_states = (
-        ["received"] * 4
-        + ["partial"] * 2
-        + ["pending"]
-    )
-    for i, status in enumerate(po_states):
+    for i in range(50):
+        status = "partial" if i < 5 else "pending" if i < 10 else "received"
         ven = vendors[(i + 2) % len(vendors)]
         sku = skus[(i + 5) % len(skus)]
         qty = 30 + i * 5
@@ -48,22 +42,45 @@ def build_procurement(vendors: list[dict], skus: list[dict]) -> dict[str, Any]:
                 "vendor": ven["name"],
                 "vendor_id": ven["id"],
                 "sku_id": sku["id"],
-                "qty_ordered": qty,
+                "qty": qty,
                 "qty_received": received,
                 "total": qty * sku["cost"],
                 "currency": "THB",
             }
         )
 
-    inbox_items = [
-        {"id": f"wf-{pr['id']}", "title": f"อนุมัติ {pr['id']}: {pr['title']}", "status": "pending"}
-        for pr in prs
-        if pr["status"] == "pending"
-    ]
-    workflow_inbox = {"count": len(inbox_items), "items": inbox_items}
+    inbox = []
+    for i, pr in enumerate(prs):
+        if pr["status"] != "pending":
+            continue
+        inbox.append(
+            {
+                "id": f"wf-{i + 1:02d}",
+                "title": pr["title"],
+                "type": "purchase_request",
+                "status": "pending",
+                "resource_type": "pr",
+                "resource_id": pr["id"],
+                "amount": pr["total"],
+            }
+        )
+    # Pad workflow inbox to 50 generic approval items for demo volume.
+    while len(inbox) < 50:
+        n = len(inbox) + 1
+        inbox.append(
+            {
+                "id": f"wf-{n:02d}",
+                "title": f"Generic approval request #{n}",
+                "type": "generic",
+                "status": "pending" if n % 3 else "approved",
+                "resource_type": "document",
+                "resource_id": f"doc-{n:02d}",
+                "amount": 1000 + n * 50,
+            }
+        )
 
     return {
         "PROCUREMENT_PRS": prs,
         "PURCHASE_ORDERS": pos,
-        "WORKFLOW_INBOX": workflow_inbox,
+        "WORKFLOW_INBOX": inbox,
     }

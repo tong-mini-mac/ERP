@@ -35,7 +35,8 @@ SKU_CATALOG = [
 
 def build_catalog() -> dict[str, Any]:
     customers = []
-    for i, base in enumerate(CUSTOMER_BASES):
+    for i in range(50):
+        base = CUSTOMER_BASES[i % len(CUSTOMER_BASES)]
         customers.append(
             {
                 "id": f"cus-{i + 1:02d}",
@@ -50,7 +51,8 @@ def build_catalog() -> dict[str, Any]:
         )
 
     vendors = []
-    for i, base in enumerate(VENDOR_BASES):
+    for i in range(50):
+        base = VENDOR_BASES[i % len(VENDOR_BASES)]
         vendors.append(
             {
                 "id": f"ven-{i + 1:02d}",
@@ -73,10 +75,12 @@ def build_catalog() -> dict[str, Any]:
             qty = 0
         else:
             qty = 40 + (i * 7) % 180
+        code = f"{prefix}-{i + 1:03d}"
         skus.append(
             {
                 "id": f"sku-{i + 1:02d}",
-                "sku": f"{prefix}-{i + 1:03d}",
+                "sku": code,
+                "code": code,
                 "name": f"{label} #{i + 1:02d}",
                 "barcode": barcode(i + 1),
                 "unit": unit,

@@ -10,7 +10,7 @@ def build_finance(customers: list[dict]) -> dict[str, Any]:
     today = date(2026, 9, 7)
     invoices: list[dict] = []
     # 30 tax invoices: paid 20, pending 7, overdue 3
-    for i in range(30):
+    for i in range(50):
         cust = customers[i % len(customers)]
         issued = today - timedelta(days=5 + i * 2)
         due = issued + timedelta(days=15)

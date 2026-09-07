@@ -36,25 +36,31 @@ def build_people() -> dict[str, Any]:
     members: list[dict] = []
     employees: list[dict] = []
 
-    for i in range(20):
+    for i in range(50):
         name = "ThaiTrade Demo Owner" if i == 0 else person_name(i)
         title, role, dept = TITLES[i % len(TITLES)]
         if i == 0:
             title, role, dept = TITLES[0]
         email = DEMO_EMAIL if i == 0 else f"staff{i:02d}@thaitrade.demo"
-        emp_type = "full_time" if i < 15 else "part_time"
-        salary = 45000 - (i * 800) if emp_type == "full_time" else 18000
+        emp_type = "full_time" if i < 40 else "part_time"
+        salary = 45000 - (i * 400) if emp_type == "full_time" else 18000
+        # SPA HR table reads `name` (not full_name) + hyphenated employment_type.
         emp = {
             "id": f"emp-{i + 1:02d}",
             "code": f"E{i + 1:03d}",
+            "name": name,
             "full_name": name,
             "title": title,
             "status": "active",
             "department": dept.replace("dept-", "").upper(),
             "department_id": dept,
-            "employment_type": emp_type,
+            "employment_type": emp_type.replace("_", "-"),
             "salary": salary,
             "currency": "THB",
+            "start_date": "2024-01-15" if i == 0 else f"2024-{(i % 12) + 1:02d}-01",
+            "bank_account": f"1234567{i:03d}",
+            "bank_name": "SCB",
+            "manager_id": None if i == 0 else 1,
         }
         employees.append(emp)
         members.append(
