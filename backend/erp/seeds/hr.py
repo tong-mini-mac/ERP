@@ -39,13 +39,24 @@ def build_hr(employees: list[dict]) -> dict[str, Any]:
     )
     for i, (status, days) in enumerate(leave_mix):
         emp = employees[(i + 1) % len(employees)]
+        leave_type = ["annual", "sick", "personal"][i % 3]
+        day_count = days + (i % 2)
+        start = today - timedelta(days=7 + i)
+        end = start + timedelta(days=max(day_count - 1, 0))
         leave.append(
             {
                 "id": f"leave-{i + 1}",
                 "employee_id": emp["id"],
-                "employee": emp["full_name"],
-                "type": ["annual", "sick", "personal"][i % 3],
-                "days": days + (i % 2),
+                "emp_id": i + 1,
+                "employee": emp.get("full_name") or emp.get("name"),
+                # SPA pending list reads emp_name / leave_type / start_date / end_date
+                "emp_name": emp.get("name") or emp.get("full_name"),
+                "type": leave_type,
+                "leave_type": leave_type,
+                "days": day_count,
+                "start_date": start.isoformat(),
+                "end_date": end.isoformat(),
+                "reason": "Demo leave request",
                 "status": status,
             }
         )
@@ -55,8 +66,14 @@ def build_hr(employees: list[dict]) -> dict[str, Any]:
 
     payroll = []
     for period, status in (("2026-08", "paid"), ("2026-09", "draft")):
+        year_s, month_s = period.split("-")
+        year, month = int(year_s), int(month_s)
         lines = [
-            {"employee": e["full_name"], "employee_id": e["id"], "net": e["salary"]}
+            {
+                "employee": e.get("full_name") or e.get("name"),
+                "employee_id": e["id"],
+                "net": e["salary"],
+            }
             for e in employees
         ]
         total = sum(x["net"] for x in lines)
@@ -64,8 +81,12 @@ def build_hr(employees: list[dict]) -> dict[str, Any]:
             {
                 "id": f"pay-{period}",
                 "period": period,
+                "year": year,
+                "month": month,
                 "status": status,
                 "total": total,
+                # SPA payroll list reads total_net
+                "total_net": total,
                 "currency": "THB",
                 "lines": lines,
             }
