@@ -25,7 +25,7 @@ from pathlib import Path
 from typing import Any
 
 import jwt
-from fastapi import Depends, FastAPI, Header, HTTPException, Request
+from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -799,19 +799,23 @@ def documents_scan(scan_id: str, _: dict[str, Any] = Depends(current_user)) -> d
 
 @app.post("/api/documents/scan")
 async def documents_scan_upload(
-    request: Request, _: dict[str, Any] = Depends(current_user)
+    file: UploadFile | None = File(None),
+    _: dict[str, Any] = Depends(current_user),
 ) -> dict[str, Any]:
-    # Multipart upload is mocked — still create a usable history row.
+    # Multipart upload is mocked OCR — still create a usable history row.
+    filename = (file.filename if file else None) or "uploaded-document.pdf"
+    if file is not None:
+        await file.read()  # consume body; demo does not persist binary
     row = {
         "id": f"scan-{uuid.uuid4().hex[:8]}",
-        "filename": "uploaded-document.pdf",
+        "filename": filename,
         "doc_type": "invoice",
         "status": "parsed",
         "vendor": "Uploaded Vendor",
         "total": 0,
         "currency": "THB",
         "source": "upload",
-        "lines": [],
+        "lines": [{"desc": f"Parsed from {filename}", "qty": 1, "amount": 0}],
         "demo": True,
     }
     getattr(seed, "DOCUMENT_SCANS").insert(0, row)
