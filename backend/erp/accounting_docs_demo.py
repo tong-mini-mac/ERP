@@ -11,10 +11,20 @@ Frontend expects wrapped payloads:
 from __future__ import annotations
 
 import copy
+import os
+import re
 import uuid
+from pathlib import Path
 from typing import Any
 
 from erp import demo_seed as seed
+
+UPLOAD_ROOT = Path(
+    os.getenv("DEMO_UPLOAD_DIR", str(Path(__file__).resolve().parents[2] / "data" / "demo_uploads"))
+)
+UPLOAD_ROOT.mkdir(parents=True, exist_ok=True)
+_ALLOWED_LOGO = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"}
+_ALLOWED_TEMPLATE = {".html", ".htm", ".json", ".png", ".jpg", ".jpeg", ".webp", ".pdf"}
 
 _DOC_TYPE_META = [
     {"id": "invoice", "label_th": "ใบแจ้งหนี้ / Tax Invoice", "label_en": "Tax Invoice"},
@@ -264,3 +274,78 @@ def bot_chat(template_id: str, message: str) -> dict[str, Any]:
             break
     html = render_preview_html(template_id)
     return {"reply": " · ".join(reply_bits), "preview_html": html, "template": copy.deepcopy(tpl)}
+
+
+def _safe_ext(filename: str, allowed: set[str]) -> str:
+    ext = Path(filename or "").suffix.lower()
+    if ext not in allowed:
+        raise ValueError(f"unsupported_file_type:{ext or 'none'}")
+    return ext
+
+
+def _save_bytes(data: bytes, filename: str, allowed: set[str]) -> dict[str, str]:
+    if len(data) > 5 * 1024 * 1024:
+        raise ValueError("file_too_large")
+    ext = _safe_ext(filename, allowed)
+    name = f"{uuid.uuid4().hex}{ext}"
+    path = UPLOAD_ROOT / name
+    path.write_bytes(data)
+    url = f"/demo-uploads/{name}"
+    return {"filename": name, "url": url, "path": str(path)}
+
+
+def attach_logo(template_id: str, data: bytes, filename: str) -> dict[str, Any]:
+    saved = _save_bytes(data, filename, _ALLOWED_LOGO)
+    tpl = get_template(template_id)
+    tpl["logo_url"] = saved["url"]
+    tpl["version"] = int(tpl.get("version") or 1) + 1
+    for i, row in enumerate(_ensure_templates()):
+        if row["id"] == template_id:
+            _ensure_templates()[i] = tpl
+            break
+    return {
+        "ok": True,
+        "logo_url": saved["url"],
+        "template": copy.deepcopy(tpl),
+        "preview_html": render_preview_html(template_id),
+    }
+
+
+def upload_customer_template(
+    data: bytes,
+    filename: str,
+    *,
+    doc_type: str = "invoice",
+    name: str | None = None,
+) -> dict[str, Any]:
+    """Accept logo/image or HTML/JSON snippet as a new selectable template."""
+    saved = _save_bytes(data, filename, _ALLOWED_TEMPLATE)
+    ext = Path(saved["filename"]).suffix.lower()
+    tpl_name = name or f"อัปโหลด: {Path(filename).name}"
+    item: dict[str, Any] = {
+        "id": f"tpl-up-{uuid.uuid4().hex[:8]}",
+        "name": tpl_name,
+        "doc_type": doc_type or "invoice",
+        "version": 1,
+        "theme_color": "#0f766e",
+        "show_vat": True,
+        "logo_url": saved["url"] if ext in _ALLOWED_LOGO else "",
+        "footer": "Customer uploaded template (demo)",
+        "source_file": saved["url"],
+        "uploaded": True,
+    }
+    if ext in {".html", ".htm"}:
+        # Keep a short note; preview still uses standard ThaiTrade layout + logo if any.
+        text = data.decode("utf-8", errors="ignore")
+        # If HTML contains an absolute/relative image, pick first as logo hint.
+        m = re.search(r'src=["\']([^"\']+)["\']', text, re.I)
+        if m and not item["logo_url"]:
+            item["logo_url"] = m.group(1)
+        item["custom_html"] = True
+    _ensure_templates().insert(0, item)
+    return {
+        "ok": True,
+        "template": copy.deepcopy(item),
+        "file_url": saved["url"],
+        "preview_html": render_preview_html(item["id"]),
+    }
