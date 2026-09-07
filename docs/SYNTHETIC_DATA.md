@@ -27,6 +27,7 @@ Data must tell a story: a **living fictional company** with history, problems, a
 | Branches | Head Office (Silom) + Asok Branch |
 | Business | Import-export + retail (covers Finance / Stock / Procurement / HR) |
 | Demo login | `demo@erp.demo` / `demo-erp-2026` (shared portfolio sandbox) |
+| Industry legs | **Resto = demo**; Clinic / Beauty / Ecommerce / Trading = **pending** (`GET /api/demo/businesses`) |
 
 ## Live scenarios (must remain visible)
 

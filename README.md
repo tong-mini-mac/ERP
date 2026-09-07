@@ -57,6 +57,18 @@ Audience is **portfolio reviewers** (CTO / Senior AI who got a job-application l
 Story-driven seed data: **ThaiTrade Solutions Co., Ltd.** — see [`docs/SYNTHETIC_DATA.md`](docs/SYNTHETIC_DATA.md) and `backend/erp/seeds/`.  
 Optional later: nightly `POST /api/demo/reset` (header `X-Demo-Reset-Key`) — not a ship blocker.
 
+### Industry verticals (demo scope)
+
+| Vertical | Status | What it covers |
+|----------|--------|----------------|
+| **Resto** | **demo** — ready to test | Menus, recipe cost, dine-in, delivery platforms (`/resto-menu`, Marketing → ร้านอาหาร) |
+| Clinic | pending | Appointments, pets, mode (pet/dental) |
+| Beauty | pending | Clients, rooms, appointments, media upload |
+| Ecommerce | pending | Catalog, channel orders, marketplace ingest |
+| Trading | pending | Customers, price lists, quotations, payment reminders |
+
+API: `GET /api/demo/businesses`. Core modules (Finance / HR / Stock / …) stay available on the shared ThaiTrade tenant.
+
 ---
 
 ## Stack

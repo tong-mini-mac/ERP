@@ -26,6 +26,9 @@ def build_master() -> dict[str, Any]:
         "address": company["address"],
         "phone": company["phone"],
         "isolated_from_production_erp": True,
+        # Unlock Marketing → ร้านอาหาร (resto) leg in the SPA. Other verticals stay pending.
+        "features": ["marketing", "resto_platform"],
+        "demo_business": "resto",
     }
     branches = [
         {

@@ -215,9 +215,14 @@ def health() -> dict[str, Any]:
             "invoices": len(getattr(seed, "INVOICES", [])),
             "customers": len(getattr(seed, "CUSTOMERS", [])),
         },
+        "businesses": {
+            "demo_ready": ["resto"],
+            "pending": ["clinic", "beauty", "ecommerce", "trading"],
+        },
         "note": (
             "ThaiTrade Solutions synth sandbox; "
-            "single login via inz.lol platform SSO; not linked to ATLAS"
+            "single login via inz.lol platform SSO; not linked to ATLAS; "
+            "industry demo = Resto only (others pending)"
         ),
     }
 
@@ -796,6 +801,68 @@ def demo_scenarios(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
 @app.get("/api/demo/company")
 def demo_company(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
     return seed.COMPANY
+
+
+@app.get("/api/demo/businesses")
+def demo_businesses(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    """Five industry legs: only Resto is demo-ready; others are pending."""
+    from erp.seeds.verticals import list_businesses
+
+    return list_businesses()
+
+
+@app.get("/api/demo/businesses/{business_id}")
+def demo_business_one(
+    business_id: str, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    from erp.seeds.verticals import BUSINESS_VERTICALS
+
+    for row in BUSINESS_VERTICALS:
+        if row["id"] == business_id:
+            payload = dict(row)
+            if row["status"] == "pending":
+                payload["message"] = (
+                    f"{row['label']} is pending — demo testing is Resto-only for now."
+                )
+                payload["message_th"] = (
+                    f"{row['label_th']} ยังเป็น pending — ตอนนี้ทดสอบ demo ได้เฉพาะ Resto"
+                )
+            return payload
+    raise HTTPException(status_code=404, detail="business_not_found")
+
+
+# Pending vertical stubs — clear status instead of empty catch-all.
+@app.api_route(
+    "/api/marketing/legs/{leg_id}/{full_path:path}",
+    methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+)
+@app.api_route(
+    "/api/marketing/legs/{leg_id}",
+    methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+)
+async def marketing_leg_pending_or_unknown(
+    leg_id: str,
+    request: Request,
+    full_path: str = "",
+    _: dict[str, Any] = Depends(current_user),
+) -> dict[str, Any]:
+    from erp.seeds.verticals import BUSINESS_VERTICALS
+
+    # Real resto routes are registered above; this only catches unmatched legs.
+    if leg_id == "resto":
+        raise HTTPException(status_code=404, detail="resto_route_not_found")
+    known = {v["id"]: v for v in BUSINESS_VERTICALS}
+    if leg_id in known and known[leg_id]["status"] == "pending":
+        return {
+            "ok": False,
+            "status": "pending",
+            "leg": leg_id,
+            "path": full_path,
+            "message": f"{known[leg_id]['label']} vertical is pending in ERP-Demo",
+            "message_th": f"ธุรกิจ {known[leg_id]['label_th']} ยังเป็น pending — ทดสอบได้เฉพาะ Resto",
+            "demo_ready": ["resto"],
+        }
+    raise HTTPException(status_code=404, detail="marketing_leg_not_found")
 
 
 @app.post("/api/demo/reset")
