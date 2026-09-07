@@ -408,10 +408,106 @@ async def stock_scan(
 
 
 # --- HR -----------------------------------------------------------------------
+# SPA contract: list endpoints return { items: [...] } (not bare arrays).
+# Employee rows need `name`; leave needs emp_name/leave_type/dates; payroll needs month/year/total_net.
+
+
+def _hr_employee_public(row: dict[str, Any]) -> dict[str, Any]:
+    name = row.get("name") or row.get("full_name") or ""
+    emp_type = str(row.get("employment_type") or "full-time").replace("_", "-")
+    return {
+        "id": row.get("id"),
+        "code": row.get("code"),
+        "name": name,
+        "full_name": row.get("full_name") or name,
+        "title": row.get("title"),
+        "status": row.get("status") or "active",
+        "department": row.get("department"),
+        "department_id": row.get("department_id"),
+        "employment_type": emp_type,
+        "salary": row.get("salary"),
+        "currency": row.get("currency") or "THB",
+        "start_date": row.get("start_date"),
+        "bank_account": row.get("bank_account") or "",
+        "bank_name": row.get("bank_name") or "",
+        "manager_id": row.get("manager_id"),
+    }
+
+
+def _hr_leave_public(row: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "id": row.get("id"),
+        "employee_id": row.get("employee_id"),
+        "emp_id": row.get("emp_id"),
+        "emp_name": row.get("emp_name") or row.get("employee"),
+        "employee": row.get("employee") or row.get("emp_name"),
+        "leave_type": row.get("leave_type") or row.get("type"),
+        "type": row.get("type") or row.get("leave_type"),
+        "days": row.get("days"),
+        "start_date": row.get("start_date"),
+        "end_date": row.get("end_date"),
+        "reason": row.get("reason"),
+        "status": row.get("status"),
+    }
+
+
+def _hr_payroll_public(row: dict[str, Any], *, include_lines: bool = False) -> dict[str, Any]:
+    period = str(row.get("period") or "")
+    year = row.get("year")
+    month = row.get("month")
+    if (year is None or month is None) and "-" in period:
+        try:
+            year_s, month_s = period.split("-", 1)
+            year, month = int(year_s), int(month_s)
+        except ValueError:
+            pass
+    out = {
+        "id": row.get("id"),
+        "period": period,
+        "year": year,
+        "month": month,
+        "status": row.get("status"),
+        "total": row.get("total"),
+        "total_net": row.get("total_net", row.get("total")),
+        "currency": row.get("currency") or "THB",
+    }
+    if include_lines:
+        out["lines"] = row.get("lines") or []
+    return out
+
 
 @app.get("/api/hr-platform/employees")
-def hr_employees(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
-    return seed.EMPLOYEES
+def hr_employees(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    return {"items": [_hr_employee_public(e) for e in seed.EMPLOYEES]}
+
+
+@app.post("/api/hr-platform/employees")
+async def hr_create_employee(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    body = await request.json()
+    next_n = len(seed.EMPLOYEES) + 1
+    name = str(body.get("name") or body.get("full_name") or f"พนักงานใหม่ {next_n}")
+    emp = {
+        "id": f"emp-{next_n:02d}",
+        "code": f"E{next_n:03d}",
+        "name": name,
+        "full_name": name,
+        "title": body.get("title") or "Staff",
+        "status": "active",
+        "department": body.get("department") or "GENERAL",
+        "department_id": body.get("department_id"),
+        "employment_type": str(body.get("employment_type") or "full-time").replace("_", "-"),
+        "salary": int(body.get("salary") or 30000),
+        "currency": "THB",
+        "start_date": body.get("start_date"),
+        "bank_account": body.get("bank_account") or "",
+        "bank_name": body.get("bank_name") or "SCB",
+        "manager_id": body.get("manager_id"),
+    }
+    seed.EMPLOYEES.append(emp)
+    seed.HR_DASHBOARD["headcount"] = len(seed.EMPLOYEES)
+    return _hr_employee_public(emp)
 
 
 @app.get("/api/hr-platform/dashboard")
@@ -420,36 +516,108 @@ def hr_dashboard(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
 
 
 @app.get("/api/hr-platform/leave")
-def hr_leave(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
-    return seed.LEAVE_REQUESTS
+def hr_leave(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    return {"items": [_hr_leave_public(x) for x in seed.LEAVE_REQUESTS]}
 
 
 @app.get("/api/hr-platform/leave/pending")
-def hr_leave_pending(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
-    return seed.LEAVE_PENDING
+def hr_leave_pending(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    return {"items": [_hr_leave_public(x) for x in seed.LEAVE_PENDING]}
+
+
+@app.post("/api/hr-platform/leave")
+async def hr_submit_leave(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    body = await request.json()
+    emp_id = body.get("emp_id")
+    emp_name = "พนักงาน"
+    for e in seed.EMPLOYEES:
+        # form sends numeric emp_id; seed ids are emp-01
+        code_n = None
+        try:
+            code_n = int(str(e.get("id", "")).split("-")[-1])
+        except ValueError:
+            code_n = None
+        if emp_id in (e.get("id"), e.get("code"), code_n, str(code_n)):
+            emp_name = e.get("name") or e.get("full_name") or emp_name
+            break
+    row = {
+        "id": f"leave-{len(seed.LEAVE_REQUESTS) + 1}",
+        "employee_id": f"emp-{int(emp_id):02d}" if str(emp_id).isdigit() else emp_id,
+        "emp_id": emp_id,
+        "employee": emp_name,
+        "emp_name": emp_name,
+        "type": body.get("leave_type") or body.get("type") or "annual",
+        "leave_type": body.get("leave_type") or body.get("type") or "annual",
+        "days": int(body.get("days") or 1),
+        "start_date": body.get("start_date"),
+        "end_date": body.get("end_date"),
+        "reason": body.get("reason") or "",
+        "status": "pending",
+    }
+    seed.LEAVE_REQUESTS.insert(0, row)
+    seed.LEAVE_PENDING.insert(0, row)
+    seed.HR_DASHBOARD["pending_leave"] = len(seed.LEAVE_PENDING)
+    return _hr_leave_public(row)
 
 
 @app.get("/api/hr-platform/payroll")
-def hr_payroll(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
-    return [{k: v for k, v in row.items() if k != "lines"} for row in seed.PAYROLL_RUNS]
+def hr_payroll(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    return {"items": [_hr_payroll_public(row) for row in seed.PAYROLL_RUNS]}
 
 
 @app.get("/api/hr-platform/payroll/{payroll_id}")
 def hr_payroll_one(payroll_id: str, _: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
     for row in seed.PAYROLL_RUNS:
         if row["id"] == payroll_id:
-            return row
+            return _hr_payroll_public(row, include_lines=True)
     raise HTTPException(status_code=404, detail="payroll_not_found")
 
 
-
 @app.post("/api/hr-platform/payroll/run")
-def hr_payroll_run(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
-    return {"ok": True, "id": "pay-2026-09", "status": "calculated"}
+async def hr_payroll_run(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    month = int((body or {}).get("month") or 9)
+    year = int((body or {}).get("year") or 2026)
+    period = f"{year}-{month:02d}"
+    lines = [
+        {
+            "employee": e.get("full_name") or e.get("name"),
+            "employee_id": e["id"],
+            "net": e["salary"],
+        }
+        for e in seed.EMPLOYEES
+    ]
+    total = sum(x["net"] for x in lines)
+    row = {
+        "id": f"pay-{period}",
+        "period": period,
+        "year": year,
+        "month": month,
+        "status": "draft",
+        "total": total,
+        "total_net": total,
+        "currency": "THB",
+        "lines": lines,
+    }
+    # Replace existing period run if any.
+    seed.PAYROLL_RUNS = [r for r in seed.PAYROLL_RUNS if r.get("period") != period]
+    seed.PAYROLL_RUNS.insert(0, row)
+    return _hr_payroll_public(row, include_lines=True)
 
 
 @app.post("/api/hr-platform/payroll/{payroll_id}/submit-approval")
 def hr_payroll_submit(payroll_id: str, _: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    for row in seed.PAYROLL_RUNS:
+        if row["id"] == payroll_id:
+            row["status"] = "pending_approval"
+            return _hr_payroll_public(row)
     return {"ok": True, "id": payroll_id, "status": "pending_approval"}
 
 
@@ -463,7 +631,14 @@ async def hr_clock_out(
     request: Request, _: dict[str, Any] = Depends(current_user)
 ) -> dict[str, Any]:
     body = await request.json()
-    return {"ok": True, "event": "clock_out", "employee_id": body.get("employee_id")}
+    return {
+        "ok": True,
+        "event": "clock_out",
+        "employee_id": body.get("employee_id") or body.get("emp_id"),
+        "clock_in": body.get("clock_in"),
+        "clock_out": body.get("clock_out"),
+        "work_date": body.get("work_date"),
+    }
 
 
 # --- Finance / procurement / marketing / resto --------------------------------
