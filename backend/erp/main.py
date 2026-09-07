@@ -25,7 +25,7 @@ from pathlib import Path
 from typing import Any
 
 import jwt
-from fastapi import Depends, FastAPI, Header, HTTPException, Request
+from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -763,6 +763,41 @@ def accounting_doc_pdf(doc_id: str, _: dict[str, Any] = Depends(current_user)) -
     return accounting_doc_html(doc_id, _)
 
 
+@app.post("/api/accounting-docs/templates/{template_id}/upload-logo")
+async def accounting_upload_logo(
+    template_id: str,
+    file: UploadFile = File(...),
+    _: dict[str, Any] = Depends(current_user),
+) -> dict[str, Any]:
+    data = await file.read()
+    try:
+        return ac_docs.attach_logo(template_id, data, file.filename or "logo.png")
+    except KeyError:
+        raise HTTPException(status_code=404, detail="template_not_found") from None
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+
+
+@app.post("/api/accounting-docs/uploads")
+async def accounting_upload_template_or_logo(
+    file: UploadFile = File(...),
+    doc_type: str = Form("invoice"),
+    name: str | None = Form(None),
+    _: dict[str, Any] = Depends(current_user),
+) -> dict[str, Any]:
+    """Upload customer logo/image or template file → new selectable template."""
+    data = await file.read()
+    try:
+        return ac_docs.upload_customer_template(
+            data,
+            file.filename or "upload.bin",
+            doc_type=doc_type,
+            name=name,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+
+
 @app.get("/api/finance/invoices")
 def finance_invoices(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
     return seed.INVOICES
@@ -937,6 +972,10 @@ def _mount_frontend() -> None:
     assets = dist / "assets"
     if assets.is_dir():
         app.mount("/assets", StaticFiles(directory=str(assets)), name="assets")
+    # Customer logo / template uploads for accounting-docs demo.
+    upload_dir = ac_docs.UPLOAD_ROOT
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    app.mount("/demo-uploads", StaticFiles(directory=str(upload_dir)), name="demo-uploads")
 
     @app.get("/{full_path:path}")
     async def spa(full_path: str) -> FileResponse:
