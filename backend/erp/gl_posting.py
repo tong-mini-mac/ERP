@@ -200,6 +200,68 @@ def ensure_invoice_trail(
     return out
 
 
+def available_months(entries: list[dict[str, Any]]) -> list[str]:
+    months = sorted(
+        {
+            str(e.get("date") or "")[:7]
+            for e in entries
+            if str(e.get("date") or "")[:7]
+        },
+        reverse=True,
+    )
+    return months
+
+
+def filter_entries(
+    entries: list[dict[str, Any]],
+    *,
+    month: str | None = None,
+    date_from: str | None = None,
+    date_to: str | None = None,
+    source: str | None = None,
+    q: str | None = None,
+    account: str | None = None,
+) -> list[dict[str, Any]]:
+    """Filter journal entries by month / date range / source / text / account."""
+    month = (month or "").strip() or None
+    date_from = (date_from or "").strip() or None
+    date_to = (date_to or "").strip() or None
+    source = (source or "").strip() or None
+    q = (q or "").strip().lower() or None
+    account = (account or "").strip() or None
+
+    out: list[dict[str, Any]] = []
+    for e in entries:
+        day = str(e.get("date") or "")
+        if month and not day.startswith(month):
+            continue
+        if date_from and day < date_from:
+            continue
+        if date_to and day > date_to:
+            continue
+        if source and str(e.get("source") or "") != source:
+            continue
+        if account:
+            lines = e.get("lines") or []
+            if not any(str(ln.get("account") or "") == account for ln in lines):
+                continue
+        if q:
+            blob = " ".join(
+                [
+                    str(e.get("id") or ""),
+                    str(e.get("memo") or ""),
+                    str(e.get("ref") or ""),
+                    str(e.get("source") or ""),
+                    " ".join(str(ln.get("account") or "") for ln in (e.get("lines") or [])),
+                    " ".join(str(ln.get("name") or "") for ln in (e.get("lines") or [])),
+                ]
+            ).lower()
+            if q not in blob:
+                continue
+        out.append(e)
+    return out
+
+
 def trial_balance(
     entries: list[dict[str, Any]], chart: list[dict[str, Any]]
 ) -> dict[str, Any]:

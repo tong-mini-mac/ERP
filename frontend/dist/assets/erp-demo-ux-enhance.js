@@ -831,6 +831,171 @@
       });
     }
 
+    function finQuery() {
+      var f = wrap._finFilters || {};
+      var parts = [];
+      ["month", "date_from", "date_to", "source", "q", "account"].forEach(function (k) {
+        if (f[k]) parts.push(encodeURIComponent(k) + "=" + encodeURIComponent(f[k]));
+      });
+      // Explicit empty filters → ask API for all rows (bypass default latest-month).
+      if (f.all) parts.push("date_from=1970-01-01");
+      return parts.length ? "?" + parts.join("&") : "";
+    }
+
+    function ensureFinFilters(data) {
+      if (!wrap._finFilters) wrap._finFilters = {};
+      var f = wrap._finFilters;
+      var months = (data && data.available_months) || f._months || [];
+      f._months = months;
+      if (!f._init) {
+        f._init = true;
+        if (data && data.filters && data.filters.month) f.month = data.filters.month;
+        else if (months.length) f.month = months[0];
+      }
+      return f;
+    }
+
+    function renderFilterBar(panel, data, mode) {
+      var f = ensureFinFilters(data);
+      var months = f._months || [];
+      var html =
+        "<div data-fin-filters style='display:grid;gap:0.5rem;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:0.75rem;padding:0.75rem;border:1px solid #334155;border-radius:8px'>" +
+        "<div><label style='font-size:0.8rem'>" +
+        tPair("เดือน", "Month") +
+        "</label><select data-ff-month style='width:100%'><option value=''>" +
+        tPair("ทั้งหมด", "All") +
+        "</option>";
+      months.forEach(function (m) {
+        html +=
+          "<option value='" +
+          m +
+          "'" +
+          (f.month === m ? " selected" : "") +
+          ">" +
+          m +
+          "</option>";
+      });
+      html +=
+        "</select></div>" +
+        "<div><label style='font-size:0.8rem'>" +
+        tPair("จากวันที่", "From") +
+        "</label><input data-ff-from type='date' value='" +
+        (f.date_from || "") +
+        "' style='width:100%' /></div>" +
+        "<div><label style='font-size:0.8rem'>" +
+        tPair("ถึงวันที่", "To") +
+        "</label><input data-ff-to type='date' value='" +
+        (f.date_to || "") +
+        "' style='width:100%' /></div>" +
+        "<div><label style='font-size:0.8rem'>" +
+        tPair("แหล่งที่มา", "Source") +
+        "</label><select data-ff-source style='width:100%'>" +
+        "<option value=''>" +
+        tPair("ทั้งหมด", "All") +
+        "</option>" +
+        ["invoice_issue", "invoice_payment", "manual"]
+          .map(function (src) {
+            return (
+              "<option value='" +
+              src +
+              "'" +
+              (f.source === src ? " selected" : "") +
+              ">" +
+              src +
+              "</option>"
+            );
+          })
+          .join("") +
+        "</select></div>";
+      if (mode !== "tb") {
+        html +=
+          "<div><label style='font-size:0.8rem'>" +
+          tPair("ค้นหา", "Search") +
+          "</label><input data-ff-q value='" +
+          (f.q || "") +
+          "' placeholder='memo / ref / id' style='width:100%' /></div>";
+      }
+      if (mode === "gl") {
+        html +=
+          "<div><label style='font-size:0.8rem'>" +
+          tPair("บัญชี", "Account") +
+          "</label><select data-ff-account style='width:100%'><option value=''>" +
+          tPair("ทุกบัญชี", "All accounts") +
+          "</option></select></div>";
+      }
+      html +=
+        "<div style='display:flex;align-items:end;gap:0.5rem;flex-wrap:wrap'>" +
+        "<button type='button' class='btn btn-primary' data-ff-apply>" +
+        tPair("ดูตามเงื่อนไข", "Apply filter") +
+        "</button>" +
+        "<button type='button' class='btn' data-ff-reset>" +
+        tPair("เดือนล่าสุด", "Latest month") +
+        "</button></div></div>";
+      return html;
+    }
+
+    function bindFilterBar(panel, mode) {
+      var apply = function () {
+        var f = wrap._finFilters || (wrap._finFilters = {});
+        f.month = (panel.querySelector("[data-ff-month]") || {}).value || "";
+        f.date_from = (panel.querySelector("[data-ff-from]") || {}).value || "";
+        f.date_to = (panel.querySelector("[data-ff-to]") || {}).value || "";
+        f.source = (panel.querySelector("[data-ff-source]") || {}).value || "";
+        f.q = (panel.querySelector("[data-ff-q]") || {}).value || "";
+        f.account = (panel.querySelector("[data-ff-account]") || {}).value || "";
+        f.all = !f.month && !f.date_from && !f.date_to && !f.source && !f.q && !f.account;
+        loadFinPanel();
+      };
+      var applyBtn = panel.querySelector("[data-ff-apply]");
+      if (applyBtn) applyBtn.onclick = apply;
+      var resetBtn = panel.querySelector("[data-ff-reset]");
+      if (resetBtn)
+        resetBtn.onclick = function () {
+          var f = wrap._finFilters || (wrap._finFilters = {});
+          var months = f._months || [];
+          f.month = months[0] || "";
+          f.date_from = "";
+          f.date_to = "";
+          f.source = "";
+          f.q = "";
+          f.account = "";
+          f.all = false;
+          loadFinPanel();
+        };
+      var monthSel = panel.querySelector("[data-ff-month]");
+      if (monthSel)
+        monthSel.onchange = function () {
+          var f = wrap._finFilters || (wrap._finFilters = {});
+          f.month = monthSel.value || "";
+          f.date_from = "";
+          f.date_to = "";
+          f.all = !f.month;
+          loadFinPanel();
+        };
+      if (mode === "gl") {
+        fetch("/api/finance/accounts", { headers: authHeaders() })
+          .then(function (r) {
+            return r.json();
+          })
+          .then(function (d) {
+            var sel = panel.querySelector("[data-ff-account]");
+            if (!sel) return;
+            var cur = (wrap._finFilters || {}).account || "";
+            (d.items || []).forEach(function (a) {
+              var o = document.createElement("option");
+              o.value = a.code;
+              o.textContent =
+                a.code +
+                " — " +
+                (getLang() === "th" && a.name_th ? a.name_th : a.name || "");
+              if (a.code === cur) o.selected = true;
+              sel.appendChild(o);
+            });
+          })
+          .catch(function () {});
+      }
+    }
+
     function loadFinPanel() {
       var panel = wrap.querySelector("[data-fin-panel]");
       if (!panel) return;
@@ -849,10 +1014,10 @@
 
       var url =
         tab === "journal"
-          ? "/api/finance/journal"
+          ? "/api/finance/journal" + finQuery()
           : tab === "gl"
-            ? "/api/finance/gl"
-            : "/api/finance/trial-balance";
+            ? "/api/finance/gl" + finQuery()
+            : "/api/finance/trial-balance" + finQuery();
       fetch(url, { headers: authHeaders() })
         .then(function (r) {
           return r.json().then(function (d) {
@@ -876,16 +1041,48 @@
         });
     }
 
+    function filterSummary(data) {
+      var f = (data && data.filters) || {};
+      var bits = [];
+      if (f.month) bits.push(tPair("เดือน", "Month") + " " + f.month);
+      if (f.date_from || f.date_to)
+        bits.push((f.date_from || "…") + " → " + (f.date_to || "…"));
+      if (f.source) bits.push(f.source);
+      if (f.account) bits.push(tPair("บัญชี", "Acct") + " " + f.account);
+      if (f.q) bits.push('"' + f.q + '"');
+      if (!bits.length) bits.push(tPair("ทั้งหมด", "All"));
+      return bits.join(" · ");
+    }
+
     function renderJournal(panel, data) {
       var items = data.items || [];
-      var html =
-        "<p style='font-size:0.85rem;color:#94a3b8'>" +
-        tPair("รายการทั้งหมด", "Total entries") +
-        ": <b>" +
-        (data.count != null ? data.count : items.length) +
-        "</b></p>";
+      var html = renderFilterBar(panel, data, "journal");
       html +=
-        "<div style='overflow:auto'><table style='width:100%;border-collapse:collapse;font-size:0.9rem'>" +
+        "<p style='font-size:0.85rem;color:#94a3b8'>" +
+        tPair("แสดง", "Showing") +
+        " <b>" +
+        (data.count != null ? data.count : items.length) +
+        "</b>" +
+        (data.total_unfiltered != null
+          ? " / " + data.total_unfiltered + " " + tPair("ทั้งหมด", "total")
+          : "") +
+        " · " +
+        filterSummary(data) +
+        "</p>";
+      if (!items.length) {
+        html +=
+          "<p style='color:#94a3b8'>" +
+          tPair(
+            "ไม่พบรายการในช่วงนี้ — ลองเปลี่ยนเดือนหรือช่วงวันที่",
+            "No rows for this filter — try another month or range"
+          ) +
+          "</p>";
+        panel.innerHTML = html;
+        bindFilterBar(panel, "journal");
+        return;
+      }
+      html +=
+        "<div style='overflow:auto;max-height:28rem'><table style='width:100%;border-collapse:collapse;font-size:0.9rem'>" +
         "<thead><tr>" +
         "<th style='text-align:left;padding:0.35rem;border-bottom:1px solid #334155'>Date</th>" +
         "<th style='text-align:left;padding:0.35rem;border-bottom:1px solid #334155'>ID / Source</th>" +
@@ -893,7 +1090,7 @@
         "<th style='text-align:right;padding:0.35rem;border-bottom:1px solid #334155'>Dr</th>" +
         "<th style='text-align:right;padding:0.35rem;border-bottom:1px solid #334155'>Cr</th>" +
         "</tr></thead><tbody>";
-      items.slice(0, 80).forEach(function (e) {
+      items.forEach(function (e) {
         (e.lines || []).forEach(function (ln, i) {
           html +=
             "<tr>" +
@@ -921,16 +1118,29 @@
       });
       html += "</tbody></table></div>";
       panel.innerHTML = html;
+      bindFilterBar(panel, "journal");
     }
 
     function renderGl(panel, data) {
       var accounts = data.accounts || [];
-      var html =
+      var html = renderFilterBar(panel, data, "gl");
+      html +=
         "<p style='font-size:0.85rem;color:#94a3b8'>" +
-        tPair("จำนวนบัญชีที่มีรายการ", "Accounts with activity") +
+        tPair("บัญชีที่มีรายการ", "Accounts with activity") +
         ": <b>" +
         accounts.length +
-        "</b></p>";
+        "</b> · " +
+        filterSummary(data) +
+        "</p>";
+      if (!accounts.length) {
+        html +=
+          "<p style='color:#94a3b8'>" +
+          tPair("ไม่พบรายการในช่วงนี้", "No rows for this filter") +
+          "</p>";
+        panel.innerHTML = html;
+        bindFilterBar(panel, "gl");
+        return;
+      }
       accounts.forEach(function (a) {
         html +=
           "<div style='margin:0.75rem 0;padding:0.5rem 0;border-top:1px solid #334155'>" +
@@ -942,11 +1152,11 @@
           "<span style='float:right;font-size:0.85rem;color:#94a3b8'>bal " +
           fmtMoney(a.balance) +
           "</span>" +
-          "<div style='overflow:auto;margin-top:0.35rem'><table style='width:100%;border-collapse:collapse;font-size:0.85rem'>" +
+          "<div style='overflow:auto;max-height:16rem;margin-top:0.35rem'><table style='width:100%;border-collapse:collapse;font-size:0.85rem'>" +
           "<thead><tr><th style='text-align:left'>Date</th><th style='text-align:left'>Memo</th>" +
           "<th style='text-align:right'>Dr</th><th style='text-align:right'>Cr</th>" +
           "<th style='text-align:right'>Bal</th></tr></thead><tbody>";
-        (a.lines || []).slice(0, 40).forEach(function (ln) {
+        (a.lines || []).forEach(function (ln) {
           html +=
             "<tr><td style='padding:0.2rem'>" +
             (ln.date || "") +
@@ -962,12 +1172,14 @@
         });
         html += "</tbody></table></div></div>";
       });
-      panel.innerHTML = html || "<p>No ledger rows</p>";
+      panel.innerHTML = html;
+      bindFilterBar(panel, "gl");
     }
 
     function renderTb(panel, data) {
       var items = data.items || [];
-      var html =
+      var html = renderFilterBar(panel, data, "tb");
+      html +=
         "<p style='font-size:0.85rem;color:#94a3b8'>" +
         tPair("งบทดลองสมดุล", "Trial balance OK") +
         ": <b style='color:" +
@@ -978,9 +1190,11 @@
         fmtMoney(data.total_debit) +
         " / Cr " +
         fmtMoney(data.total_credit) +
+        " · " +
+        filterSummary(data) +
         "</p>";
       html +=
-        "<div style='overflow:auto'><table style='width:100%;border-collapse:collapse;font-size:0.9rem'>" +
+        "<div style='overflow:auto;max-height:28rem'><table style='width:100%;border-collapse:collapse;font-size:0.9rem'>" +
         "<thead><tr><th style='text-align:left;padding:0.35rem'>Acct</th>" +
         "<th style='text-align:left;padding:0.35rem'>Name</th>" +
         "<th style='text-align:right;padding:0.35rem'>Debit</th>" +
@@ -1005,6 +1219,7 @@
         fmtMoney(data.total_credit) +
         "</td></tr></tbody></table></div>";
       panel.innerHTML = html;
+      bindFilterBar(panel, "tb");
     }
 
     function renderManualJournal(panel) {

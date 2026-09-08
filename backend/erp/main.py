@@ -1059,14 +1059,52 @@ def finance_invoices(_: dict[str, Any] = Depends(current_user)) -> list[dict[str
 
 
 @app.get("/api/finance/journal")
-def finance_journal(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
-    """สมุดรายวัน — every Dr/Cr journal entry (GL_ENTRIES)."""
+def finance_journal(
+    month: str | None = None,
+    date_from: str | None = None,
+    date_to: str | None = None,
+    source: str | None = None,
+    q: str | None = None,
+    account: str | None = None,
+    limit: int = 200,
+    _: dict[str, Any] = Depends(current_user),
+) -> dict[str, Any]:
+    """สมุดรายวัน — filterable by month / date range / source / text."""
+    all_entries = list(getattr(seed, "GL_ENTRIES", []))
+    months = gl_posting.available_months(all_entries)
+    # Default: latest month only (avoid dumping the full ledger).
+    if not any([month, date_from, date_to, source, q, account]) and months:
+        month = months[0]
+    filtered = gl_posting.filter_entries(
+        all_entries,
+        month=month,
+        date_from=date_from,
+        date_to=date_to,
+        source=source,
+        q=q,
+        account=account,
+    )
     items = sorted(
-        list(getattr(seed, "GL_ENTRIES", [])),
+        filtered,
         key=lambda e: (e.get("date") or "", e.get("id") or ""),
         reverse=True,
     )
-    return {"items": items, "count": len(items)}
+    lim = max(1, min(int(limit or 200), 500))
+    return {
+        "items": items[:lim],
+        "count": len(items),
+        "total_unfiltered": len(all_entries),
+        "truncated": len(items) > lim,
+        "filters": {
+            "month": month,
+            "date_from": date_from,
+            "date_to": date_to,
+            "source": source,
+            "q": q,
+            "account": account,
+        },
+        "available_months": months,
+    }
 
 
 @app.get("/api/finance/journal/{entry_id}")
@@ -1103,20 +1141,78 @@ async def finance_create_journal(
 
 @app.get("/api/finance/gl")
 @app.get("/api/finance/ledger")
-def finance_gl(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
-    """บัญชีแยกประเภท — General Ledger by account."""
-    return gl_posting.general_ledger(
-        list(getattr(seed, "GL_ENTRIES", [])),
+def finance_gl(
+    month: str | None = None,
+    date_from: str | None = None,
+    date_to: str | None = None,
+    source: str | None = None,
+    q: str | None = None,
+    account: str | None = None,
+    _: dict[str, Any] = Depends(current_user),
+) -> dict[str, Any]:
+    """บัญชีแยกประเภท — General Ledger by account (filterable)."""
+    all_entries = list(getattr(seed, "GL_ENTRIES", []))
+    months = gl_posting.available_months(all_entries)
+    if not any([month, date_from, date_to, source, q, account]) and months:
+        month = months[0]
+    filtered = gl_posting.filter_entries(
+        all_entries,
+        month=month,
+        date_from=date_from,
+        date_to=date_to,
+        source=source,
+        q=q,
+        account=account,
+    )
+    result = gl_posting.general_ledger(
+        filtered,
         list(getattr(seed, "CHART_OF_ACCOUNTS", [])),
     )
+    result["total_unfiltered"] = len(all_entries)
+    result["filters"] = {
+        "month": month,
+        "date_from": date_from,
+        "date_to": date_to,
+        "source": source,
+        "q": q,
+        "account": account,
+    }
+    result["available_months"] = months
+    return result
 
 
 @app.get("/api/finance/trial-balance")
-def finance_trial_balance(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
-    return gl_posting.trial_balance(
-        list(getattr(seed, "GL_ENTRIES", [])),
+def finance_trial_balance(
+    month: str | None = None,
+    date_from: str | None = None,
+    date_to: str | None = None,
+    source: str | None = None,
+    _: dict[str, Any] = Depends(current_user),
+) -> dict[str, Any]:
+    all_entries = list(getattr(seed, "GL_ENTRIES", []))
+    months = gl_posting.available_months(all_entries)
+    if not any([month, date_from, date_to, source]) and months:
+        month = months[0]
+    filtered = gl_posting.filter_entries(
+        all_entries,
+        month=month,
+        date_from=date_from,
+        date_to=date_to,
+        source=source,
+    )
+    result = gl_posting.trial_balance(
+        filtered,
         list(getattr(seed, "CHART_OF_ACCOUNTS", [])),
     )
+    result["filters"] = {
+        "month": month,
+        "date_from": date_from,
+        "date_to": date_to,
+        "source": source,
+    }
+    result["available_months"] = months
+    result["entry_count_unfiltered"] = len(all_entries)
+    return result
 
 
 @app.get("/api/finance/accounts")
