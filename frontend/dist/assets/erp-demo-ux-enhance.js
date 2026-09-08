@@ -120,7 +120,26 @@
     }
   }
 
+  function ensureDemoToken() {
+    if (token()) return token();
+    try {
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", "/api/stock/auth/login", false);
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.send(JSON.stringify({ email: "demo@erp.demo", password: "demo-erp-2026" }));
+      if (xhr.status >= 200 && xhr.status < 300) {
+        var d = JSON.parse(xhr.responseText || "{}");
+        if (d.access_token) {
+          localStorage.setItem("erp_access_token", d.access_token);
+          return d.access_token;
+        }
+      }
+    } catch (e) {}
+    return token();
+  }
+
   function authHeaders() {
+    ensureDemoToken();
     return { Authorization: "Bearer " + token(), "Content-Type": "application/json" };
   }
 
