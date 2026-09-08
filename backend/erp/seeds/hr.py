@@ -5,6 +5,8 @@ from __future__ import annotations
 from datetime import date, timedelta
 from typing import Any
 
+from erp.payroll_th import build_payroll_run, leave_balances
+
 
 def build_hr(employees: list[dict]) -> dict[str, Any]:
     today = date(2026, 9, 7)
@@ -47,29 +49,32 @@ def build_hr(employees: list[dict]) -> dict[str, Any]:
                 "type": ["annual", "sick", "personal"][i % 3],
                 "days": days + (i % 2),
                 "status": status,
+                "start_date": (today - timedelta(days=20 + i)).isoformat(),
+                "end_date": (today - timedelta(days=20 + i - (days + (i % 2)) + 1)).isoformat(),
             }
         )
 
     pending_leave = [x for x in leave if x["status"] == "pending"]
-    on_leave_today = sum(1 for a in attendance if a["date"] == today.isoformat() and a["status"] == "absent")
+    on_leave_today = sum(
+        1 for a in attendance if a["date"] == today.isoformat() and a["status"] == "absent"
+    )
 
-    payroll = []
-    for period, status in (("2026-08", "paid"), ("2026-09", "draft")):
-        lines = [
-            {"employee": e["full_name"], "employee_id": e["id"], "net": e["salary"]}
-            for e in employees
-        ]
-        total = sum(x["net"] for x in lines)
-        payroll.append(
-            {
-                "id": f"pay-{period}",
-                "period": period,
-                "status": status,
-                "total": total,
-                "currency": "THB",
-                "lines": lines,
-            }
-        )
+    balances = leave_balances(employees, leave, year=today.year)
+
+    payroll = [
+        build_payroll_run(
+            employees,
+            period="2026-08",
+            status="paid",
+            attendance=attendance,
+        ),
+        build_payroll_run(
+            employees,
+            period="2026-09",
+            status="draft",
+            attendance=attendance,
+        ),
+    ]
 
     dashboard = {
         "headcount": len(employees),
@@ -77,12 +82,16 @@ def build_hr(employees: list[dict]) -> dict[str, Any]:
         "pending_leave": len(pending_leave),
         "payroll_status": "ready",
         "absent_without_leave": 1,
+        "payroll_total_net": payroll[0]["total_net"],
+        "payroll_total_sso": payroll[0]["total_sso_employee"],
+        "payroll_total_wht": payroll[0]["total_withholding_tax"],
     }
 
     return {
         "ATTENDANCE": attendance,
         "LEAVE_REQUESTS": leave,
         "LEAVE_PENDING": pending_leave,
+        "LEAVE_BALANCES": balances,
         "PAYROLL_RUNS": payroll,
         "HR_DASHBOARD": dashboard,
     }

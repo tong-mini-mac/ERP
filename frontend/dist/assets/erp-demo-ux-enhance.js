@@ -84,6 +84,12 @@
     "ลงบัญชีอัตโนมัติ": "Auto-post to GL",
     "สร้างใบแจ้งหนี้ + ลงบัญชี": "Create invoice + post JE",
     "รับชำระ + ลงบัญชี": "Receive payment + post JE",
+    "สลิปเงินเดือน": "Payslip",
+    "วันลาคงเหลือ": "Leave balance",
+    "ประกันสังคม": "Social Security (SSO)",
+    "ภาษีหัก ณ ที่จ่าย": "Withholding tax",
+    "หักขาด / สาย": "Absent / late deduction",
+    "รันเงินเดือน (TH)": "Run payroll (TH)",
   };
 
   var EN_TO_TH = {};
@@ -1095,6 +1101,316 @@
     }
   }
 
+  function isHrPage() {
+    return location.pathname === "/hr" || location.pathname === "/hr/";
+  }
+
+  function enhanceHrPayroll(rebuild) {
+    var wrap = document.getElementById("erp-demo-hr-th");
+    if (!isHrPage()) {
+      if (wrap) wrap.remove();
+      return;
+    }
+    var main = document.querySelector("main") || document.querySelector("#root");
+    if (!main) return;
+
+    if (!wrap) {
+      wrap = document.createElement("div");
+      wrap.id = "erp-demo-hr-th";
+      wrap.style.cssText = "margin:1rem 0";
+      var host = main.querySelector(".page") || main;
+      var title = host.querySelector("h1,h2");
+      if (title && title.parentElement) title.insertAdjacentElement("afterend", wrap);
+      else host.insertBefore(wrap, host.firstChild);
+    }
+
+    if (!wrap.querySelector("[data-hr-select]")) {
+      wrap.innerHTML =
+        "<div class='card' style='padding:1rem;margin-bottom:1rem;border:1px solid rgba(15,118,110,0.35);background:rgba(15,118,110,0.06)'>" +
+        "<h3 data-hr-title style='margin-top:0'></h3>" +
+        "<p data-hr-desc style='color:#94a3b8;font-size:0.85rem;margin-top:0'></p>" +
+        "<label data-hr-label style='display:block;margin-bottom:0.35rem'></label>" +
+        "<select data-hr-select style='max-width:28rem;margin-bottom:0.75rem'>" +
+        "<option value='payslip'></option>" +
+        "<option value='balances'></option>" +
+        "<option value='run'></option>" +
+        "</select>" +
+        "<div data-hr-panel></div>" +
+        "</div>";
+      wrap._hrTab = "payslip";
+      var sel = wrap.querySelector("[data-hr-select]");
+      sel.value = "payslip";
+      sel.addEventListener("change", function () {
+        wrap._hrTab = sel.value || "payslip";
+        loadHrPanel();
+      });
+      wrap._loadHrPanel = loadHrPanel;
+      window.__erpHrShow = function (tab) {
+        wrap._hrTab = tab || "payslip";
+        sel.value = wrap._hrTab;
+        loadHrPanel();
+      };
+      applyHrLabels();
+      loadHrPanel();
+    } else {
+      applyHrLabels();
+    }
+
+    function applyHrLabels() {
+      var title = wrap.querySelector("[data-hr-title]");
+      var desc = wrap.querySelector("[data-hr-desc]");
+      var label = wrap.querySelector("[data-hr-label]");
+      var sel = wrap.querySelector("[data-hr-select]");
+      if (title)
+        title.textContent = tPair(
+          "Payroll TH + Leave Balance",
+          "Payroll TH + Leave Balance"
+        );
+      if (desc)
+        desc.textContent = tPair(
+          "gross → SSO 5% → WHT → หักขาด/สาย → net · วันลาคงเหลือต่อคน",
+          "gross → SSO 5% → WHT → absent/late → net · leave balance per employee"
+        );
+      if (label) label.textContent = tPair("มุมมอง HR", "HR view");
+      if (sel) {
+        var map = {
+          payslip: tPair("สลิปเงินเดือน (Payslip)", "Payslip"),
+          balances: tPair("วันลาคงเหลือ", "Leave balance"),
+          run: tPair("รันเงินเดือน (TH)", "Run payroll (TH)"),
+        };
+        Array.prototype.forEach.call(sel.options, function (opt) {
+          if (map[opt.value]) opt.textContent = map[opt.value];
+        });
+      }
+    }
+
+    function loadHrPanel() {
+      var panel = wrap.querySelector("[data-hr-panel]");
+      if (!panel) return;
+      var tab = wrap._hrTab || "payslip";
+      panel.innerHTML =
+        "<p style='color:#94a3b8'>" + tPair("กำลังโหลด…", "Loading…") + "</p>";
+      if (tab === "payslip") renderPayslip(panel);
+      else if (tab === "balances") renderBalances(panel);
+      else renderRun(panel);
+    }
+
+    function renderPayslip(panel) {
+      Promise.all([
+        fetch("/api/hr-platform/payroll", { headers: authHeaders() }).then(function (r) {
+          return r.json();
+        }),
+      ]).then(function (arr) {
+        var runs = (arr[0] && arr[0].items) || [];
+        var runId = (runs[0] && runs[0].id) || "pay-2026-08";
+        return fetch("/api/hr-platform/payroll/" + encodeURIComponent(runId), {
+          headers: authHeaders(),
+        }).then(function (r) {
+          return r.json().then(function (d) {
+            return { ok: r.ok, d: d, runs: runs };
+          });
+        });
+      }).then(function (res) {
+        if (!res.ok) {
+          panel.innerHTML = "<p style='color:#b91c1c'>" + (res.d.detail || "Failed") + "</p>";
+          return;
+        }
+        var lines = res.d.lines || [];
+        var html =
+          "<p style='font-size:0.85rem;color:#94a3b8'>" +
+          tPair("รอบ", "Period") +
+          " <b>" +
+          (res.d.period || "") +
+          "</b> · gross " +
+          fmtMoney(res.d.total_gross) +
+          " → net " +
+          fmtMoney(res.d.total_net) +
+          " · SSO " +
+          fmtMoney(res.d.total_sso_employee) +
+          " · WHT " +
+          fmtMoney(res.d.total_withholding_tax) +
+          " · " +
+          tPair("หักขาด/สาย", "Absent/late") +
+          " " +
+          fmtMoney(res.d.total_attendance_deduction) +
+          "</p>";
+        html +=
+          "<label>" +
+          tPair("เลือกพนักงานดูสลิป", "Employee payslip") +
+          "</label><select data-hr-emp style='max-width:28rem;display:block;margin-bottom:0.75rem'></select>";
+        html += "<div data-hr-slip></div>";
+        panel.innerHTML = html;
+        var sel = panel.querySelector("[data-hr-emp]");
+        lines.slice(0, 50).forEach(function (ln, i) {
+          var o = document.createElement("option");
+          o.value = String(i);
+          o.textContent =
+            (ln.code || "") +
+            " · " +
+            (ln.employee || "") +
+            " · net " +
+            fmtMoney(ln.net);
+          sel.appendChild(o);
+        });
+        function showSlip() {
+          var ln = lines[Number(sel.value) || 0];
+          var box = panel.querySelector("[data-hr-slip]");
+          if (!ln || !box) return;
+          var ded = ln.deductions || [];
+          var attn = ln.attendance || {};
+          box.innerHTML =
+            "<div style='padding:0.75rem;border:1px dashed #0f766e;border-radius:8px'>" +
+            "<h4 style='margin:0 0 0.5rem'>" +
+            tPair("สลิปเงินเดือน", "Payslip") +
+            " — " +
+            (ln.employee || "") +
+            "</h4>" +
+            "<table style='width:100%;border-collapse:collapse;font-size:0.9rem'>" +
+            "<tr><td style='padding:0.25rem'>" +
+            tPair("เงินได้ (Gross)", "Gross") +
+            "</td><td style='text-align:right;padding:0.25rem'><b>" +
+            fmtMoney(ln.gross) +
+            "</b></td></tr>" +
+            ded
+              .map(function (d) {
+                return (
+                  "<tr><td style='padding:0.25rem;color:#94a3b8'>— " +
+                  (d.name || d.code) +
+                  "</td><td style='text-align:right;padding:0.25rem;color:#f87171'>-" +
+                  fmtMoney(d.amount) +
+                  "</td></tr>"
+                );
+              })
+              .join("") +
+            "<tr><td style='padding:0.35rem;border-top:1px solid #334155'><b>" +
+            tPair("รับสุทธิ / Net", "Net pay") +
+            "</b></td><td style='text-align:right;padding:0.35rem;border-top:1px solid #334155'><b>" +
+            fmtMoney(ln.net) +
+            "</b></td></tr></table>" +
+            "<p style='font-size:0.8rem;color:#94a3b8;margin:0.5rem 0 0'>SSO ER " +
+            fmtMoney(ln.sso_employer) +
+            " · absent " +
+            (attn.absent_days || 0) +
+            " · late " +
+            (attn.late_days || 0) +
+            "</p></div>";
+        }
+        sel.addEventListener("change", showSlip);
+        showSlip();
+      }).catch(function (err) {
+        panel.innerHTML = "<p style='color:#b91c1c'>" + String(err) + "</p>";
+      });
+    }
+
+    function renderBalances(panel) {
+      fetch("/api/hr-platform/leave/balances", { headers: authHeaders() })
+        .then(function (r) {
+          return r.json().then(function (d) {
+            return { ok: r.ok, d: d };
+          });
+        })
+        .then(function (res) {
+          if (!res.ok) {
+            panel.innerHTML = "<p style='color:#b91c1c'>" + (res.d.detail || "Failed") + "</p>";
+            return;
+          }
+          var items = res.d.items || [];
+          var html =
+            "<p style='font-size:0.85rem;color:#94a3b8'>" +
+            tPair("สิทธิ์ปี", "Year entitlements") +
+            " " +
+            (res.d.year || "") +
+            " — annual/sick/personal</p>";
+          html +=
+            "<div style='overflow:auto'><table style='width:100%;border-collapse:collapse;font-size:0.85rem'>" +
+            "<thead><tr>" +
+            "<th style='text-align:left;padding:0.3rem'>Emp</th>" +
+            "<th style='text-align:right;padding:0.3rem'>" +
+            tPair("พักร้อน", "Annual") +
+            "</th>" +
+            "<th style='text-align:right;padding:0.3rem'>" +
+            tPair("ป่วย", "Sick") +
+            "</th>" +
+            "<th style='text-align:right;padding:0.3rem'>" +
+            tPair("กิจ", "Personal") +
+            "</th>" +
+            "</tr></thead><tbody>";
+          items.slice(0, 40).forEach(function (row) {
+            var by = {};
+            (row.balances || []).forEach(function (b) {
+              by[b.type] = b;
+            });
+            function cell(t) {
+              var b = by[t] || {};
+              return (
+                (b.remaining != null ? b.remaining : "-") +
+                "<span style='color:#64748b'>/" +
+                (b.entitled != null ? b.entitled : "-") +
+                "</span>"
+              );
+            }
+            html +=
+              "<tr><td style='padding:0.3rem;border-bottom:1px solid #1e293b'>" +
+              (row.code || "") +
+              " " +
+              (row.employee || "") +
+              "</td><td style='padding:0.3rem;border-bottom:1px solid #1e293b;text-align:right'>" +
+              cell("annual") +
+              "</td><td style='padding:0.3rem;border-bottom:1px solid #1e293b;text-align:right'>" +
+              cell("sick") +
+              "</td><td style='padding:0.3rem;border-bottom:1px solid #1e293b;text-align:right'>" +
+              cell("personal") +
+              "</td></tr>";
+          });
+          html += "</tbody></table></div>";
+          panel.innerHTML = html;
+        })
+        .catch(function (err) {
+          panel.innerHTML = "<p style='color:#b91c1c'>" + String(err) + "</p>";
+        });
+    }
+
+    function renderRun(panel) {
+      panel.innerHTML =
+        "<p style='font-size:0.85rem;color:#94a3b8'>" +
+        tPair(
+          "คำนวณใหม่: gross → SSO → WHT → หักขาด/สาย → net",
+          "Recalculate: gross → SSO → WHT → absent/late → net"
+        ) +
+        "</p>" +
+        "<label>Period</label><input data-hr-period value='2026-09' style='max-width:12rem;display:block' />" +
+        "<div style='margin-top:0.75rem'><button type='button' class='btn btn-primary' data-hr-run>" +
+        tPair("รันเงินเดือน (TH)", "Run payroll (TH)") +
+        "</button></div>" +
+        "<pre data-hr-out style='white-space:pre-wrap;font-family:inherit;margin-top:1rem;font-size:0.85rem;color:#cbd5e1'></pre>";
+      panel.querySelector("[data-hr-run]").addEventListener("click", function () {
+        var out = panel.querySelector("[data-hr-out]");
+        var period = panel.querySelector("[data-hr-period]").value || "2026-09";
+        out.textContent = tPair("กำลังคำนวณ…", "Calculating…");
+        fetch("/api/hr-platform/payroll/run", {
+          method: "POST",
+          headers: authHeaders(),
+          body: JSON.stringify({ period: period }),
+        })
+          .then(function (r) {
+            return r.json().then(function (d) {
+              return { ok: r.ok, d: d };
+            });
+          })
+          .then(function (res) {
+            if (!res.ok) {
+              out.textContent = res.d.detail || "Failed";
+              return;
+            }
+            out.textContent = JSON.stringify(res.d, null, 2);
+          })
+          .catch(function (err) {
+            out.textContent = String(err);
+          });
+      });
+    }
+  }
+
   var lastAppliedLang = null;
   var debounceTimer = null;
 
@@ -1125,11 +1441,13 @@
         enhanceAddIngredientToDb();
         enhancePresentCampaign(true);
         enhanceFinanceJournal(true);
+        enhanceHrPayroll(true);
       } else {
         enhanceDocumentsManual(false);
         enhanceAddIngredientToDb();
         enhancePresentCampaign(false);
         enhanceFinanceJournal(false);
+        enhanceHrPayroll(false);
       }
     } finally {
       applyingLang = false;

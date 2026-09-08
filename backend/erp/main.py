@@ -35,6 +35,7 @@ from pydantic import BaseModel, EmailStr, Field
 from erp import demo_seed as seed
 from erp import accounting_docs_demo as ac_docs
 from erp import gl_posting
+from erp import payroll_th
 
 JWT_SECRET = os.getenv("JWT_SECRET", "erp-demo-dev-secret-change-me-32chars")
 JWT_ALG = "HS256"
@@ -441,6 +442,19 @@ def hr_leave(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
     return seed.LEAVE_REQUESTS
 
 
+@app.get("/api/hr-platform/leave/balances")
+def hr_leave_balances(
+    employee_id: str | None = None,
+    _: dict[str, Any] = Depends(current_user),
+) -> dict[str, Any]:
+    items = list(getattr(seed, "LEAVE_BALANCES", []))
+    if not items:
+        items = payroll_th.leave_balances(seed.EMPLOYEES, seed.LEAVE_REQUESTS)
+    if employee_id:
+        items = [x for x in items if x.get("employee_id") == employee_id]
+    return {"items": items, "year": 2026, "entitlements": payroll_th.LEAVE_ENTITLEMENTS}
+
+
 @app.get("/api/hr-platform/leave/pending")
 def hr_leave_pending(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
     items = []
@@ -478,7 +492,13 @@ def hr_payroll(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
                 "status": row.get("status"),
                 "total": row.get("total"),
                 "total_net": row.get("total_net", row.get("total")),
+                "total_gross": row.get("total_gross"),
+                "total_sso_employee": row.get("total_sso_employee"),
+                "total_withholding_tax": row.get("total_withholding_tax"),
+                "total_attendance_deduction": row.get("total_attendance_deduction"),
                 "currency": row.get("currency") or "THB",
+                "country": row.get("country") or "TH",
+                "calc_version": row.get("calc_version"),
             }
         )
     return {"items": items}
@@ -492,15 +512,94 @@ def hr_payroll_one(payroll_id: str, _: dict[str, Any] = Depends(current_user)) -
     raise HTTPException(status_code=404, detail="payroll_not_found")
 
 
+@app.get("/api/hr-platform/payroll/{payroll_id}/payslip/{employee_id}")
+def hr_payslip(
+    payroll_id: str,
+    employee_id: str,
+    _: dict[str, Any] = Depends(current_user),
+) -> dict[str, Any]:
+    run = next((r for r in seed.PAYROLL_RUNS if r.get("id") == payroll_id), None)
+    if not run:
+        raise HTTPException(status_code=404, detail="payroll_not_found")
+    for line in run.get("lines") or []:
+        if line.get("employee_id") == employee_id:
+            return {
+                "payroll_id": payroll_id,
+                "payslip": line,
+                "company": getattr(seed, "COMPANY", {}),
+            }
+    raise HTTPException(status_code=404, detail="payslip_not_found")
+
 
 @app.post("/api/hr-platform/payroll/run")
-def hr_payroll_run(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
-    return {"ok": True, "id": "pay-2026-09", "status": "calculated"}
+async def hr_payroll_run(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    """Recalculate a period with TH SSO + WHT + attendance deductions."""
+    body: dict[str, Any] = {}
+    try:
+        raw = await request.json()
+        if isinstance(raw, dict):
+            body = raw
+    except Exception:
+        body = {}
+    period = str(body.get("period") or "2026-09")
+    run = payroll_th.build_payroll_run(
+        list(seed.EMPLOYEES),
+        period=period,
+        status="calculated",
+        attendance=list(getattr(seed, "ATTENDANCE", [])),
+        run_id=f"pay-{period}",
+    )
+    # Upsert into in-memory payroll runs
+    replaced = False
+    for i, existing in enumerate(seed.PAYROLL_RUNS):
+        if existing.get("id") == run["id"] or existing.get("period") == period:
+            seed.PAYROLL_RUNS[i] = run
+            replaced = True
+            break
+    if not replaced:
+        seed.PAYROLL_RUNS.append(run)
+    # Refresh leave balances while we're here
+    seed.LEAVE_BALANCES = payroll_th.leave_balances(
+        seed.EMPLOYEES, seed.LEAVE_REQUESTS
+    )
+    return {
+        "ok": True,
+        "id": run["id"],
+        "status": run["status"],
+        "period": period,
+        "total_gross": run["total_gross"],
+        "total_net": run["total_net"],
+        "total_sso_employee": run["total_sso_employee"],
+        "total_withholding_tax": run["total_withholding_tax"],
+        "total_attendance_deduction": run["total_attendance_deduction"],
+        "employee_count": run["employee_count"],
+        "calc_version": run["calc_version"],
+    }
 
 
 @app.post("/api/hr-platform/payroll/{payroll_id}/submit-approval")
 def hr_payroll_submit(payroll_id: str, _: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    for row in seed.PAYROLL_RUNS:
+        if row.get("id") == payroll_id:
+            row["status"] = "pending_approval"
+            return {"ok": True, "id": payroll_id, "status": "pending_approval"}
     return {"ok": True, "id": payroll_id, "status": "pending_approval"}
+
+
+@app.get("/api/hr-platform/attendance")
+def hr_attendance_list(
+    period: str | None = None,
+    employee_id: str | None = None,
+    _: dict[str, Any] = Depends(current_user),
+) -> dict[str, Any]:
+    rows = list(getattr(seed, "ATTENDANCE", []))
+    if period:
+        rows = [r for r in rows if str(r.get("date") or "").startswith(period)]
+    if employee_id:
+        rows = [r for r in rows if r.get("employee_id") == employee_id]
+    return {"items": rows, "count": len(rows)}
 
 
 @app.post("/api/hr-platform/attendance/{employee_id}")
