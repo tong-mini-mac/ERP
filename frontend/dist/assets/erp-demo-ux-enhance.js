@@ -727,22 +727,24 @@
       defs.forEach(function (d, i) {
         var b = document.createElement("button");
         b.type = "button";
-        b.className = "tab" + (i === 0 ? " tab-active" : "");
+        b.className = "btn" + (i === 0 ? " btn-primary" : "");
         b.setAttribute("data-fin-tab", d.id);
         b.textContent = tPair(d.th, d.en);
+        b.style.cssText = "cursor:pointer;margin:0 0.25rem 0.25rem 0";
+        b.addEventListener("click", function (ev) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          wrap._finTab = d.id;
+          Array.prototype.forEach.call(tabs.querySelectorAll("[data-fin-tab]"), function (t) {
+            var active = t.getAttribute("data-fin-tab") === d.id;
+            t.className = active ? "btn btn-primary" : "btn";
+          });
+          loadFinPanel();
+        });
         tabs.appendChild(b);
       });
 
       wrap._finTab = "journal";
-      tabs.addEventListener("click", function (ev) {
-        var btn = ev.target.closest("[data-fin-tab]");
-        if (!btn) return;
-        wrap._finTab = btn.getAttribute("data-fin-tab");
-        Array.prototype.forEach.call(tabs.querySelectorAll("[data-fin-tab]"), function (t) {
-          t.classList.toggle("tab-active", t === btn);
-        });
-        loadFinPanel();
-      });
       wrap._loadFinPanel = loadFinPanel;
       loadFinPanel();
     } else {
@@ -1027,7 +1029,8 @@
               JSON.stringify(je.lines || [], null, 2);
             wrap._finTab = "journal";
             wrap.querySelectorAll("[data-fin-tab]").forEach(function (t) {
-              t.classList.toggle("tab-active", t.getAttribute("data-fin-tab") === "journal");
+              var active = t.getAttribute("data-fin-tab") === "journal";
+              t.className = active ? "btn btn-primary" : "btn";
             });
             if (typeof wrap._loadFinPanel === "function") wrap._loadFinPanel();
           })
