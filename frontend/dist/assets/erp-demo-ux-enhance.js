@@ -726,49 +726,69 @@
       else host.insertBefore(wrap, host.firstChild);
     }
 
+    // Migrate old <select> UI → buttons (select change was unreliable / felt frozen).
+    var existingCtl = wrap.querySelector("[data-fin-select]");
+    if (existingCtl && existingCtl.tagName === "SELECT") {
+      wrap.innerHTML = "";
+    }
+
     if (!wrap.querySelector("[data-fin-select]")) {
       wrap.innerHTML =
         "<div class='card' style='padding:1rem;margin-bottom:1rem;border:1px solid rgba(15,118,110,0.35);background:rgba(15,118,110,0.06)'>" +
         "<h3 data-fin-title style='margin-top:0'></h3>" +
         "<p data-fin-desc style='color:#94a3b8;font-size:0.85rem;margin-top:0'></p>" +
         "<label data-fin-label style='display:block;margin-bottom:0.35rem'></label>" +
-        "<select data-fin-select style='max-width:28rem;margin-bottom:0.75rem'>" +
-        "<option value='journal'></option>" +
-        "<option value='gl'></option>" +
-        "<option value='tb'></option>" +
-        "<option value='autopost'></option>" +
-        "</select>" +
+        "<div data-fin-select style='display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem'>" +
+        "<button type='button' class='btn btn-primary' data-fin-tab='journal'></button>" +
+        "<button type='button' class='btn' data-fin-tab='gl'></button>" +
+        "<button type='button' class='btn' data-fin-tab='tb'></button>" +
+        "<button type='button' class='btn' data-fin-tab='autopost'></button>" +
+        "</div>" +
         "<div data-fin-panel></div>" +
         "</div>";
+      wrap._finTab = wrap._finTab || "journal";
+    }
 
-      wrap._finTab = "journal";
-      var sel = wrap.querySelector("[data-fin-select]");
-      sel.value = "journal";
-      sel.addEventListener("change", function () {
-        wrap._finTab = sel.value || "journal";
-        loadFinPanel();
+    wrap._loadFinPanel = loadFinPanel;
+    function syncFinTabButtons() {
+      var w = document.getElementById("erp-demo-finance-gl");
+      if (!w) return;
+      var tab = w._finTab || "journal";
+      w.querySelectorAll("[data-fin-tab]").forEach(function (b) {
+        var on = b.getAttribute("data-fin-tab") === tab;
+        b.className = on ? "btn btn-primary" : "btn";
       });
-
-      wrap._loadFinPanel = loadFinPanel;
-      window.__erpFinShow = function (tab) {
-        wrap._finTab = tab || "journal";
-        sel.value = wrap._finTab;
-        loadFinPanel();
+    }
+    wrap.querySelectorAll("[data-fin-tab]").forEach(function (btn) {
+      btn.onclick = function (ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        var w = document.getElementById("erp-demo-finance-gl");
+        if (!w) return;
+        w._finTab = btn.getAttribute("data-fin-tab") || "journal";
+        syncFinTabButtons();
+        if (typeof w._loadFinPanel === "function") w._loadFinPanel();
       };
-      applyFinLabels();
+    });
+    window.__erpFinShow = function (tab) {
+      var w = document.getElementById("erp-demo-finance-gl");
+      if (!w) return;
+      w._finTab = tab || "journal";
+      syncFinTabButtons();
+      if (typeof w._loadFinPanel === "function") w._loadFinPanel();
+    };
+    applyFinLabels();
+    syncFinTabButtons();
+    if (rebuild || !wrap.querySelector("[data-fin-panel]").getAttribute("data-fin-ready")) {
       loadFinPanel();
-    } else {
-      applyFinLabels();
-      if (rebuild && typeof wrap._loadFinPanel === "function") {
-        // keep current tab; do not wipe handlers
-      }
+      var p = wrap.querySelector("[data-fin-panel]");
+      if (p) p.setAttribute("data-fin-ready", "1");
     }
 
     function applyFinLabels() {
       var title = wrap.querySelector("[data-fin-title]");
       var desc = wrap.querySelector("[data-fin-desc]");
       var label = wrap.querySelector("[data-fin-label]");
-      var sel = wrap.querySelector("[data-fin-select]");
       if (title)
         title.textContent = tPair(
           "ตารางบันทึกบัญชี (Journal / GL)",
@@ -776,21 +796,20 @@
         );
       if (desc)
         desc.textContent = tPair(
-          "Invoice/Payment จะ Post เข้าสมุดรายวันอัตโนมัติ (Dr/Cr) — เลือกมุมมองด้านล่าง",
-          "Invoices and payments auto-post to the journal (Dr/Cr). Pick a view below."
+          "Invoice/Payment จะ Post เข้าสมุดรายวันอัตโนมัติ (Dr/Cr) — กดปุ่มมุมมองด้านล่าง",
+          "Invoices and payments auto-post to the journal (Dr/Cr). Tap a view below."
         );
       if (label) label.textContent = tPair("มุมมองบัญชี", "Accounting view");
-      if (sel) {
-        var map = {
-          journal: tPair("สมุดรายวัน (Journal Entry)", "Journal Entry"),
-          gl: tPair("บัญชีแยกประเภท (General Ledger)", "General Ledger"),
-          tb: tPair("งบทดลอง (Trial Balance)", "Trial Balance"),
-          autopost: tPair("ลงบัญชีอัตโนมัติ (Auto-post)", "Auto-post demo"),
-        };
-        Array.prototype.forEach.call(sel.options, function (opt) {
-          if (map[opt.value]) opt.textContent = map[opt.value];
-        });
-      }
+      var map = {
+        journal: tPair("สมุดรายวัน", "Journal Entry"),
+        gl: tPair("บัญชีแยกประเภท", "General Ledger"),
+        tb: tPair("งบทดลอง", "Trial Balance"),
+        autopost: tPair("ลงบัญชีอัตโนมัติ", "Auto-post"),
+      };
+      wrap.querySelectorAll("[data-fin-tab]").forEach(function (b) {
+        var id = b.getAttribute("data-fin-tab");
+        if (map[id]) b.textContent = map[id];
+      });
     }
 
     function loadFinPanel() {
