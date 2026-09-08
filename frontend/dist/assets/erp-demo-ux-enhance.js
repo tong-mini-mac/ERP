@@ -1138,22 +1138,33 @@
         "<div data-hr-panel></div>" +
         "</div>";
       wrap._hrTab = "payslip";
-      var sel = wrap.querySelector("[data-hr-select]");
-      sel.value = "payslip";
-      sel.addEventListener("change", function () {
-        wrap._hrTab = sel.value || "payslip";
-        loadHrPanel();
-      });
-      wrap._loadHrPanel = loadHrPanel;
-      window.__erpHrShow = function (tab) {
-        wrap._hrTab = tab || "payslip";
-        sel.value = wrap._hrTab;
-        loadHrPanel();
+      wrap.querySelector("[data-hr-select]").value = "payslip";
+    }
+
+    // Always (re)bind so MutationObserver / SPA remounts cannot leave stale handlers.
+    wrap._loadHrPanel = loadHrPanel;
+    var sel = wrap.querySelector("[data-hr-select]");
+    if (sel) {
+      sel.onchange = function () {
+        var w = document.getElementById("erp-demo-hr-th");
+        if (!w) return;
+        w._hrTab = sel.value || "payslip";
+        if (typeof w._loadHrPanel === "function") w._loadHrPanel();
       };
-      applyHrLabels();
+    }
+    window.__erpHrShow = function (tab) {
+      var w = document.getElementById("erp-demo-hr-th");
+      if (!w) return;
+      w._hrTab = tab || "payslip";
+      var s = w.querySelector("[data-hr-select]");
+      if (s) s.value = w._hrTab;
+      if (typeof w._loadHrPanel === "function") w._loadHrPanel();
+    };
+    applyHrLabels();
+    if (rebuild || !wrap.querySelector("[data-hr-panel]").getAttribute("data-hr-ready")) {
       loadHrPanel();
-    } else {
-      applyHrLabels();
+      var p = wrap.querySelector("[data-hr-panel]");
+      if (p) p.setAttribute("data-hr-ready", "1");
     }
 
     function applyHrLabels() {
