@@ -210,9 +210,24 @@
     upgrade("แผนก", ["Finance", "HR", "Warehouse", "Purchasing", "Marketing", "Operations"]);
   }
 
+  function isDocumentsPage() {
+    var path = (location.pathname || "").replace(/\/+$/, "") || "/";
+    // Exact OCR Documents page only — NOT /accounting-docs
+    return path === "/documents";
+  }
+
+  function isRestoMenuPage() {
+    var path = (location.pathname || "").replace(/\/+$/, "") || "/";
+    return path === "/resto-menu";
+  }
+
   function enhanceDocumentsManual() {
-    if (!/\/documents/.test(location.pathname)) return;
-    if (document.getElementById("erp-demo-manual-doc")) return;
+    var existing = document.getElementById("erp-demo-manual-doc");
+    if (!isDocumentsPage()) {
+      if (existing) existing.remove();
+      return;
+    }
+    if (existing) return;
     var main = document.querySelector("main") || document.querySelector("#root");
     if (!main) return;
     var card = document.createElement("div");
@@ -220,8 +235,16 @@
     card.className = "card";
     card.style.cssText = "margin:1rem 0;padding:1rem;border:1px dashed #64748b;border-radius:8px";
     card.innerHTML =
-      "<h3 style='margin-top:0'>Manual entry (scanner / OCR failover)</h3>" +
-      "<p style='color:#94a3b8;font-size:0.85rem'>Keep using Scan &amp; extract when hardware works. If the scanner or OCR is broken, enter invoice / TOR / contract details here so work continues.</p>" +
+      "<h3 style='margin-top:0'>Documents — scan upload + manual failover</h3>" +
+      "<p style='color:#94a3b8;font-size:0.85rem;margin-top:0'>Primary: upload a scan file. Failover: if the scanner/OCR is broken, fill the manual form below.</p>" +
+      "<div style='padding:0.75rem;margin-bottom:1rem;border:1px solid #334155;border-radius:8px;background:rgba(15,23,42,0.45)'>" +
+      "<div style='font-weight:600;margin-bottom:0.35rem'>1) Upload file scan</div>" +
+      "<label>Scan file (PNG, JPEG, WebP, PDF)</label>" +
+      "<input type='file' accept='image/png,image/jpeg,image/webp,application/pdf' data-scan-file />" +
+      "<div style='margin-top:0.5rem'><button type='button' class='btn btn-primary' data-scan-upload>Upload &amp; extract</button>" +
+      "<span data-scan-status style='margin-left:0.75rem;font-size:0.85rem;color:#94a3b8'></span></div>" +
+      "</div>" +
+      "<div style='font-weight:600;margin-bottom:0.35rem'>2) Manual entry (scanner / OCR failover)</div>" +
       "<label>Document type</label>" +
       "<select data-f='doc_type'><option value='invoice'>Invoice</option><option value='tor'>TOR</option><option value='contract'>Contract</option></select>" +
       "<label>Vendor</label><input data-f='vendor' required placeholder='Vendor name' />" +
@@ -231,8 +254,55 @@
       "<label>Notes</label><textarea data-f='notes' rows='2' placeholder='Optional notes'></textarea>" +
       "<div style='margin-top:0.75rem'><button type='button' class='btn btn-primary' data-manual-save>Save manual entry</button>" +
       "<span data-manual-status style='margin-left:0.75rem;font-size:0.85rem;color:#94a3b8'></span></div>";
-    var anchor = main.querySelector("form.card") || main.querySelector(".card") || main;
-    anchor.parentElement.insertBefore(card, anchor.nextSibling);
+
+    // Prefer placing under Document Intelligence header; avoid leaking into other modules.
+    var host = main.querySelector(".page") || main;
+    var title = null;
+    host.querySelectorAll("h1,h2").forEach(function (h) {
+      var t = (h.textContent || "").trim();
+      if (!title && (t.indexOf("Document") >= 0 || t.indexOf("เอกสาร") >= 0)) title = h;
+    });
+    if (title && title.parentElement) title.insertAdjacentElement("afterend", card);
+    else host.insertBefore(card, host.firstChild);
+
+    card.querySelector("[data-scan-upload]").addEventListener("click", function () {
+      var input = card.querySelector("[data-scan-file]");
+      var st = card.querySelector("[data-scan-status]");
+      var file = input && input.files && input.files[0];
+      if (!file) {
+        st.textContent = "Choose a scan file first";
+        st.style.color = "#b91c1c";
+        return;
+      }
+      var fd = new FormData();
+      fd.append("file", file);
+      st.textContent = "Uploading scan…";
+      st.style.color = "#94a3b8";
+      fetch("/api/documents/scan", {
+        method: "POST",
+        headers: { Authorization: "Bearer " + token() },
+        body: fd,
+      })
+        .then(function (r) {
+          return r.json().then(function (d) {
+            return { ok: r.ok, d: d };
+          });
+        })
+        .then(function (res) {
+          if (!res.ok) {
+            st.textContent = res.d.detail || "Upload failed";
+            st.style.color = "#b91c1c";
+            return;
+          }
+          st.textContent = "Scan saved " + (res.d.id || "") + " (" + (res.d.status || "parsed") + ")";
+          st.style.color = "#0f766e";
+        })
+        .catch(function (err) {
+          st.textContent = String(err);
+          st.style.color = "#b91c1c";
+        });
+    });
+
     card.querySelector("[data-manual-save]").addEventListener("click", function () {
       var body = {};
       card.querySelectorAll("[data-f]").forEach(function (el) {
@@ -257,6 +327,88 @@
             return;
           }
           st.textContent = "Saved " + (res.d.id || "") + " — refresh history if needed";
+          st.style.color = "#0f766e";
+        })
+        .catch(function (err) {
+          st.textContent = String(err);
+          st.style.color = "#b91c1c";
+        });
+    });
+  }
+
+  function enhanceAddIngredientToDb() {
+    var existing = document.getElementById("erp-demo-add-ingredient");
+    if (!isRestoMenuPage()) {
+      if (existing) existing.remove();
+      return;
+    }
+    if (existing) return;
+    var main = document.querySelector("main") || document.querySelector("#root");
+    if (!main) return;
+    var card = document.createElement("div");
+    card.id = "erp-demo-add-ingredient";
+    card.className = "card";
+    card.style.cssText =
+      "margin:1rem 0;padding:1rem;border:1px dashed #0f766e;border-radius:8px;background:rgba(15,118,110,0.08)";
+    card.innerHTML =
+      "<h3 style='margin-top:0'>Add ingredient to database</h3>" +
+      "<p style='color:#94a3b8;font-size:0.85rem;margin-top:0'>Not the same as “+ add line” in a recipe. Use this when the ingredient is missing from the dropdown / database.</p>" +
+      "<label>Ingredient name</label><input data-ing='name' required placeholder='e.g. Holy basil' />" +
+      "<label>Unit</label><select data-ing='unit'><option>g</option><option>kg</option><option>ml</option><option>l</option><option>pcs</option></select>" +
+      "<label>Yield % (usable after prep)</label><input data-ing='yield_pct' type='number' min='1' max='100' step='0.1' value='100' />" +
+      "<label>Purchase price / unit (THB)</label><input data-ing='purchase_price' type='number' min='0' step='0.01' value='0' />" +
+      "<label>Notes</label><input data-ing='notes' placeholder='Optional' />" +
+      "<div style='margin-top:0.75rem'><button type='button' class='btn btn-primary' data-ing-save>+ Add ingredient to database</button>" +
+      "<span data-ing-status style='margin-left:0.75rem;font-size:0.85rem;color:#94a3b8'></span></div>";
+
+    var anchor =
+      Array.prototype.find.call(document.querySelectorAll("h3,h2,label,button"), function (el) {
+        var t = (el.textContent || "").trim();
+        return (
+          t.indexOf("Ingredients") >= 0 ||
+          t.indexOf("วัตถุดิบ") >= 0 ||
+          t.indexOf("เพิ่มบรรทัด") >= 0 ||
+          t.indexOf("เมนู") >= 0
+        );
+      }) || main.querySelector(".card") || main;
+    var host = anchor.closest(".card") || anchor.parentElement || main;
+    host.appendChild(card);
+
+    card.querySelector("[data-ing-save]").addEventListener("click", function () {
+      var body = {};
+      card.querySelectorAll("[data-ing]").forEach(function (el) {
+        body[el.getAttribute("data-ing")] = el.value;
+      });
+      var st = card.querySelector("[data-ing-status]");
+      if (!body.name) {
+        st.textContent = "Name required";
+        st.style.color = "#b91c1c";
+        return;
+      }
+      st.textContent = "Saving ingredient…";
+      st.style.color = "#94a3b8";
+      fetch("/api/resto/ingredients", {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify(body),
+      })
+        .then(function (r) {
+          return r.json().then(function (d) {
+            return { ok: r.ok, d: d };
+          });
+        })
+        .then(function (res) {
+          if (!res.ok) {
+            st.textContent = res.d.detail || "Save failed";
+            st.style.color = "#b91c1c";
+            return;
+          }
+          st.textContent =
+            "Added to database: " +
+            (res.d.name || body.name) +
+            " (" +
+            (res.d.id || "") +
+            ") — reload / reopen Ingredients to see it in dropdowns";
           st.style.color = "#0f766e";
         })
         .catch(function (err) {
@@ -355,6 +507,7 @@
     enhanceStockManualHint();
     enhanceCfoDropdowns();
     enhanceDocumentsManual();
+    enhanceAddIngredientToDb();
     enhancePresentCampaign();
   }
 
