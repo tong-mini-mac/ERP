@@ -84,6 +84,9 @@
     "ลงบัญชีอัตโนมัติ": "Auto-post to GL",
     "สร้างใบแจ้งหนี้ + ลงบัญชี": "Create invoice + post JE",
     "รับชำระ + ลงบัญชี": "Receive payment + post JE",
+    "บันทึก JE": "Enter JE",
+    "บันทึกสมุดรายวัน (Manual Journal)": "Enter journal entry",
+    "บันทึก Journal Entry": "Save journal entry",
     "สลิปเงินเดือน": "Payslip",
     "วันลาคงเหลือ": "Leave balance",
     "ประกันสังคม": "Social Security (SSO)",
@@ -731,6 +734,20 @@
     if (existingCtl && existingCtl.tagName === "SELECT") {
       wrap.innerHTML = "";
     }
+    // Ensure Manual JE button exists on older 4-button markup.
+    if (
+      existingCtl &&
+      existingCtl.tagName !== "SELECT" &&
+      !wrap.querySelector("[data-fin-tab='manual']")
+    ) {
+      var bManual = document.createElement("button");
+      bManual.type = "button";
+      bManual.className = "btn";
+      bManual.setAttribute("data-fin-tab", "manual");
+      existingCtl.appendChild(bManual);
+      var ready = wrap.querySelector("[data-fin-panel]");
+      if (ready) ready.removeAttribute("data-fin-ready");
+    }
 
     if (!wrap.querySelector("[data-fin-select]")) {
       wrap.innerHTML =
@@ -743,6 +760,7 @@
         "<button type='button' class='btn' data-fin-tab='gl'></button>" +
         "<button type='button' class='btn' data-fin-tab='tb'></button>" +
         "<button type='button' class='btn' data-fin-tab='autopost'></button>" +
+        "<button type='button' class='btn' data-fin-tab='manual'></button>" +
         "</div>" +
         "<div data-fin-panel></div>" +
         "</div>";
@@ -805,6 +823,7 @@
         gl: tPair("บัญชีแยกประเภท", "General Ledger"),
         tb: tPair("งบทดลอง", "Trial Balance"),
         autopost: tPair("ลงบัญชีอัตโนมัติ", "Auto-post"),
+        manual: tPair("บันทึก JE", "Enter JE"),
       };
       wrap.querySelectorAll("[data-fin-tab]").forEach(function (b) {
         var id = b.getAttribute("data-fin-tab");
@@ -821,6 +840,10 @@
 
       if (tab === "autopost") {
         renderAutopost(panel);
+        return;
+      }
+      if (tab === "manual") {
+        renderManualJournal(panel);
         return;
       }
 
@@ -982,6 +1005,144 @@
         fmtMoney(data.total_credit) +
         "</td></tr></tbody></table></div>";
       panel.innerHTML = html;
+    }
+
+    function renderManualJournal(panel) {
+      panel.innerHTML =
+        "<div style='padding:0.75rem;border:1px dashed #0f766e;border-radius:8px'>" +
+        "<h4 style='margin:0 0 0.5rem'>" +
+        tPair("บันทึกสมุดรายวัน (Manual Journal)", "Enter journal entry") +
+        "</h4>" +
+        "<p style='font-size:0.8rem;color:#94a3b8;margin:0 0 0.75rem'>" +
+        tPair("กรอก Dr/Cr ให้ยอดเท่ากัน อย่างน้อย 2 บรรทัด", "Enter balanced Dr/Cr — at least 2 lines") +
+        "</p>" +
+        "<label>" +
+        tPair("วันที่", "Date") +
+        "</label><input data-mj-date type='date' />" +
+        "<label>Memo</label><input data-mj-memo placeholder='e.g. Office supplies' value='Manual journal entry' />" +
+        "<label>Ref</label><input data-mj-ref placeholder='MJ-2026-xxx' />" +
+        "<div style='margin-top:0.75rem;overflow:auto'>" +
+        "<table style='width:100%;border-collapse:collapse;font-size:0.9rem'>" +
+        "<thead><tr>" +
+        "<th style='text-align:left;padding:0.3rem'>Account</th>" +
+        "<th style='text-align:right;padding:0.3rem'>Debit</th>" +
+        "<th style='text-align:right;padding:0.3rem'>Credit</th>" +
+        "</tr></thead><tbody data-mj-lines></tbody></table></div>" +
+        "<div style='margin-top:0.5rem;display:flex;gap:0.5rem;flex-wrap:wrap'>" +
+        "<button type='button' class='btn' data-mj-add>+ " +
+        tPair("เพิ่มบรรทัด", "Add line") +
+        "</button>" +
+        "<button type='button' class='btn btn-primary' data-mj-save>" +
+        tPair("บันทึก Journal Entry", "Save journal entry") +
+        "</button></div>" +
+        "<pre data-mj-out style='white-space:pre-wrap;font-family:inherit;margin-top:1rem;font-size:0.85rem;color:#cbd5e1'></pre>" +
+        "</div>";
+
+      var dateEl = panel.querySelector("[data-mj-date]");
+      try {
+        dateEl.value = new Date().toISOString().slice(0, 10);
+      } catch (e) {}
+      var tbody = panel.querySelector("[data-mj-lines]");
+      var acctOpts = "";
+
+      function addLine(account, debit, credit) {
+        var tr = document.createElement("tr");
+        tr.innerHTML =
+          "<td style='padding:0.25rem'><select data-mj-acct style='min-width:10rem'></select></td>" +
+          "<td style='padding:0.25rem'><input data-mj-dr type='number' min='0' step='0.01' value='" +
+          (debit || "") +
+          "' style='width:7rem;text-align:right' /></td>" +
+          "<td style='padding:0.25rem'><input data-mj-cr type='number' min='0' step='0.01' value='" +
+          (credit || "") +
+          "' style='width:7rem;text-align:right' /></td>";
+        tbody.appendChild(tr);
+        var sel = tr.querySelector("[data-mj-acct]");
+        sel.innerHTML = acctOpts || "<option value='1100'>1100 Cash</option>";
+        if (account) sel.value = account;
+      }
+
+      fetch("/api/finance/accounts", { headers: authHeaders() })
+        .then(function (r) {
+          return r.json();
+        })
+        .then(function (d) {
+          var items = (d && d.items) || [];
+          acctOpts = items
+            .map(function (a) {
+              var label =
+                a.code +
+                " — " +
+                (getLang() === "th" && a.name_th ? a.name_th : a.name || "");
+              return "<option value='" + a.code + "'>" + label + "</option>";
+            })
+            .join("");
+          if (!acctOpts) {
+            acctOpts =
+              "<option value='1100'>1100 Cash</option><option value='5300'>5300 Opex</option>";
+          }
+          // refresh existing selects
+          tbody.querySelectorAll("[data-mj-acct]").forEach(function (sel) {
+            var v = sel.value;
+            sel.innerHTML = acctOpts;
+            if (v) sel.value = v;
+          });
+        })
+        .catch(function () {});
+
+      addLine("5300", "1000", "");
+      addLine("1100", "", "1000");
+
+      panel.querySelector("[data-mj-add]").addEventListener("click", function () {
+        addLine("1100", "", "");
+      });
+
+      panel.querySelector("[data-mj-save]").addEventListener("click", function () {
+        var out = panel.querySelector("[data-mj-out]");
+        var lines = [];
+        tbody.querySelectorAll("tr").forEach(function (tr) {
+          lines.push({
+            account: tr.querySelector("[data-mj-acct]").value,
+            debit: Number(tr.querySelector("[data-mj-dr]").value) || 0,
+            credit: Number(tr.querySelector("[data-mj-cr]").value) || 0,
+          });
+        });
+        out.textContent = tPair("กำลังบันทึก…", "Saving…");
+        fetch("/api/finance/journal", {
+          method: "POST",
+          headers: authHeaders(),
+          body: JSON.stringify({
+            date: panel.querySelector("[data-mj-date]").value,
+            memo: panel.querySelector("[data-mj-memo]").value,
+            ref: panel.querySelector("[data-mj-ref]").value,
+            lines: lines,
+          }),
+        })
+          .then(function (r) {
+            return r.json().then(function (d) {
+              return { ok: r.ok, d: d };
+            });
+          })
+          .then(function (res) {
+            if (!res.ok) {
+              out.textContent = res.d.detail || "Failed";
+              return;
+            }
+            var je = res.d.journal_entry || {};
+            out.textContent =
+              "OK " +
+              (je.id || "") +
+              " · " +
+              (je.memo || "") +
+              "\n" +
+              JSON.stringify(je.lines || [], null, 2);
+            wrap._finTab = "journal";
+            syncFinTabButtons();
+            if (typeof wrap._loadFinPanel === "function") wrap._loadFinPanel();
+          })
+          .catch(function (err) {
+            out.textContent = String(err);
+          });
+      });
     }
 
     function renderAutopost(panel) {

@@ -1079,6 +1079,28 @@ def finance_journal_one(
     raise HTTPException(status_code=404, detail="journal_not_found")
 
 
+@app.post("/api/finance/journal")
+async def finance_create_journal(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    """Manual journal entry input (balanced Dr/Cr)."""
+    body = await request.json()
+    if not isinstance(body, dict):
+        raise HTTPException(status_code=400, detail="invalid_body")
+    try:
+        entry = gl_posting.create_manual_journal(
+            seed.GL_ENTRIES,
+            memo=str(body.get("memo") or ""),
+            lines=list(body.get("lines") or []),
+            chart=list(getattr(seed, "CHART_OF_ACCOUNTS", [])),
+            posted_date=body.get("date"),
+            ref=body.get("ref"),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return {"ok": True, "journal_entry": entry, "count": len(seed.GL_ENTRIES)}
+
+
 @app.get("/api/finance/gl")
 @app.get("/api/finance/ledger")
 def finance_gl(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:

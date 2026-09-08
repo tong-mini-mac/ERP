@@ -36,6 +36,71 @@ def find_by_source(
     return None
 
 
+def create_manual_journal(
+    entries: list[dict[str, Any]],
+    *,
+    memo: str,
+    lines: list[dict[str, Any]],
+    chart: list[dict[str, Any]] | None = None,
+    posted_date: str | None = None,
+    ref: str | None = None,
+) -> dict[str, Any]:
+    """Create a balanced manual journal entry (Dr must equal Cr)."""
+    if not memo or not str(memo).strip():
+        raise ValueError("memo_required")
+    if not isinstance(lines, list) or len(lines) < 2:
+        raise ValueError("need_at_least_two_lines")
+
+    coa = _coa_map(chart or [])
+    cleaned: list[dict[str, Any]] = []
+    sum_dr = 0.0
+    sum_cr = 0.0
+    for raw in lines:
+        if not isinstance(raw, dict):
+            continue
+        code = str(raw.get("account") or raw.get("code") or "").strip()
+        if not code:
+            raise ValueError("account_required")
+        debit = float(raw.get("debit") or 0)
+        credit = float(raw.get("credit") or 0)
+        if debit < 0 or credit < 0:
+            raise ValueError("amounts_must_be_non_negative")
+        if debit > 0 and credit > 0:
+            raise ValueError("line_cannot_have_both_debit_and_credit")
+        if debit == 0 and credit == 0:
+            continue
+        acct = coa.get(code) or {}
+        cleaned.append(
+            {
+                "account": code,
+                "debit": round(debit, 2),
+                "credit": round(credit, 2),
+                "name": acct.get("name") or raw.get("name") or code,
+            }
+        )
+        sum_dr += debit
+        sum_cr += credit
+
+    if len(cleaned) < 2:
+        raise ValueError("need_at_least_two_lines")
+    if abs(sum_dr - sum_cr) > 0.02:
+        raise ValueError(f"unbalanced_entry:debit={round(sum_dr,2)}_credit={round(sum_cr,2)}")
+
+    entry_id = _next_id(entries)
+    day = posted_date or date.today().isoformat()
+    entry = {
+        "id": entry_id,
+        "date": day,
+        "memo": str(memo).strip(),
+        "source": "manual",
+        "source_id": entry_id,
+        "ref": (ref or f"MJ-{entry_id}").strip(),
+        "lines": cleaned,
+    }
+    entries.append(entry)
+    return entry
+
+
 def post_invoice_issue(
     entries: list[dict[str, Any]],
     invoice: dict[str, Any],
