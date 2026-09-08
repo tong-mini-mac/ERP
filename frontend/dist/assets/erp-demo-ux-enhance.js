@@ -1130,11 +1130,11 @@
         "<h3 data-hr-title style='margin-top:0'></h3>" +
         "<p data-hr-desc style='color:#94a3b8;font-size:0.85rem;margin-top:0'></p>" +
         "<label data-hr-label style='display:block;margin-bottom:0.35rem'></label>" +
-        "<select data-hr-select style='max-width:28rem;margin-bottom:0.75rem'>" +
-        "<option value='payslip'></option>" +
-        "<option value='balances'></option>" +
-        "<option value='run'></option>" +
-        "</select>" +
+        "<div data-hr-select style='display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem'>" +
+        "<button type='button' class='btn btn-primary' data-hr-tab='payslip'></button>" +
+        "<button type='button' class='btn' data-hr-tab='balances'></button>" +
+        "<button type='button' class='btn' data-hr-tab='run'></button>" +
+        "</div>" +
         "<div data-hr-panel></div>" +
         "</div>";
       wrap._hrTab = "payslip";
@@ -1143,24 +1143,35 @@
 
     // Always (re)bind so MutationObserver / SPA remounts cannot leave stale handlers.
     wrap._loadHrPanel = loadHrPanel;
-    var sel = wrap.querySelector("[data-hr-select]");
-    if (sel) {
-      sel.onchange = function () {
+    function syncHrTabButtons() {
+      var w = document.getElementById("erp-demo-hr-th");
+      if (!w) return;
+      var tab = w._hrTab || "payslip";
+      w.querySelectorAll("[data-hr-tab]").forEach(function (b) {
+        var on = b.getAttribute("data-hr-tab") === tab;
+        b.className = on ? "btn btn-primary" : "btn";
+      });
+    }
+    wrap.querySelectorAll("[data-hr-tab]").forEach(function (btn) {
+      btn.onclick = function (ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
         var w = document.getElementById("erp-demo-hr-th");
         if (!w) return;
-        w._hrTab = sel.value || "payslip";
+        w._hrTab = btn.getAttribute("data-hr-tab") || "payslip";
+        syncHrTabButtons();
         if (typeof w._loadHrPanel === "function") w._loadHrPanel();
       };
-    }
+    });
     window.__erpHrShow = function (tab) {
       var w = document.getElementById("erp-demo-hr-th");
       if (!w) return;
       w._hrTab = tab || "payslip";
-      var s = w.querySelector("[data-hr-select]");
-      if (s) s.value = w._hrTab;
+      syncHrTabButtons();
       if (typeof w._loadHrPanel === "function") w._loadHrPanel();
     };
     applyHrLabels();
+    syncHrTabButtons();
     if (rebuild || !wrap.querySelector("[data-hr-panel]").getAttribute("data-hr-ready")) {
       loadHrPanel();
       var p = wrap.querySelector("[data-hr-panel]");
@@ -1171,7 +1182,6 @@
       var title = wrap.querySelector("[data-hr-title]");
       var desc = wrap.querySelector("[data-hr-desc]");
       var label = wrap.querySelector("[data-hr-label]");
-      var sel = wrap.querySelector("[data-hr-select]");
       if (title)
         title.textContent = tPair(
           "Payroll TH + Leave Balance",
@@ -1183,16 +1193,15 @@
           "gross → SSO 5% → WHT → absent/late → net · leave balance per employee"
         );
       if (label) label.textContent = tPair("มุมมอง HR", "HR view");
-      if (sel) {
-        var map = {
-          payslip: tPair("สลิปเงินเดือน (Payslip)", "Payslip"),
-          balances: tPair("วันลาคงเหลือ", "Leave balance"),
-          run: tPair("รันเงินเดือน (TH)", "Run payroll (TH)"),
-        };
-        Array.prototype.forEach.call(sel.options, function (opt) {
-          if (map[opt.value]) opt.textContent = map[opt.value];
-        });
-      }
+      var map = {
+        payslip: tPair("สลิปเงินเดือน", "Payslip"),
+        balances: tPair("วันลาคงเหลือ", "Leave balance"),
+        run: tPair("รันเงินเดือน (TH)", "Run payroll (TH)"),
+      };
+      wrap.querySelectorAll("[data-hr-tab]").forEach(function (b) {
+        var id = b.getAttribute("data-hr-tab");
+        if (map[id]) b.textContent = map[id];
+      });
     }
 
     function loadHrPanel() {
