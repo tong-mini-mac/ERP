@@ -1,59 +1,109 @@
 /**
  * ERP-Demo UX layer (no React source in-repo):
+ * - TH/EN language toggle (top-right) for the whole UI
  * - Home → https://www.inz.lol
- * - English labels overlay
  * - Hide raw JSON payload fields / pretty-print result cards
- * - Manual document entry when OCR/scanner unavailable
+ * - Manual document entry when OCR/scanner unavailable (failover)
  * - Present-campaign mock tab
  * - CFO Scope/Role/Department dropdowns + visible answer
- * - Stock manual barcode hint
+ * - Stock manual barcode hint (scanner failover)
  */
 (function () {
   var HOME = "https://www.inz.lol";
+  var LANG_KEY = "erp_ui_lang";
+  var applyingLang = false;
 
+  // Longer keys first when applying (sorted at runtime).
   var TH_TO_EN = {
-    "โมดูล": "Modules",
-    "เอกสารบัญชี": "Accounting Docs",
-    "เมนู & ต้นทุน": "Menu & Cost",
     "เมนู & ต้นทุนอาหาร": "Menu & Food Cost",
-    "วัตถุดิบ": "Ingredients",
-    "เติมสต็อก": "Restock",
-    "สมาชิก": "Members",
+    "เมนู & ต้นทุน": "Menu & Cost",
+    "เอกสารบัญชี": "Accounting Docs",
+    "ส่งคำขออนุมัติ": "Submit approval request",
+    "ส่งเข้าคิวอนุมัติทันที": "Submit to approval queue now",
+    "ทดสอบ / พิมพ์ Barcode แล้ว Enter": "Failover: type barcode + Enter if scanner is broken",
+    "โหมด (Context-aware)": "Mode (context-aware)",
+    "ยอดขาย (คั่นด้วย comma)": "Sales (comma-separated)",
+    "สแกนและดึงข้อมูล": "Scan & extract",
+    "รายชื่อพนักงาน": "Employees",
+    "เพิ่มพนักงาน": "Add employee",
+    "ประวัติการสแกน": "Scan history",
+    "อัปโหลด Invoice": "Upload Invoice",
+    "ประเภทเอกสาร": "Document type",
+    "คลังสินค้า": "Warehouse",
     "ข้อมูลร้าน": "Shop Info",
     "สแกน Barcode": "Scan Barcode",
-    "คลังสินค้า": "Warehouse",
-    "โหมด (Context-aware)": "Mode (context-aware)",
     "ค้นหา SKU": "Lookup SKU",
     "รับเข้า (+1)": "Stock in (+1)",
     "จ่ายออก (-1)": "Stock out (-1)",
     "นับสต็อก (-1)": "Stocktake (-1)",
     "— ยังไม่มีคลัง —": "— No warehouse yet —",
-    "ทดสอบ / พิมพ์ Barcode แล้ว Enter": "Failover: type barcode + Enter if scanner is broken",
-    "ถาม CFO": "Ask CFO",
     "คำถาม CFO": "CFO question",
-    "คำถาม": "Question",
     "คำตอบ CFO": "CFO answer",
-    "ยอดขาย (คั่นด้วย comma)": "Sales (comma-separated)",
-    "แผนก": "Department",
-    "ส่งคำขออนุมัติ": "Submit approval request",
-    "ประเภทเอกสาร": "Document type",
-    "หัวข้อ": "Title",
+    "ถาม CFO": "Ask CFO",
+    "ถาม Athena": "Ask Athena",
+    "สร้าง Brief": "Create brief",
+    "รัน Pre-campaign": "Run Pre-campaign",
     "Payload (JSON)": "Details (plain text — no JSON required)",
-    "ส่งเข้าคิวอนุมัติทันที": "Submit to approval queue now",
-    "ส่งคำขอ": "Submit request",
-    "อัปโหลด Invoice": "Upload Invoice",
-    "สแกนและดึงข้อมูล": "Scan & extract",
-    "ประวัติการสแกน": "Scan history",
     "ยังไม่ตั้งค่า": "Not configured",
-    "เพิ่มพนักงาน": "Add employee",
-    "รายชื่อพนักงาน": "Employees",
-    "ชื่อ": "Name",
+    "เติมสต็อก": "Restock",
+    "วัตถุดิบ": "Ingredients",
+    "สมาชิก": "Members",
     "เงินเดือน": "Salary",
     "ร้านอาหาร": "Restaurant",
-    "รัน Pre-campaign": "Run Pre-campaign",
-    "สร้าง Brief": "Create brief",
-    "ถาม Athena": "Ask Athena",
+    "โมดูล": "Modules",
+    "คำถาม": "Question",
+    "แผนก": "Department",
+    "หัวข้อ": "Title",
+    "ส่งคำขอ": "Submit request",
+    "ชื่อ": "Name",
+    "ลา": "Leave",
+    "เวลางาน": "Attendance",
+    "พนักงาน": "Employees",
+    "เมนู & สูตร": "Menu & Recipe",
+    "บันทึกวัตถุดิบ": "Save ingredient",
+    "เพิ่มวัตถุดิบ": "Add ingredient",
+    "ดูตัวอย่าง": "Preview",
+    "ออกเอกสาร": "Issue document",
+    "ประวัติ": "History",
+    "เทมเพลต + BOT": "Template + BOT",
+    "เลือกเทมเพลต": "Select template",
+    "สร้างเทมเพลตใหม่": "Create new template",
+    "ตัวอย่างเอกสาร": "Document preview",
+    "อนุมัติ": "Approve",
+    "ปฏิเสธ": "Reject",
+    "บันทึก": "Save",
+    "ยกเลิก": "Cancel",
+    "ค้นหา": "Search",
+    "ตั้งค่า": "Settings",
+    "องค์กร": "Organization",
+    "องค์กร (Organization)": "Organization",
   };
+
+  var EN_TO_TH = {};
+  Object.keys(TH_TO_EN).forEach(function (th) {
+    EN_TO_TH[TH_TO_EN[th]] = th;
+  });
+
+  var TH_KEYS = Object.keys(TH_TO_EN).sort(function (a, b) {
+    return b.length - a.length;
+  });
+  var EN_KEYS = Object.keys(EN_TO_TH).sort(function (a, b) {
+    return b.length - a.length;
+  });
+
+  function getLang() {
+    try {
+      var v = localStorage.getItem(LANG_KEY);
+      if (v === "en" || v === "th") return v;
+    } catch (e) {}
+    return "th";
+  }
+
+  function setLang(lang) {
+    try {
+      localStorage.setItem(LANG_KEY, lang);
+    } catch (e) {}
+  }
 
   function token() {
     try {
@@ -67,64 +117,159 @@
     return { Authorization: "Bearer " + token(), "Content-Type": "application/json" };
   }
 
-  function injectHome() {
-    if (document.getElementById("erp-demo-home-link")) return;
-    var side = document.querySelector("aside, nav, .sidebar");
-    if (!side) return;
-    var a = document.createElement("a");
-    a.id = "erp-demo-home-link";
-    a.href = HOME;
-    a.target = "_top";
-    a.rel = "noopener";
-    a.textContent = "Home · inz.lol";
-    a.style.cssText =
-      "display:block;margin:0.5rem 0.75rem 0.75rem;padding:0.45rem 0.65rem;border-radius:6px;background:#0f766e;color:#ecfdf5;text-decoration:none;font-weight:600;font-size:0.9rem;text-align:center";
-    side.insertBefore(a, side.firstChild);
+  function tPair(th, en) {
+    return getLang() === "en" ? en : th;
   }
 
-  function translateTextNode(node) {
+  function mapString(str, toEn) {
+    if (!str) return str;
+    var out = str;
+    var keys = toEn ? TH_KEYS : EN_KEYS;
+    var dict = toEn ? TH_TO_EN : EN_TO_TH;
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i];
+      if (out.indexOf(k) >= 0) out = out.split(k).join(dict[k]);
+    }
+    return out;
+  }
+
+  function translateTextNode(node, toEn) {
     if (!node || node.nodeType !== 3) return;
+    var p = node.parentElement;
+    if (p && (p.id === "erp-demo-lang-toggle" || (p.closest && p.closest("#erp-demo-lang-toggle")))) return;
+    if (p && (p.tagName === "SCRIPT" || p.tagName === "STYLE" || p.tagName === "CODE" || p.tagName === "PRE")) return;
+
     var raw = node.nodeValue;
     if (!raw || !raw.trim()) return;
-    var t = raw;
-    Object.keys(TH_TO_EN).forEach(function (th) {
-      if (t.indexOf(th) >= 0) t = t.split(th).join(TH_TO_EN[th]);
-    });
-    if (t !== raw) node.nodeValue = t;
+
+    // Thai chars mean SPA refreshed the label — keep original in sync.
+    if (/[\u0E00-\u0E7F]/.test(raw)) node.__erpOrig = raw;
+    if (node.__erpOrig == null) node.__erpOrig = raw;
+
+    if (toEn) {
+      var en = mapString(node.__erpOrig, true);
+      if (en !== node.nodeValue) node.nodeValue = en;
+    } else if (node.nodeValue !== node.__erpOrig) {
+      node.nodeValue = node.__erpOrig;
+    }
   }
 
-  function translateTree(root) {
+  function translateAttr(el, attr, toEn) {
+    var cur = el.getAttribute(attr);
+    if (cur == null) return;
+    var key = "__erpOrig_" + attr;
+    if (el[key] == null) el[key] = cur;
+    if (toEn) el.setAttribute(attr, mapString(el[key], true));
+    else el.setAttribute(attr, el[key]);
+  }
+
+  function translateTree(root, toEn, onlyNew) {
     if (!root) return;
     var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
     var n;
-    while ((n = walker.nextNode())) translateTextNode(n);
-    // placeholders / titles
-    root.querySelectorAll &&
+    while ((n = walker.nextNode())) {
+      if (onlyNew && n.__erpOrig != null && !/[\u0E00-\u0E7F]/.test(n.nodeValue || "")) continue;
+      translateTextNode(n, toEn);
+    }
+    if (root.querySelectorAll) {
       root.querySelectorAll("input[placeholder], textarea[placeholder], [title]").forEach(function (el) {
-        ["placeholder", "title"].forEach(function (attr) {
-          var v = el.getAttribute(attr);
-          if (!v) return;
-          Object.keys(TH_TO_EN).forEach(function (th) {
-            if (v.indexOf(th) >= 0) v = v.split(th).join(TH_TO_EN[th]);
-          });
-          el.setAttribute(attr, v);
-        });
+        if (el.closest && el.closest("#erp-demo-lang-toggle")) return;
+        if (onlyNew && el.__erpOrig_placeholder != null) return;
+        translateAttr(el, "placeholder", toEn);
+        translateAttr(el, "title", toEn);
       });
+    }
+  }
+
+  function injectLangToggle() {
+    var box = document.getElementById("erp-demo-lang-toggle");
+    if (!box) {
+      box = document.createElement("div");
+      box.id = "erp-demo-lang-toggle";
+      box.setAttribute("role", "group");
+      box.setAttribute("aria-label", "Language");
+      box.style.cssText =
+        "position:fixed;top:12px;right:12px;z-index:2147483647;display:flex;gap:0;border:1px solid #475569;border-radius:8px;overflow:hidden;background:#0f172a;box-shadow:0 4px 16px rgba(0,0,0,.35);font-family:system-ui,sans-serif;pointer-events:auto";
+      ["th", "en"].forEach(function (code) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.setAttribute("data-lang", code);
+        btn.textContent = code.toUpperCase();
+        btn.style.cssText =
+          "border:0;padding:0.45rem 0.85rem;cursor:pointer;font-weight:700;font-size:0.85rem;pointer-events:auto";
+        box.appendChild(btn);
+      });
+      document.body.appendChild(box);
+
+      function onPick(lang) {
+        if (lang !== "th" && lang !== "en") return;
+        setLang(lang);
+        lastAppliedLang = null;
+        applyLanguage(true);
+      }
+
+      box.addEventListener(
+        "click",
+        function (ev) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          var el = ev.target;
+          if (el && el.nodeType === 3) el = el.parentElement;
+          while (el && el !== box && !(el.getAttribute && el.getAttribute("data-lang"))) {
+            el = el.parentElement;
+          }
+          if (!el || el === box) return;
+          onPick(el.getAttribute("data-lang"));
+        },
+        true
+      );
+
+      window.__erpSetLang = onPick;
+    }
+    var lang = getLang();
+    box.querySelectorAll("[data-lang]").forEach(function (btn) {
+      var on = btn.getAttribute("data-lang") === lang;
+      btn.style.background = on ? "#0f766e" : "transparent";
+      btn.style.color = on ? "#ecfdf5" : "#94a3b8";
+    });
+  }
+
+  function injectHome() {
+    var side = document.querySelector("aside, nav, .sidebar");
+    if (!side) return;
+    var a = document.getElementById("erp-demo-home-link");
+    if (!a) {
+      a = document.createElement("a");
+      a.id = "erp-demo-home-link";
+      a.href = HOME;
+      a.target = "_top";
+      a.rel = "noopener";
+      a.style.cssText =
+        "display:block;margin:0.5rem 0.75rem 0.75rem;padding:0.45rem 0.65rem;border-radius:6px;background:#0f766e;color:#ecfdf5;text-decoration:none;font-weight:600;font-size:0.9rem;text-align:center";
+      side.insertBefore(a, side.firstChild);
+    }
+    a.textContent = tPair("หน้าแรก · inz.lol", "Home · inz.lol");
   }
 
   function hideJsonPayloadFields() {
     document.querySelectorAll("label").forEach(function (lab) {
       var t = (lab.textContent || "").trim();
-      if (t === "Payload (JSON)" || t.indexOf("Payload") === 0) {
-        lab.textContent = "Details (plain text — no JSON required)";
+      if (t === "Payload (JSON)" || t.indexOf("Payload") === 0 || t.indexOf("Details (plain text") === 0) {
+        if (lab.__erpOrig == null) lab.__erpOrig = "Payload (JSON)";
+        lab.textContent = tPair(
+          "รายละเอียด (ข้อความธรรมดา ไม่ต้องใช้ JSON)",
+          "Details (plain text — no JSON required)"
+        );
         var area = lab.nextElementSibling;
         if (area && area.tagName === "TEXTAREA") {
-          area.placeholder = "Optional notes for approvers (plain language)";
+          area.placeholder = tPair(
+            "หมายเหตุสำหรับผู้อนุมัติ (ภาษาปกติ)",
+            "Optional notes for approvers (plain language)"
+          );
           if ((area.value || "").trim() === "{}") area.value = "";
         }
       }
     });
-    // Pretty-print result cards that dump JSON
     document.querySelectorAll(".result-panel pre, pre").forEach(function (pre) {
       if (pre.getAttribute("data-erp-pretty")) return;
       var txt = (pre.textContent || "").trim();
@@ -139,7 +284,6 @@
           pre.setAttribute("data-erp-pretty", "1");
           return;
         }
-        // flatten short key/values without showing braces
         var lines = Object.keys(obj)
           .filter(function (k) {
             return typeof obj[k] !== "object";
@@ -159,20 +303,25 @@
 
   function enhanceStockManualHint() {
     if (!/\/stock/.test(location.pathname)) return;
-    if (document.getElementById("erp-demo-barcode-hint")) return;
-    var labels = document.querySelectorAll("label");
-    for (var i = 0; i < labels.length; i++) {
-      var t = labels[i].textContent || "";
-      if (t.indexOf("Barcode") >= 0 || t.indexOf("barcode") >= 0 || t.indexOf("พิมพ์") >= 0) {
-        var hint = document.createElement("p");
-        hint.id = "erp-demo-barcode-hint";
-        hint.style.cssText = "font-size:0.85rem;color:#94a3b8;margin:0.35rem 0 0.75rem";
-        hint.textContent =
-          "Primary: USB/Bluetooth scanner (HID). Failover: if the scanner is broken or offline, type the barcode below and press Enter — operations must not stop.";
-        labels[i].parentElement.insertBefore(hint, labels[i].nextSibling);
-        break;
+    var hint = document.getElementById("erp-demo-barcode-hint");
+    if (!hint) {
+      var labels = document.querySelectorAll("label");
+      for (var i = 0; i < labels.length; i++) {
+        var t = labels[i].textContent || "";
+        if (t.indexOf("Barcode") >= 0 || t.indexOf("barcode") >= 0 || t.indexOf("พิมพ์") >= 0) {
+          hint = document.createElement("p");
+          hint.id = "erp-demo-barcode-hint";
+          hint.style.cssText = "font-size:0.85rem;color:#94a3b8;margin:0.35rem 0 0.75rem";
+          labels[i].parentElement.insertBefore(hint, labels[i].nextSibling);
+          break;
+        }
       }
     }
+    if (!hint) return;
+    hint.textContent = tPair(
+      "หลัก: สแกนด้วยเครื่อง USB/Bluetooth (HID) · สำรอง: ถ้าเครื่องเสีย ให้พิมพ์บาร์โค้ดด้านล่างแล้วกด Enter — งานต้องเดินต่อได้",
+      "Primary: USB/Bluetooth scanner (HID). Failover: if the scanner is broken or offline, type the barcode below and press Enter — operations must not stop."
+    );
   }
 
   function enhanceCfoDropdowns() {
@@ -181,7 +330,8 @@
       var labels = document.querySelectorAll("label");
       for (var i = 0; i < labels.length; i++) {
         var t = (labels[i].textContent || "").trim();
-        if (t !== labelText && TH_TO_EN[labelText] !== t && t !== TH_TO_EN[labelText]) continue;
+        var en = TH_TO_EN[labelText] || labelText;
+        if (t !== labelText && t !== en) continue;
         var input = labels[i].nextElementSibling;
         if (!input || input.tagName !== "INPUT" || input.getAttribute("data-erp-select")) continue;
         var sel = document.createElement("select");
@@ -221,7 +371,8 @@
     return path === "/resto-menu";
   }
 
-  function enhanceDocumentsManual() {
+  function enhanceDocumentsManual(rebuild) {
+    rebuild = !!rebuild;
     var existing = document.getElementById("erp-demo-manual-doc");
     if (!isDocumentsPage()) {
       if (existing) existing.remove();
@@ -418,106 +569,162 @@
     });
   }
 
-  function enhancePresentCampaign() {
+    function enhancePresentCampaign(rebuild) {
     if (!/\/marketing/.test(location.pathname)) return;
-    if (document.getElementById("erp-demo-present-tab")) return;
     var tabs = document.querySelector(".tabs");
     if (!tabs) return;
-    var btn = document.createElement("button");
-    btn.type = "button";
-    btn.id = "erp-demo-present-tab";
-    btn.className = "tab";
-    btn.textContent = "Present-campaign";
-    // Insert after Pre-campaign if possible
-    if (tabs.children.length >= 1) tabs.insertBefore(btn, tabs.children[1] || null);
-    else tabs.appendChild(btn);
+    var btn = document.getElementById("erp-demo-present-tab");
+    if (!btn) {
+      btn = document.createElement("button");
+      btn.type = "button";
+      btn.id = "erp-demo-present-tab";
+      btn.className = "tab";
+      if (tabs.children.length >= 1) tabs.insertBefore(btn, tabs.children[1] || null);
+      else tabs.appendChild(btn);
 
-    var panel = document.createElement("div");
-    panel.id = "erp-demo-present-panel";
-    panel.style.display = "none";
-    panel.className = "card";
-    panel.style.cssText += ";margin-top:1rem;padding:1rem";
-    panel.innerHTML =
-      "<h3 style='margin-top:0'>Present-campaign (live pulse)</h3>" +
-      "<p style='color:#94a3b8;font-size:0.85rem'>Mock live monitoring while a campaign is running.</p>" +
-      "<label>Focus channel</label>" +
-      "<select data-present-channel><option>facebook</option><option>line</option><option>instagram</option><option>tiktok</option></select>" +
-      "<label>Note</label><textarea data-present-note rows='2' placeholder='What should we watch this week?'></textarea>" +
-      "<div style='margin-top:0.75rem'><button type='button' class='btn btn-primary' data-present-run>Run present pulse</button></div>" +
-      "<pre data-present-out style='white-space:pre-wrap;font-family:inherit;margin-top:1rem'></pre>";
-    var host = tabs.parentElement || document.querySelector("main");
-    host.appendChild(panel);
+      var panel = document.createElement("div");
+      panel.id = "erp-demo-present-panel";
+      panel.style.display = "none";
+      panel.className = "card";
+      panel.style.cssText += ";margin-top:1rem;padding:1rem";
+      var host = tabs.parentElement || document.querySelector("main");
+      host.appendChild(panel);
 
-    btn.addEventListener("click", function () {
-      Array.prototype.forEach.call(tabs.querySelectorAll(".tab"), function (t) {
-        t.classList.remove("tab-active");
-      });
-      btn.classList.add("tab-active");
-      // Hide sibling SPA forms lightly
-      host.querySelectorAll("form.card").forEach(function (f) {
-        f.style.display = "none";
-      });
-      panel.style.display = "block";
-    });
-
-    panel.querySelector("[data-present-run]").addEventListener("click", function () {
-      var out = panel.querySelector("[data-present-out]");
-      out.textContent = "Loading…";
-      fetch("/api/marketing/campaigns/present", {
-        method: "POST",
-        headers: authHeaders(),
-        body: JSON.stringify({
-          channel: panel.querySelector("[data-present-channel]").value,
-          note: panel.querySelector("[data-present-note]").value,
-        }),
-      })
-        .then(function (r) {
-          return r.json();
-        })
-        .then(function (d) {
-          var lines = [d.summary || "Present campaign pulse"];
-          (d.alerts || []).forEach(function (a) {
-            lines.push("• " + a);
-          });
-          (d.live_campaigns || []).slice(0, 5).forEach(function (c) {
-            lines.push(
-              "- " +
-                c.name +
-                " | " +
-                c.channel +
-                " | CTR " +
-                c.ctr +
-                " | spend " +
-                c.spend
-            );
-          });
-          out.textContent = lines.join("\n");
-        })
-        .catch(function (err) {
-          out.textContent = String(err);
+      btn.addEventListener("click", function () {
+        Array.prototype.forEach.call(tabs.querySelectorAll(".tab"), function (t) {
+          t.classList.remove("tab-active");
         });
-    });
+        btn.classList.add("tab-active");
+        host.querySelectorAll("form.card").forEach(function (f) {
+          f.style.display = "none";
+        });
+        panel.style.display = "block";
+      });
+
+      panel.addEventListener("click", function (ev) {
+        if (!ev.target.matches("[data-present-run]")) return;
+        var out = panel.querySelector("[data-present-out]");
+        out.textContent = tPair("กำลังโหลด…", "Loading…");
+        fetch("/api/marketing/campaigns/present", {
+          method: "POST",
+          headers: authHeaders(),
+          body: JSON.stringify({
+            channel: panel.querySelector("[data-present-channel]").value,
+            note: panel.querySelector("[data-present-note]").value,
+          }),
+        })
+          .then(function (r) {
+            return r.json();
+          })
+          .then(function (d) {
+            var lines = [d.summary || "Present campaign pulse"];
+            (d.alerts || []).forEach(function (a) {
+              lines.push("• " + a);
+            });
+            (d.live_campaigns || []).slice(0, 5).forEach(function (c) {
+              lines.push("- " + c.name + " | " + c.channel + " | CTR " + c.ctr + " | spend " + c.spend);
+            });
+            out.textContent = lines.join("\n");
+          })
+          .catch(function (err) {
+            out.textContent = String(err);
+          });
+      });
+    }
+
+    btn.textContent = tPair("Present-campaign", "Present-campaign");
+    var panel = document.getElementById("erp-demo-present-panel");
+    if (panel && panel.style.display !== "none") {
+      // keep content if open; rebuild labels lightly only when empty structure
+    }
+    if (panel && !panel.querySelector("[data-present-run]")) {
+      panel.innerHTML =
+        "<h3 style='margin-top:0'>" +
+        tPair("Present-campaign (สถานะแคมเปญสด)", "Present-campaign (live pulse)") +
+        "</h3>" +
+        "<p style='color:#94a3b8;font-size:0.85rem'>" +
+        tPair("ม็อคติดตามแคมเปญขณะกำลังรัน", "Mock live monitoring while a campaign is running.") +
+        "</p>" +
+        "<label>" +
+        tPair("ช่องทาง", "Focus channel") +
+        "</label>" +
+        "<select data-present-channel><option>facebook</option><option>line</option><option>instagram</option><option>tiktok</option></select>" +
+        "<label>" +
+        tPair("หมายเหตุ", "Note") +
+        "</label><textarea data-present-note rows='2' placeholder='" +
+        tPair("สัปดาห์นี้ควรจับตาอะไร?", "What should we watch this week?") +
+        "'></textarea>" +
+        "<div style='margin-top:0.75rem'><button type='button' class='btn btn-primary' data-present-run>" +
+        tPair("รัน Present pulse", "Run present pulse") +
+        "</button></div>" +
+        "<pre data-present-out style='white-space:pre-wrap;font-family:inherit;margin-top:1rem'></pre>";
+    } else if (panel && panel.querySelector("h3")) {
+      panel.querySelector("h3").textContent = tPair(
+        "Present-campaign (สถานะแคมเปญสด)",
+        "Present-campaign (live pulse)"
+      );
+    }
   }
 
-  function tick() {
-    document.documentElement.lang = "en";
-    injectHome();
-    translateTree(document.body);
-    hideJsonPayloadFields();
-    enhanceStockManualHint();
-    enhanceCfoDropdowns();
-    enhanceDocumentsManual();
-    enhanceAddIngredientToDb();
-    enhancePresentCampaign();
+  var lastAppliedLang = null;
+  var debounceTimer = null;
+
+  function applyLanguage(force) {
+    if (applyingLang) return;
+    applyingLang = true;
+    try {
+      var lang = getLang();
+      var toEn = lang === "en";
+      var langChanged = lastAppliedLang !== lang;
+      document.documentElement.lang = lang;
+      injectLangToggle();
+      injectHome();
+      // Full-tree translate only on lang change or forced navigation refresh.
+      if (force || langChanged) {
+        translateTree(document.body, toEn, false);
+        lastAppliedLang = lang;
+      } else {
+        // Light pass: only unmarked text nodes (new SPA mounts).
+        translateTree(document.body, toEn, true);
+      }
+      hideJsonPayloadFields();
+      enhanceStockManualHint();
+      enhanceCfoDropdowns();
+      // Rebuild injected forms only when language changes (avoid Mutation loops).
+      if (force || langChanged) {
+        enhanceDocumentsManual(true);
+        enhanceAddIngredientToDb();
+        enhancePresentCampaign(true);
+      } else {
+        enhanceDocumentsManual(false);
+        enhanceAddIngredientToDb();
+        enhancePresentCampaign(false);
+      }
+    } finally {
+      applyingLang = false;
+    }
+  }
+
+  function scheduleApply() {
+    if (applyingLang) return;
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(function () {
+      applyLanguage(false);
+    }, 250);
   }
 
   var obs = new MutationObserver(function () {
-    tick();
+    if (applyingLang) return;
+    scheduleApply();
   });
   obs.observe(document.documentElement, { childList: true, subtree: true });
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", tick);
-  else tick();
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () {
+    applyLanguage(true);
+  });
+  else applyLanguage(true);
   window.addEventListener("popstate", function () {
-    setTimeout(tick, 80);
+    setTimeout(function () {
+      applyLanguage(true);
+    }, 80);
   });
 })();
