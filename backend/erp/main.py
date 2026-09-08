@@ -21,6 +21,7 @@ import json
 import os
 import time
 import uuid
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -33,6 +34,7 @@ from pydantic import BaseModel, EmailStr, Field
 
 from erp import demo_seed as seed
 from erp import accounting_docs_demo as ac_docs
+from erp import gl_posting
 
 JWT_SECRET = os.getenv("JWT_SECRET", "erp-demo-dev-secret-change-me-32chars")
 JWT_ALG = "HS256"
@@ -217,6 +219,7 @@ def health() -> dict[str, Any]:
             "ingredients": len(getattr(seed, "INGREDIENTS", [])),
             "menus": len(getattr(seed, "MENUS", [])),
             "document_scans": len(getattr(seed, "DOCUMENT_SCANS", [])),
+            "gl_entries": len(getattr(seed, "GL_ENTRIES", [])),
         },
         "note": (
             "ThaiTrade Solutions synth sandbox; "
@@ -954,6 +957,161 @@ def accounting_doc_pdf(doc_id: str, _: dict[str, Any] = Depends(current_user)) -
 @app.get("/api/finance/invoices")
 def finance_invoices(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
     return seed.INVOICES
+
+
+@app.get("/api/finance/journal")
+def finance_journal(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    """สมุดรายวัน — every Dr/Cr journal entry (GL_ENTRIES)."""
+    items = sorted(
+        list(getattr(seed, "GL_ENTRIES", [])),
+        key=lambda e: (e.get("date") or "", e.get("id") or ""),
+        reverse=True,
+    )
+    return {"items": items, "count": len(items)}
+
+
+@app.get("/api/finance/journal/{entry_id}")
+def finance_journal_one(
+    entry_id: str, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    for e in getattr(seed, "GL_ENTRIES", []):
+        if e.get("id") == entry_id:
+            return e
+    raise HTTPException(status_code=404, detail="journal_not_found")
+
+
+@app.get("/api/finance/gl")
+@app.get("/api/finance/ledger")
+def finance_gl(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    """บัญชีแยกประเภท — General Ledger by account."""
+    return gl_posting.general_ledger(
+        list(getattr(seed, "GL_ENTRIES", [])),
+        list(getattr(seed, "CHART_OF_ACCOUNTS", [])),
+    )
+
+
+@app.get("/api/finance/trial-balance")
+def finance_trial_balance(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    return gl_posting.trial_balance(
+        list(getattr(seed, "GL_ENTRIES", [])),
+        list(getattr(seed, "CHART_OF_ACCOUNTS", [])),
+    )
+
+
+@app.get("/api/finance/accounts")
+def finance_accounts(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    return {"items": list(getattr(seed, "CHART_OF_ACCOUNTS", []))}
+
+
+@app.post("/api/finance/invoices")
+async def finance_create_invoice(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    """Create invoice and auto-post issue journal (Dr AR / Cr Revenue + VAT)."""
+    body = await request.json()
+    if not isinstance(body, dict):
+        raise HTTPException(status_code=400, detail="invalid_body")
+    n = len(seed.INVOICES) + 1
+    inv_id = f"inv-{n:03d}"
+    while any(i.get("id") == inv_id for i in seed.INVOICES):
+        n += 1
+        inv_id = f"inv-{n:03d}"
+    subtotal = float(body.get("subtotal") or body.get("amount") or 0)
+    vat = float(body.get("vat") if body.get("vat") is not None else round(subtotal * 0.07, 2))
+    total = float(body.get("total") if body.get("total") is not None else round(subtotal + vat, 2))
+    today = body.get("issue_date") or date.today().isoformat()
+    customer_name = body.get("customer_name") or "Walk-in customer"
+    invoice = {
+        "id": inv_id,
+        "number": body.get("number") or f"INV-TT-2026-{n:03d}",
+        "title": body.get("number") or f"INV-TT-2026-{n:03d}",
+        "type": "tax_invoice",
+        "customer_id": body.get("customer_id") or "",
+        "customer_name": customer_name,
+        "issue_date": today,
+        "due_date": body.get("due_date") or today,
+        "status": "pending",
+        "subtotal": subtotal,
+        "vat": vat,
+        "total": total,
+        "currency": "THB",
+        "days_overdue": 0,
+    }
+    seed.INVOICES.append(invoice)
+    je = gl_posting.post_invoice_issue(seed.GL_ENTRIES, invoice)
+    return {"ok": True, "invoice": invoice, "journal_entry": je}
+
+
+@app.post("/api/finance/invoices/{invoice_id}/pay")
+async def finance_pay_invoice(
+    invoice_id: str,
+    request: Request,
+    _: dict[str, Any] = Depends(current_user),
+) -> dict[str, Any]:
+    """Mark invoice paid, create receipt, auto-post payment JE (Dr Cash / Cr AR)."""
+    invoice = next((i for i in seed.INVOICES if i.get("id") == invoice_id), None)
+    if not invoice:
+        raise HTTPException(status_code=404, detail="invoice_not_found")
+    body: dict[str, Any] = {}
+    try:
+        raw = await request.json()
+        if isinstance(raw, dict):
+            body = raw
+    except Exception:
+        body = {}
+
+    # Ensure issue JE exists first (pending invoices may already have it from seed).
+    issue_je = gl_posting.post_invoice_issue(seed.GL_ENTRIES, invoice)
+
+    if invoice.get("status") == "paid" and invoice.get("gl_payment_id"):
+        pay_je = gl_posting.find_by_source(seed.GL_ENTRIES, "invoice_payment", invoice_id)
+        return {
+            "ok": True,
+            "invoice": invoice,
+            "journal_issue": issue_je,
+            "journal_payment": pay_je,
+            "already_paid": True,
+        }
+
+    paid_date = body.get("paid_date") or date.today().isoformat()
+    r_n = len(seed.RECEIPTS) + 1
+    rcpt_id = f"rcpt-{r_n:02d}"
+    while any(r.get("id") == rcpt_id for r in seed.RECEIPTS):
+        r_n += 1
+        rcpt_id = f"rcpt-{r_n:02d}"
+    receipt = {
+        "id": rcpt_id,
+        "number": f"RC-2026-{r_n:03d}",
+        "invoice_id": invoice_id,
+        "amount": float(body.get("amount") or invoice.get("total") or 0),
+        "currency": "THB",
+        "paid_date": paid_date,
+    }
+    seed.RECEIPTS.append(receipt)
+    invoice["status"] = "paid"
+    invoice["days_overdue"] = 0
+    pay_je = gl_posting.post_invoice_payment(
+        seed.GL_ENTRIES, invoice, receipt=receipt, paid_date=paid_date
+    )
+    return {
+        "ok": True,
+        "invoice": invoice,
+        "receipt": receipt,
+        "journal_issue": issue_je,
+        "journal_payment": pay_je,
+    }
+
+
+@app.post("/api/finance/invoices/{invoice_id}/post")
+def finance_post_invoice(
+    invoice_id: str, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    """Explicitly post issue journal for an existing invoice (idempotent)."""
+    invoice = next((i for i in seed.INVOICES if i.get("id") == invoice_id), None)
+    if not invoice:
+        raise HTTPException(status_code=404, detail="invoice_not_found")
+    je = gl_posting.post_invoice_issue(seed.GL_ENTRIES, invoice)
+    return {"ok": True, "invoice": invoice, "journal_entry": je}
 
 
 @app.get("/api/finance/statements/income")

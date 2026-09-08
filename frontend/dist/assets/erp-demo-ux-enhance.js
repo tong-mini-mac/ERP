@@ -7,6 +7,7 @@
  * - Present-campaign mock tab
  * - CFO Scope/Role/Department dropdowns + visible answer
  * - Stock manual barcode hint (scanner failover)
+ * - Finance: Journal Entry / GL / Trial Balance + invoice auto-post demo
  */
 (function () {
   var HOME = "https://www.inz.lol";
@@ -77,6 +78,12 @@
     "ตั้งค่า": "Settings",
     "องค์กร": "Organization",
     "องค์กร (Organization)": "Organization",
+    "สมุดรายวัน": "Journal Entry",
+    "บัญชีแยกประเภท": "General Ledger",
+    "งบทดลอง": "Trial Balance",
+    "ลงบัญชีอัตโนมัติ": "Auto-post to GL",
+    "สร้างใบแจ้งหนี้ + ลงบัญชี": "Create invoice + post JE",
+    "รับชำระ + ลงบัญชี": "Receive payment + post JE",
   };
 
   var EN_TO_TH = {};
@@ -666,6 +673,412 @@
     }
   }
 
+  function isFinancePage() {
+    return location.pathname === "/finance" || location.pathname === "/finance/";
+  }
+
+  function fmtMoney(n) {
+    var x = Number(n) || 0;
+    return x.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function enhanceFinanceJournal(rebuild) {
+    var wrap = document.getElementById("erp-demo-finance-gl");
+    if (!isFinancePage()) {
+      if (wrap) wrap.remove();
+      return;
+    }
+    var main = document.querySelector("main") || document.querySelector("#root");
+    if (!main) return;
+
+    if (!wrap) {
+      wrap = document.createElement("div");
+      wrap.id = "erp-demo-finance-gl";
+      wrap.style.cssText = "margin:1rem 0";
+      var host = main.querySelector(".page") || main;
+      var title = host.querySelector("h1,h2");
+      if (title && title.parentElement) title.insertAdjacentElement("afterend", wrap);
+      else host.insertBefore(wrap, host.firstChild);
+    }
+
+    if (rebuild || !wrap.querySelector("[data-fin-tabs]")) {
+      wrap.innerHTML =
+        "<div class='card' style='padding:1rem;margin-bottom:1rem;border:1px solid rgba(15,118,110,0.35);background:rgba(15,118,110,0.06)'>" +
+        "<h3 style='margin-top:0'>" +
+        tPair("ตารางบันทึกบัญชี (Journal / GL)", "Accounting trail (Journal / GL)") +
+        "</h3>" +
+        "<p style='color:#94a3b8;font-size:0.85rem;margin-top:0'>" +
+        tPair(
+          "Invoice/Payment จะ Post เข้าสมุดรายวันอัตโนมัติ (Dr/Cr) — ดูด้านล่าง",
+          "Invoices and payments auto-post to the journal (Dr/Cr). Browse below."
+        ) +
+        "</p>" +
+        "<div data-fin-tabs style='display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem'></div>" +
+        "<div data-fin-panel></div>" +
+        "</div>";
+
+      var tabs = wrap.querySelector("[data-fin-tabs]");
+      var defs = [
+        { id: "journal", th: "สมุดรายวัน", en: "Journal Entry" },
+        { id: "gl", th: "บัญชีแยกประเภท", en: "General Ledger" },
+        { id: "tb", th: "งบทดลอง", en: "Trial Balance" },
+        { id: "autopost", th: "ลงบัญชีอัตโนมัติ", en: "Auto-post demo" },
+      ];
+      defs.forEach(function (d, i) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "tab" + (i === 0 ? " tab-active" : "");
+        b.setAttribute("data-fin-tab", d.id);
+        b.textContent = tPair(d.th, d.en);
+        tabs.appendChild(b);
+      });
+
+      wrap._finTab = "journal";
+      tabs.addEventListener("click", function (ev) {
+        var btn = ev.target.closest("[data-fin-tab]");
+        if (!btn) return;
+        wrap._finTab = btn.getAttribute("data-fin-tab");
+        Array.prototype.forEach.call(tabs.querySelectorAll("[data-fin-tab]"), function (t) {
+          t.classList.toggle("tab-active", t === btn);
+        });
+        loadFinPanel();
+      });
+      wrap._loadFinPanel = loadFinPanel;
+      loadFinPanel();
+    } else {
+      // refresh tab labels on lang change
+      var labelMap = {
+        journal: tPair("สมุดรายวัน", "Journal Entry"),
+        gl: tPair("บัญชีแยกประเภท", "General Ledger"),
+        tb: tPair("งบทดลอง", "Trial Balance"),
+        autopost: tPair("ลงบัญชีอัตโนมัติ", "Auto-post demo"),
+      };
+      wrap.querySelectorAll("[data-fin-tab]").forEach(function (b) {
+        var id = b.getAttribute("data-fin-tab");
+        if (labelMap[id]) b.textContent = labelMap[id];
+      });
+      var h3 = wrap.querySelector("h3");
+      if (h3)
+        h3.textContent = tPair(
+          "ตารางบันทึกบัญชี (Journal / GL)",
+          "Accounting trail (Journal / GL)"
+        );
+      if (rebuild && typeof wrap._loadFinPanel === "function") wrap._loadFinPanel();
+    }
+
+    function loadFinPanel() {
+      var panel = wrap.querySelector("[data-fin-panel]");
+      if (!panel) return;
+      var tab = wrap._finTab || "journal";
+      panel.innerHTML =
+        "<p style='color:#94a3b8'>" + tPair("กำลังโหลด…", "Loading…") + "</p>";
+
+      if (tab === "autopost") {
+        renderAutopost(panel);
+        return;
+      }
+
+      var url =
+        tab === "journal"
+          ? "/api/finance/journal"
+          : tab === "gl"
+            ? "/api/finance/gl"
+            : "/api/finance/trial-balance";
+      fetch(url, { headers: authHeaders() })
+        .then(function (r) {
+          return r.json().then(function (d) {
+            return { ok: r.ok, d: d };
+          });
+        })
+        .then(function (res) {
+          if (!res.ok) {
+            panel.innerHTML =
+              "<p style='color:#b91c1c'>" +
+              (res.d.detail || "Failed") +
+              "</p>";
+            return;
+          }
+          if (tab === "journal") renderJournal(panel, res.d);
+          else if (tab === "gl") renderGl(panel, res.d);
+          else renderTb(panel, res.d);
+        })
+        .catch(function (err) {
+          panel.innerHTML = "<p style='color:#b91c1c'>" + String(err) + "</p>";
+        });
+    }
+
+    function renderJournal(panel, data) {
+      var items = data.items || [];
+      var html =
+        "<p style='font-size:0.85rem;color:#94a3b8'>" +
+        tPair("รายการทั้งหมด", "Total entries") +
+        ": <b>" +
+        (data.count != null ? data.count : items.length) +
+        "</b></p>";
+      html +=
+        "<div style='overflow:auto'><table style='width:100%;border-collapse:collapse;font-size:0.9rem'>" +
+        "<thead><tr>" +
+        "<th style='text-align:left;padding:0.35rem;border-bottom:1px solid #334155'>Date</th>" +
+        "<th style='text-align:left;padding:0.35rem;border-bottom:1px solid #334155'>ID / Source</th>" +
+        "<th style='text-align:left;padding:0.35rem;border-bottom:1px solid #334155'>Memo</th>" +
+        "<th style='text-align:right;padding:0.35rem;border-bottom:1px solid #334155'>Dr</th>" +
+        "<th style='text-align:right;padding:0.35rem;border-bottom:1px solid #334155'>Cr</th>" +
+        "</tr></thead><tbody>";
+      items.slice(0, 80).forEach(function (e) {
+        (e.lines || []).forEach(function (ln, i) {
+          html +=
+            "<tr>" +
+            "<td style='padding:0.3rem;border-bottom:1px solid #1e293b'>" +
+            (i === 0 ? e.date || "" : "") +
+            "</td>" +
+            "<td style='padding:0.3rem;border-bottom:1px solid #1e293b'>" +
+            (i === 0
+              ? (e.id || "") +
+                (e.source ? " · " + e.source : "") +
+                (e.ref ? " · " + e.ref : "")
+              : "↳ " + (ln.account || "")) +
+            "</td>" +
+            "<td style='padding:0.3rem;border-bottom:1px solid #1e293b'>" +
+            (i === 0 ? e.memo || "" : ln.name || ln.account || "") +
+            "</td>" +
+            "<td style='padding:0.3rem;border-bottom:1px solid #1e293b;text-align:right'>" +
+            (ln.debit ? fmtMoney(ln.debit) : "") +
+            "</td>" +
+            "<td style='padding:0.3rem;border-bottom:1px solid #1e293b;text-align:right'>" +
+            (ln.credit ? fmtMoney(ln.credit) : "") +
+            "</td>" +
+            "</tr>";
+        });
+      });
+      html += "</tbody></table></div>";
+      panel.innerHTML = html;
+    }
+
+    function renderGl(panel, data) {
+      var accounts = data.accounts || [];
+      var html =
+        "<p style='font-size:0.85rem;color:#94a3b8'>" +
+        tPair("จำนวนบัญชีที่มีรายการ", "Accounts with activity") +
+        ": <b>" +
+        accounts.length +
+        "</b></p>";
+      accounts.forEach(function (a) {
+        html +=
+          "<div style='margin:0.75rem 0;padding:0.5rem 0;border-top:1px solid #334155'>" +
+          "<strong>" +
+          a.account +
+          " — " +
+          (getLang() === "th" && a.name_th ? a.name_th : a.name) +
+          "</strong>" +
+          "<span style='float:right;font-size:0.85rem;color:#94a3b8'>bal " +
+          fmtMoney(a.balance) +
+          "</span>" +
+          "<div style='overflow:auto;margin-top:0.35rem'><table style='width:100%;border-collapse:collapse;font-size:0.85rem'>" +
+          "<thead><tr><th style='text-align:left'>Date</th><th style='text-align:left'>Memo</th>" +
+          "<th style='text-align:right'>Dr</th><th style='text-align:right'>Cr</th>" +
+          "<th style='text-align:right'>Bal</th></tr></thead><tbody>";
+        (a.lines || []).slice(0, 40).forEach(function (ln) {
+          html +=
+            "<tr><td style='padding:0.2rem'>" +
+            (ln.date || "") +
+            "</td><td style='padding:0.2rem'>" +
+            (ln.memo || "") +
+            "</td><td style='padding:0.2rem;text-align:right'>" +
+            (ln.debit ? fmtMoney(ln.debit) : "") +
+            "</td><td style='padding:0.2rem;text-align:right'>" +
+            (ln.credit ? fmtMoney(ln.credit) : "") +
+            "</td><td style='padding:0.2rem;text-align:right'>" +
+            fmtMoney(ln.balance) +
+            "</td></tr>";
+        });
+        html += "</tbody></table></div></div>";
+      });
+      panel.innerHTML = html || "<p>No ledger rows</p>";
+    }
+
+    function renderTb(panel, data) {
+      var items = data.items || [];
+      var html =
+        "<p style='font-size:0.85rem;color:#94a3b8'>" +
+        tPair("งบทดลองสมดุล", "Trial balance OK") +
+        ": <b style='color:" +
+        (data.balanced ? "#0f766e" : "#b91c1c") +
+        "'>" +
+        (data.balanced ? "YES" : "NO") +
+        "</b> · Dr " +
+        fmtMoney(data.total_debit) +
+        " / Cr " +
+        fmtMoney(data.total_credit) +
+        "</p>";
+      html +=
+        "<div style='overflow:auto'><table style='width:100%;border-collapse:collapse;font-size:0.9rem'>" +
+        "<thead><tr><th style='text-align:left;padding:0.35rem'>Acct</th>" +
+        "<th style='text-align:left;padding:0.35rem'>Name</th>" +
+        "<th style='text-align:right;padding:0.35rem'>Debit</th>" +
+        "<th style='text-align:right;padding:0.35rem'>Credit</th></tr></thead><tbody>";
+      items.forEach(function (r) {
+        html +=
+          "<tr><td style='padding:0.3rem;border-bottom:1px solid #1e293b'>" +
+          r.account +
+          "</td><td style='padding:0.3rem;border-bottom:1px solid #1e293b'>" +
+          (getLang() === "th" && r.name_th ? r.name_th : r.name) +
+          "</td><td style='padding:0.3rem;border-bottom:1px solid #1e293b;text-align:right'>" +
+          (r.debit ? fmtMoney(r.debit) : "") +
+          "</td><td style='padding:0.3rem;border-bottom:1px solid #1e293b;text-align:right'>" +
+          (r.credit ? fmtMoney(r.credit) : "") +
+          "</td></tr>";
+      });
+      html +=
+        "<tr><td></td><td style='padding:0.35rem;font-weight:600'>Total</td>" +
+        "<td style='padding:0.35rem;text-align:right;font-weight:600'>" +
+        fmtMoney(data.total_debit) +
+        "</td><td style='padding:0.35rem;text-align:right;font-weight:600'>" +
+        fmtMoney(data.total_credit) +
+        "</td></tr></tbody></table></div>";
+      panel.innerHTML = html;
+    }
+
+    function renderAutopost(panel) {
+      panel.innerHTML =
+        "<div style='display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))'>" +
+        "<div style='padding:0.75rem;border:1px dashed #0f766e;border-radius:8px'>" +
+        "<h4 style='margin:0 0 0.5rem'>" +
+        tPair("สร้างใบแจ้งหนี้ + ลงบัญชี", "Create invoice + post JE") +
+        "</h4>" +
+        "<p style='font-size:0.8rem;color:#94a3b8;margin:0 0 0.5rem'>Dr AR / Cr Revenue + VAT</p>" +
+        "<label>Customer</label><input data-ap-cust value='Demo Customer' />" +
+        "<label>Subtotal (THB)</label><input data-ap-amt type='number' value='10000' step='0.01' />" +
+        "<div style='margin-top:0.5rem'><button type='button' class='btn btn-primary' data-ap-create>" +
+        tPair("สร้าง + Post", "Create + Post") +
+        "</button></div>" +
+        "</div>" +
+        "<div style='padding:0.75rem;border:1px dashed #0f766e;border-radius:8px'>" +
+        "<h4 style='margin:0 0 0.5rem'>" +
+        tPair("รับชำระ + ลงบัญชี", "Receive payment + post JE") +
+        "</h4>" +
+        "<p style='font-size:0.8rem;color:#94a3b8;margin:0 0 0.5rem'>Dr Cash / Cr AR — pick a pending invoice</p>" +
+        "<label>Invoice</label><select data-ap-inv></select>" +
+        "<div style='margin-top:0.5rem'><button type='button' class='btn btn-primary' data-ap-pay>" +
+        tPair("รับชำระ + Post", "Pay + Post") +
+        "</button></div>" +
+        "</div></div>" +
+        "<pre data-ap-out style='white-space:pre-wrap;font-family:inherit;margin-top:1rem;font-size:0.85rem;color:#cbd5e1'></pre>";
+
+      var sel = panel.querySelector("[data-ap-inv]");
+      fetch("/api/finance/invoices", { headers: authHeaders() })
+        .then(function (r) {
+          return r.json();
+        })
+        .then(function (list) {
+          var pending = (list || []).filter(function (i) {
+            return i.status === "pending" || i.status === "overdue";
+          });
+          sel.innerHTML = "";
+          if (!pending.length) {
+            var o = document.createElement("option");
+            o.value = "";
+            o.textContent = "(no pending invoices)";
+            sel.appendChild(o);
+            return;
+          }
+          pending.slice(0, 30).forEach(function (inv) {
+            var o = document.createElement("option");
+            o.value = inv.id;
+            o.textContent =
+              inv.number + " · " + inv.customer_name + " · " + fmtMoney(inv.total) + " (" + inv.status + ")";
+            sel.appendChild(o);
+          });
+        })
+        .catch(function () {
+          sel.innerHTML = "<option value=''>(failed to load)</option>";
+        });
+
+      panel.querySelector("[data-ap-create]").addEventListener("click", function () {
+        var out = panel.querySelector("[data-ap-out]");
+        var subtotal = Number(panel.querySelector("[data-ap-amt]").value) || 0;
+        out.textContent = tPair("กำลังสร้าง…", "Creating…");
+        fetch("/api/finance/invoices", {
+          method: "POST",
+          headers: authHeaders(),
+          body: JSON.stringify({
+            customer_name: panel.querySelector("[data-ap-cust]").value || "Demo Customer",
+            subtotal: subtotal,
+          }),
+        })
+          .then(function (r) {
+            return r.json().then(function (d) {
+              return { ok: r.ok, d: d };
+            });
+          })
+          .then(function (res) {
+            if (!res.ok) {
+              out.textContent = res.d.detail || "Failed";
+              return;
+            }
+            var je = res.d.journal_entry || {};
+            out.textContent =
+              "OK invoice " +
+              (res.d.invoice && res.d.invoice.number) +
+              " → journal " +
+              (je.id || "") +
+              "\n" +
+              (je.memo || "") +
+              "\n" +
+              JSON.stringify(je.lines || [], null, 2);
+            wrap._finTab = "journal";
+            wrap.querySelectorAll("[data-fin-tab]").forEach(function (t) {
+              t.classList.toggle("tab-active", t.getAttribute("data-fin-tab") === "journal");
+            });
+            if (typeof wrap._loadFinPanel === "function") wrap._loadFinPanel();
+          })
+          .catch(function (err) {
+            out.textContent = String(err);
+          });
+      });
+
+      panel.querySelector("[data-ap-pay]").addEventListener("click", function () {
+        var out = panel.querySelector("[data-ap-out]");
+        var id = panel.querySelector("[data-ap-inv]").value;
+        if (!id) {
+          out.textContent = "Pick an invoice";
+          return;
+        }
+        out.textContent = tPair("กำลังรับชำระ…", "Posting payment…");
+        fetch("/api/finance/invoices/" + encodeURIComponent(id) + "/pay", {
+          method: "POST",
+          headers: authHeaders(),
+          body: JSON.stringify({}),
+        })
+          .then(function (r) {
+            return r.json().then(function (d) {
+              return { ok: r.ok, d: d };
+            });
+          })
+          .then(function (res) {
+            if (!res.ok) {
+              out.textContent = res.d.detail || "Failed";
+              return;
+            }
+            var je = res.d.journal_payment || {};
+            out.textContent =
+              "OK paid " +
+              (res.d.invoice && res.d.invoice.number) +
+              " receipt " +
+              ((res.d.receipt && res.d.receipt.number) || "") +
+              " → journal " +
+              (je.id || "") +
+              "\n" +
+              (je.memo || "") +
+              "\n" +
+              JSON.stringify(je.lines || [], null, 2);
+          })
+          .catch(function (err) {
+            out.textContent = String(err);
+          });
+      });
+    }
+  }
+
   var lastAppliedLang = null;
   var debounceTimer = null;
 
@@ -695,10 +1108,12 @@
         enhanceDocumentsManual(true);
         enhanceAddIngredientToDb();
         enhancePresentCampaign(true);
+        enhanceFinanceJournal(true);
       } else {
         enhanceDocumentsManual(false);
         enhanceAddIngredientToDb();
         enhancePresentCampaign(false);
+        enhanceFinanceJournal(false);
       }
     } finally {
       applyingLang = false;

@@ -5,6 +5,8 @@ from __future__ import annotations
 from datetime import date, timedelta
 from typing import Any
 
+from erp.gl_posting import ensure_invoice_trail, post_invoice_issue
+
 
 def build_finance(customers: list[dict]) -> dict[str, Any]:
     today = date(2026, 9, 7)
@@ -80,17 +82,32 @@ def build_finance(customers: list[dict]) -> dict[str, Any]:
         for i in range(3)
     ]
 
-    gl_entries = []
-    for i in range(60):
-        day = today - timedelta(days=i % 90)
+    # Auto-post from invoices/receipts (real accounting trail), then a few misc journals.
+    gl_entries: list[dict] = []
+    receipt_by_inv = {r["invoice_id"]: r for r in receipts}
+    for inv in invoices:
+        # Every issued invoice gets AR/Revenue; paid ones also get Cash/AR.
+        if inv["status"] == "paid":
+            ensure_invoice_trail(gl_entries, inv, receipt=receipt_by_inv.get(inv["id"]))
+        else:
+            post_invoice_issue(gl_entries, inv)
+
+    # Extra standalone journals so the demo ledger is not invoice-only.
+    base = len(gl_entries)
+    for i in range(12):
+        day = today - timedelta(days=i * 3 + 1)
+        amt = 2500 + i * 150
         gl_entries.append(
             {
-                "id": f"gl-{i + 1:03d}",
+                "id": f"gl-{base + i + 1:03d}",
                 "date": day.isoformat(),
-                "memo": f"Demo journal #{i + 1}",
+                "memo": f"Misc operating journal #{i + 1}",
+                "source": "manual",
+                "source_id": f"misc-{i + 1}",
+                "ref": f"MJ-2026-{i + 1:03d}",
                 "lines": [
-                    {"account": "1200" if i % 2 == 0 else "5100", "debit": 1000 + i * 10, "credit": 0},
-                    {"account": "4100" if i % 2 == 0 else "1100", "debit": 0, "credit": 1000 + i * 10},
+                    {"account": "5300", "debit": amt, "credit": 0, "name": "Operating expense"},
+                    {"account": "1100", "debit": 0, "credit": amt, "name": "Cash"},
                 ],
             }
         )
