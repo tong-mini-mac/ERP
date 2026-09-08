@@ -701,71 +701,71 @@
       else host.insertBefore(wrap, host.firstChild);
     }
 
-    if (rebuild || !wrap.querySelector("[data-fin-tabs]")) {
+    if (!wrap.querySelector("[data-fin-select]")) {
       wrap.innerHTML =
         "<div class='card' style='padding:1rem;margin-bottom:1rem;border:1px solid rgba(15,118,110,0.35);background:rgba(15,118,110,0.06)'>" +
-        "<h3 style='margin-top:0'>" +
-        tPair("ตารางบันทึกบัญชี (Journal / GL)", "Accounting trail (Journal / GL)") +
-        "</h3>" +
-        "<p style='color:#94a3b8;font-size:0.85rem;margin-top:0'>" +
-        tPair(
-          "Invoice/Payment จะ Post เข้าสมุดรายวันอัตโนมัติ (Dr/Cr) — ดูด้านล่าง",
-          "Invoices and payments auto-post to the journal (Dr/Cr). Browse below."
-        ) +
-        "</p>" +
-        "<div data-fin-tabs style='display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem'></div>" +
+        "<h3 data-fin-title style='margin-top:0'></h3>" +
+        "<p data-fin-desc style='color:#94a3b8;font-size:0.85rem;margin-top:0'></p>" +
+        "<label data-fin-label style='display:block;margin-bottom:0.35rem'></label>" +
+        "<select data-fin-select style='max-width:28rem;margin-bottom:0.75rem'>" +
+        "<option value='journal'></option>" +
+        "<option value='gl'></option>" +
+        "<option value='tb'></option>" +
+        "<option value='autopost'></option>" +
+        "</select>" +
         "<div data-fin-panel></div>" +
         "</div>";
 
-      var tabs = wrap.querySelector("[data-fin-tabs]");
-      var defs = [
-        { id: "journal", th: "สมุดรายวัน", en: "Journal Entry" },
-        { id: "gl", th: "บัญชีแยกประเภท", en: "General Ledger" },
-        { id: "tb", th: "งบทดลอง", en: "Trial Balance" },
-        { id: "autopost", th: "ลงบัญชีอัตโนมัติ", en: "Auto-post demo" },
-      ];
-      defs.forEach(function (d, i) {
-        var b = document.createElement("button");
-        b.type = "button";
-        b.className = "btn" + (i === 0 ? " btn-primary" : "");
-        b.setAttribute("data-fin-tab", d.id);
-        b.textContent = tPair(d.th, d.en);
-        b.style.cssText = "cursor:pointer;margin:0 0.25rem 0.25rem 0";
-        b.addEventListener("click", function (ev) {
-          ev.preventDefault();
-          ev.stopPropagation();
-          wrap._finTab = d.id;
-          Array.prototype.forEach.call(tabs.querySelectorAll("[data-fin-tab]"), function (t) {
-            var active = t.getAttribute("data-fin-tab") === d.id;
-            t.className = active ? "btn btn-primary" : "btn";
-          });
-          loadFinPanel();
-        });
-        tabs.appendChild(b);
+      wrap._finTab = "journal";
+      var sel = wrap.querySelector("[data-fin-select]");
+      sel.value = "journal";
+      sel.addEventListener("change", function () {
+        wrap._finTab = sel.value || "journal";
+        loadFinPanel();
       });
 
-      wrap._finTab = "journal";
       wrap._loadFinPanel = loadFinPanel;
+      window.__erpFinShow = function (tab) {
+        wrap._finTab = tab || "journal";
+        sel.value = wrap._finTab;
+        loadFinPanel();
+      };
+      applyFinLabels();
       loadFinPanel();
     } else {
-      // refresh tab labels on lang change
-      var labelMap = {
-        journal: tPair("สมุดรายวัน", "Journal Entry"),
-        gl: tPair("บัญชีแยกประเภท", "General Ledger"),
-        tb: tPair("งบทดลอง", "Trial Balance"),
-        autopost: tPair("ลงบัญชีอัตโนมัติ", "Auto-post demo"),
-      };
-      wrap.querySelectorAll("[data-fin-tab]").forEach(function (b) {
-        var id = b.getAttribute("data-fin-tab");
-        if (labelMap[id]) b.textContent = labelMap[id];
-      });
-      var h3 = wrap.querySelector("h3");
-      if (h3)
-        h3.textContent = tPair(
+      applyFinLabels();
+      if (rebuild && typeof wrap._loadFinPanel === "function") {
+        // keep current tab; do not wipe handlers
+      }
+    }
+
+    function applyFinLabels() {
+      var title = wrap.querySelector("[data-fin-title]");
+      var desc = wrap.querySelector("[data-fin-desc]");
+      var label = wrap.querySelector("[data-fin-label]");
+      var sel = wrap.querySelector("[data-fin-select]");
+      if (title)
+        title.textContent = tPair(
           "ตารางบันทึกบัญชี (Journal / GL)",
           "Accounting trail (Journal / GL)"
         );
-      if (rebuild && typeof wrap._loadFinPanel === "function") wrap._loadFinPanel();
+      if (desc)
+        desc.textContent = tPair(
+          "Invoice/Payment จะ Post เข้าสมุดรายวันอัตโนมัติ (Dr/Cr) — เลือกมุมมองด้านล่าง",
+          "Invoices and payments auto-post to the journal (Dr/Cr). Pick a view below."
+        );
+      if (label) label.textContent = tPair("มุมมองบัญชี", "Accounting view");
+      if (sel) {
+        var map = {
+          journal: tPair("สมุดรายวัน (Journal Entry)", "Journal Entry"),
+          gl: tPair("บัญชีแยกประเภท (General Ledger)", "General Ledger"),
+          tb: tPair("งบทดลอง (Trial Balance)", "Trial Balance"),
+          autopost: tPair("ลงบัญชีอัตโนมัติ (Auto-post)", "Auto-post demo"),
+        };
+        Array.prototype.forEach.call(sel.options, function (opt) {
+          if (map[opt.value]) opt.textContent = map[opt.value];
+        });
+      }
     }
 
     function loadFinPanel() {
@@ -966,7 +966,7 @@
         "</div></div>" +
         "<pre data-ap-out style='white-space:pre-wrap;font-family:inherit;margin-top:1rem;font-size:0.85rem;color:#cbd5e1'></pre>";
 
-      var sel = panel.querySelector("[data-ap-inv]");
+      var invSel = panel.querySelector("[data-ap-inv]");
       fetch("/api/finance/invoices", { headers: authHeaders() })
         .then(function (r) {
           return r.json();
@@ -975,12 +975,12 @@
           var pending = (list || []).filter(function (i) {
             return i.status === "pending" || i.status === "overdue";
           });
-          sel.innerHTML = "";
+          invSel.innerHTML = "";
           if (!pending.length) {
             var o = document.createElement("option");
             o.value = "";
             o.textContent = "(no pending invoices)";
-            sel.appendChild(o);
+            invSel.appendChild(o);
             return;
           }
           pending.slice(0, 30).forEach(function (inv) {
@@ -988,11 +988,11 @@
             o.value = inv.id;
             o.textContent =
               inv.number + " · " + inv.customer_name + " · " + fmtMoney(inv.total) + " (" + inv.status + ")";
-            sel.appendChild(o);
+            invSel.appendChild(o);
           });
         })
         .catch(function () {
-          sel.innerHTML = "<option value=''>(failed to load)</option>";
+          invSel.innerHTML = "<option value=''>(failed to load)</option>";
         });
 
       panel.querySelector("[data-ap-create]").addEventListener("click", function () {
@@ -1027,12 +1027,6 @@
               (je.memo || "") +
               "\n" +
               JSON.stringify(je.lines || [], null, 2);
-            wrap._finTab = "journal";
-            wrap.querySelectorAll("[data-fin-tab]").forEach(function (t) {
-              var active = t.getAttribute("data-fin-tab") === "journal";
-              t.className = active ? "btn btn-primary" : "btn";
-            });
-            if (typeof wrap._loadFinPanel === "function") wrap._loadFinPanel();
           })
           .catch(function (err) {
             out.textContent = String(err);
