@@ -95,7 +95,45 @@ def build_procurement(vendors: list[dict], skus: list[dict]) -> dict[str, Any]:
             "total": 220_000,
             "currency": "THB",
             "budget": 220_000,
+            "band": "high_value",
             "high_value": True,
+            "has_tor": True,
+        },
+    )
+    mid_sku = skus[2] if len(skus) > 2 else hv_sku
+    prs.insert(
+        0,
+        {
+            "id": "pr-mid-1001",
+            "title": f"PR งบกลาง — {mid_sku['name']} (TOR แนบ)",
+            "status": "pending",
+            "vendor": "",
+            "vendor_id": None,
+            "sku_id": mid_sku["id"],
+            "qty": 40,
+            "total": 45_000,
+            "currency": "THB",
+            "budget": 45_000,
+            "band": "mid_value",
+            "mid_value": True,
+            "has_tor": True,
+        },
+    )
+    prs.insert(
+        0,
+        {
+            "id": "pr-petty-1001",
+            "title": "PR เงินสดยืม — วัสดุสำนักงานด่วน",
+            "status": "approved",
+            "vendor": "ร้านอุปกรณ์ใกล้เคียง",
+            "vendor_id": None,
+            "sku_id": None,
+            "qty": 1,
+            "total": 3_200,
+            "currency": "THB",
+            "budget": 3_200,
+            "band": "petty",
+            "petty": True,
             "has_tor": True,
         },
     )

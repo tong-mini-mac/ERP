@@ -93,6 +93,7 @@
     "ภาษีหัก ณ ที่จ่าย": "Withholding tax",
     "หักขาด / สาย": "Absent / late deduction",
     "รันเงินเดือน (TH)": "Run payroll (TH)",
+    "จัดซื้อตามช่วงงบประมาณ": "Procurement by budget band",
     "จัดซื้อมูลค่าสูง (>100,000)": "High-value procurement (>100,000)",
     "ลงทะเบียนผู้ประกอบการ": "Register vendor",
     "บอร์ดประกาศสาธารณะ": "Public tender board",
@@ -1858,38 +1859,30 @@
     box.style.cssText =
       "margin:16px;padding:16px;border:1px solid #334155;border-radius:12px;background:#0f172a;color:#e2e8f0;font-family:system-ui,sans-serif";
     box.innerHTML =
-      "<h2 style='margin:0 0 8px;font-size:1.15rem'>จัดซื้อมูลค่าสูง (>100,000)</h2>" +
-      "<p style='margin:0 0 12px;color:#94a3b8;font-size:.9rem'>งบ &gt; 100,000: ลงทะเบียนผู้ขาย → PR+TOR → เชิญ ≥3 ราย → บอร์ดสาธารณะ → AI คัดเลือก → ผู้จัดการอนุมัติ → PO (&lt;1ล.) / สัญญา (≥1ล.) → ตรวจรับ+สต็อก → แจ้งบัญชี → ใบแจ้งหนี้/ตั้งเจ้าหนี้ · การเบิกตัดสต็อกทำที่เมนู Stock</p>" +
-      "<div id='erp-hv-meta' style='font-size:.8rem;color:#64748b;margin-bottom:10px'></div>" +
-      "<div style='display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px'>" +
+      "<h2 style='margin:0 0 8px;font-size:1.15rem'>จัดซื้อตามช่วงงบประมาณ</h2>" +
+      "<p style='margin:0 0 12px;color:#94a3b8;font-size:.9rem'>≤10,000 เงินสดยืม (float 50,000) · 10,001–100,000 ค้นราคาตลาด+≥3 ราย · &gt;100,000 บอร์ดสาธารณะ / PO&lt;1ล. สัญญา≥1ล. · เบิกตัดสต็อกที่เมนู Stock</p>" +
+      "<div style='display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px'>" +
+      "<button type='button' data-band='petty' class='btn btn-primary'>A) ≤10,000 เงินสดยืม</button>" +
+      "<button type='button' data-band='mid' class='btn'>B) 10k–100k</button>" +
+      "<button type='button' data-band='high' class='btn'>C) &gt;100k</button>" +
       "<button type='button' data-hv='refresh' class='btn'>รีเฟรช</button>" +
-      "<button type='button' data-hv='register' class='btn'>0) ลงทะเบียนผู้ขาย</button>" +
-      "<button type='button' data-hv='pr' class='btn'>1) สร้าง PR + TOR</button>" +
-      "<button type='button' data-hv='invite' class='btn'>2) เชิญเสนอราคา</button>" +
-      "<button type='button' data-hv='publish' class='btn'>3) ประกาศบอร์ด</button>" +
-      "<button type='button' data-hv='bid' class='btn'>เสนอราคา (บอร์ด)</button>" +
-      "<button type='button' data-hv='evaluate' class='btn btn-primary'>4) AI พิจารณา</button>" +
-      "<button type='button' data-hv='award' class='btn btn-primary'>4) ผู้จัดการอนุมัติผู้ชนะ</button>" +
-      "<button type='button' data-hv='issue' class='btn btn-primary'>5) ออก PO/สัญญา</button>" +
-      "<button type='button' data-hv='doc' class='btn'>5) อนุมัติสัญญา (≥1ล.)</button>" +
-      "<button type='button' data-hv='recv' class='btn'>6) เจ้าหน้าที่ตรวจรับ</button>" +
-      "<button type='button' data-hv='recvOk' class='btn btn-primary'>6) ผู้จัดการอนุมัติรับ</button>" +
-      "<button type='button' data-hv='vinv' class='btn'>8) ผู้ขายส่งใบแจ้งหนี้</button>" +
-      "<button type='button' data-hv='ap' class='btn btn-primary'>8) ตรวจแล้วส่งบัญชี</button>" +
       "</div>" +
+      "<div id='erp-hv-meta' style='font-size:.8rem;color:#64748b;margin-bottom:10px'></div>" +
+      "<div id='erp-hv-actions' style='display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px'></div>" +
       "<div id='erp-hv-msg' style='min-height:1.2em;margin-bottom:8px;color:#38bdf8;font-size:.9rem'></div>" +
       "<pre id='erp-hv-out' style='white-space:pre-wrap;background:#020617;border:1px solid #1e293b;border-radius:8px;padding:12px;max-height:420px;overflow:auto;font-size:.8rem;color:#cbd5e1'></pre>";
 
-    // Insert near top of page content
     var anchor = host.querySelector("h1, h2, .card, form") || host.firstChild;
     if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(box, anchor);
     else host.appendChild(box);
 
+    var band = "petty";
     var tenderId = null;
     var lastInvoiceId = null;
     var msg = box.querySelector("#erp-hv-msg");
     var out = box.querySelector("#erp-hv-out");
     var meta = box.querySelector("#erp-hv-meta");
+    var actions = box.querySelector("#erp-hv-actions");
 
     function show(obj) {
       out.textContent = typeof obj === "string" ? obj : JSON.stringify(obj, null, 2);
@@ -1912,6 +1905,66 @@
       });
     }
 
+    function renderActions() {
+      var html = "";
+      if (band === "petty") {
+        html =
+          "<button type='button' data-hv='pettyBuy' class='btn btn-primary'>1–2) PR+TOR ซื้อเงินสด</button>" +
+          "<button type='button' data-hv='pettyClear' class='btn btn-primary'>3) ส่งบิลเคลียร์บัญชี</button>" +
+          "<button type='button' data-hv='pettyRecon' class='btn'>4) กระทบยอดสิ้นเดือน</button>" +
+          "<button type='button' data-hv='pettyRefill' class='btn'>เติมเงินสดยืม → 50,000</button>";
+      } else if (band === "mid") {
+        html =
+          "<button type='button' data-hv='prMid' class='btn'>1) สร้าง PR+TOR (งบกลาง)</button>" +
+          "<button type='button' data-hv='market' class='btn btn-primary'>2) ค้นหาราคาตลาดออนไลน์</button>" +
+          "<button type='button' data-hv='invite' class='btn btn-primary'>3) เชิญ ≥3 ราย</button>" +
+          "<button type='button' data-hv='publish' class='btn'>3) เปิด bidding สาธารณะ (ถ้ามีเวลา)</button>" +
+          "<button type='button' data-hv='bid' class='btn'>เสนอราคา (บอร์ด)</button>" +
+          "<button type='button' data-hv='evaluate' class='btn btn-primary'>4) AI พิจารณา</button>" +
+          "<button type='button' data-hv='award' class='btn btn-primary'>ผู้จัดการอนุมัติ</button>" +
+          "<button type='button' data-hv='issue' class='btn btn-primary'>ออก PO</button>" +
+          "<button type='button' data-hv='recv' class='btn'>ตรวจรับ</button>" +
+          "<button type='button' data-hv='recvOk' class='btn'>ผู้จัดการอนุมัติรับ</button>" +
+          "<button type='button' data-hv='vinv' class='btn'>ใบแจ้งหนี้</button>" +
+          "<button type='button' data-hv='ap' class='btn'>ส่งบัญชี</button>";
+      } else {
+        html =
+          "<button type='button' data-hv='register' class='btn'>0) ลงทะเบียนผู้ขาย</button>" +
+          "<button type='button' data-hv='pr' class='btn'>1) สร้าง PR + TOR</button>" +
+          "<button type='button' data-hv='invite' class='btn'>2) เชิญเสนอราคา</button>" +
+          "<button type='button' data-hv='publish' class='btn'>3) ประกาศบอร์ด</button>" +
+          "<button type='button' data-hv='bid' class='btn'>เสนอราคา (บอร์ด)</button>" +
+          "<button type='button' data-hv='evaluate' class='btn btn-primary'>4) AI พิจารณา</button>" +
+          "<button type='button' data-hv='award' class='btn btn-primary'>4) ผู้จัดการอนุมัติผู้ชนะ</button>" +
+          "<button type='button' data-hv='issue' class='btn btn-primary'>5) ออก PO/สัญญา</button>" +
+          "<button type='button' data-hv='doc' class='btn'>5) อนุมัติสัญญา (≥1ล.)</button>" +
+          "<button type='button' data-hv='recv' class='btn'>6) เจ้าหน้าที่ตรวจรับ</button>" +
+          "<button type='button' data-hv='recvOk' class='btn btn-primary'>6) ผู้จัดการอนุมัติรับ</button>" +
+          "<button type='button' data-hv='vinv' class='btn'>8) ผู้ขายส่งใบแจ้งหนี้</button>" +
+          "<button type='button' data-hv='ap' class='btn btn-primary'>8) ตรวจแล้วส่งบัญชี</button>";
+      }
+      actions.innerHTML = html;
+      box.querySelectorAll("[data-band]").forEach(function (b) {
+        var on = b.getAttribute("data-band") === band;
+        b.className = on ? "btn btn-primary" : "btn";
+      });
+    }
+
+    function pickTender(tenders) {
+      var want = band === "mid" ? "mid_value" : band === "high" ? "high_value" : null;
+      if (!want) return null;
+      var match = tenders.find(function (x) {
+        return x.threshold === want;
+      });
+      if (tenderId) {
+        var cur = tenders.find(function (x) {
+          return x.id === tenderId;
+        });
+        if (cur && (!want || cur.threshold === want)) return cur;
+      }
+      return match || tenders[0] || null;
+    }
+
     function refresh() {
       return Promise.all([
         j("/api/procurement/flow/meta"),
@@ -1919,25 +1972,35 @@
         j("/api/procurement/board"),
         j("/api/procurement/accounting-alerts"),
         j("/api/procurement/vendor-invoices"),
+        j("/api/procurement/petty-cash"),
       ]).then(function (arr) {
         var m = arr[0];
         var tenders = arr[1].items || [];
-        if (!tenderId && tenders[0]) tenderId = tenders[0].id;
-        var t = tenders.find(function (x) {
-          return x.id === tenderId;
-        }) || tenders[0];
+        var petty = arr[5];
+        var t = pickTender(tenders);
         if (t) tenderId = t.id;
+        else if (band !== "petty") tenderId = null;
         meta.textContent =
-          "เกณฑ์: งบ > " +
+          "≤" +
+          (m.petty_max_thb || 10000).toLocaleString() +
+          " เงินสดยืม (float " +
+          (m.petty_float_thb || 50000).toLocaleString() +
+          ") · กลาง ≤" +
           (m.high_value_thb || 100000).toLocaleString() +
-          " THB · สัญญาเมื่อ ≥ " +
+          " · สูง >" +
+          (m.high_value_thb || 100000).toLocaleString() +
+          " · สัญญา ≥" +
           (m.contract_thb || 1000000).toLocaleString() +
-          " · ขั้นต่ำ " +
-          (m.min_quotes || 3) +
-          " ใบเสนอราคา · tender: " +
-          (tenderId || "—");
+          " · แท็บ: " +
+          band +
+          (tenderId ? " · tender: " + tenderId : "") +
+          (band === "petty"
+            ? " · คงเหลือ " + Number(petty.balance_thb || 0).toLocaleString() + " THB"
+            : "");
         show({
+          band: band,
           selected_tender: t,
+          petty_cash: petty,
           board: arr[2].items,
           accounting_alerts: arr[3].items,
           vendor_invoices: arr[4].items,
@@ -1947,7 +2010,20 @@
       });
     }
 
+    renderActions();
+
     box.addEventListener("click", function (ev) {
+      var bandBtn = ev.target.closest("[data-band]");
+      if (bandBtn) {
+        band = bandBtn.getAttribute("data-band");
+        tenderId = null;
+        renderActions();
+        setMsg("สลับแท็บ: " + band);
+        refresh().catch(function (e) {
+          setMsg("ผิดพลาด: " + (e.message || e));
+        });
+        return;
+      }
       var btn = ev.target.closest("[data-hv]");
       if (!btn) return;
       var act = btn.getAttribute("data-hv");
@@ -1957,7 +2033,92 @@
         p = refresh().then(function () {
           setMsg("อัปเดตแล้ว");
         });
-      else if (act === "register") {
+      else if (act === "pettyBuy") {
+        var title = prompt("เรื่อง PR + TOR (ซื้อเงินสด)", "ซื้อวัสดุสิ้นเปลืองด่วน");
+        if (!title) return setMsg("ยกเลิก");
+        var amt = prompt("จำนวนเงิน (ไม่เกิน 10,000)", "4500");
+        if (!amt) return setMsg("ยกเลิก");
+        p = j("/api/procurement/petty-cash/purchase", {
+          method: "POST",
+          body: {
+            title: title,
+            tor_summary: title + " ตาม TOR หน่วยงาน",
+            amount: Number(amt),
+            department: "Admin",
+            vendor_name: "ร้านค้าเงินสด",
+            receipt_no: "RC-" + Date.now().toString().slice(-6),
+          },
+        }).then(function (d) {
+          setMsg("ซื้อเงินสดแล้ว " + d.id + " / " + d.amount + " THB — คงเหลือรอเคลียร์");
+          return refresh();
+        });
+      } else if (act === "pettyClear") {
+        p = j("/api/procurement/petty-cash/clearance", {
+          method: "POST",
+          body: {},
+        }).then(function (d) {
+          setMsg("ส่งบัญชีเคลียร์ยอดยืม " + d.amount + " THB (" + d.accounting_ref + ")");
+          return refresh();
+        });
+      } else if (act === "pettyRecon") {
+        p = j("/api/procurement/petty-cash/reconcile", {
+          method: "POST",
+          body: { month: new Date().toISOString().slice(0, 7) },
+        }).then(function (d) {
+          setMsg(
+            (d.balanced ? "กระทบยอดครบ: " : "ยอดคลาดเคลื่อน: ") +
+              d.note_th +
+              " (ใช้ไป " +
+              d.spent_thb +
+              ")"
+          );
+          return refresh();
+        });
+      } else if (act === "pettyRefill") {
+        p = j("/api/procurement/petty-cash/refill", {
+          method: "POST",
+          body: { float_thb: 50000 },
+        }).then(function (d) {
+          setMsg("เติมเงินสดยืมแล้ว คงเหลือ " + d.after_thb + " THB");
+          return refresh();
+        });
+      } else if (act === "prMid") {
+        var titleM = prompt("เรื่อง PR + TOR (งบกลาง)", "จัดซื้อวัสดุช่วงงบกลาง");
+        if (!titleM) return setMsg("ยกเลิก");
+        p = j("/api/procurement/pr", {
+          method: "POST",
+          body: {
+            subject: titleM,
+            budget: 45000,
+            qty: 20,
+            kind: "goods",
+            create_tender: true,
+            tor_summary: titleM + " ตามสเปกหน่วยงาน",
+            tor_text: "คุณภาพมาตรฐาน\nส่งมอบ 7 วัน",
+            department: "Admin",
+          },
+        }).then(function (d) {
+          if (d.tender_id) tenderId = d.tender_id;
+          setMsg("สร้าง PR " + d.id + (d.tender_id ? " + tender " + d.tender_id : ""));
+          return refresh();
+        });
+      } else if (act === "market") {
+        p = j("/api/procurement/tenders/" + encodeURIComponent(tenderId) + "/market-research", {
+          method: "POST",
+          body: {},
+        }).then(function (d) {
+          setMsg(
+            "ราคากลางออนไลน์ " +
+              Number(d.market_median || 0).toLocaleString() +
+              " THB (min " +
+              d.market_min +
+              " / max " +
+              d.market_max +
+              ")"
+          );
+          return refresh();
+        });
+      } else if (act === "register") {
         var name = prompt("ชื่อผู้ประกอบการ", "Demo Vendor Co., Ltd.");
         if (!name) return setMsg("ยกเลิก");
         p = j("/api/procurement/vendors", {
@@ -1968,17 +2129,17 @@
           return refresh();
         });
       } else if (act === "pr") {
-        var title = prompt("เรื่อง PR + TOR", "จัดซื้ออุปกรณ์คลัง (งบสูง)");
-        if (!title) return setMsg("ยกเลิก");
+        var titleH = prompt("เรื่อง PR + TOR", "จัดซื้ออุปกรณ์คลัง (งบสูง)");
+        if (!titleH) return setMsg("ยกเลิก");
         p = j("/api/procurement/pr", {
           method: "POST",
           body: {
-            subject: title,
+            subject: titleH,
             budget: 250000,
             qty: 100,
             kind: "goods",
             create_tender: true,
-            tor_summary: title + " ตามสเปกหน่วยงาน",
+            tor_summary: titleH + " ตามสเปกหน่วยงาน",
             tor_text: "รับประกัน 12 เดือน\nส่งมอบ 14 วัน\nมีเอกสารรับรองคุณภาพ",
             department: "Operations",
           },
@@ -1988,44 +2149,51 @@
           return refresh();
         });
       } else if (act === "invite") {
-        p = j("/api/procurement/vendors").then(function (v) {
-          var ids = (v.items || []).slice(0, 3).map(function (x) {
-            return x.id;
+        p = j("/api/procurement/vendors")
+          .then(function (v) {
+            var ids = (v.items || []).slice(0, 3).map(function (x) {
+              return x.id;
+            });
+            return j("/api/procurement/tenders/" + encodeURIComponent(tenderId) + "/invite", {
+              method: "POST",
+              body: { vendor_ids: ids },
+            });
+          })
+          .then(function () {
+            setMsg("เชิญผู้ขายอย่างน้อย 3 รายแล้ว");
+            return refresh();
           });
-          return j("/api/procurement/tenders/" + encodeURIComponent(tenderId) + "/invite", {
-            method: "POST",
-            body: { vendor_ids: ids },
-          });
-        }).then(function () {
-          setMsg("เชิญผู้ขายอย่างน้อย 3 รายแล้ว");
-          return refresh();
-        });
       } else if (act === "publish") {
         p = j("/api/procurement/tenders/" + encodeURIComponent(tenderId) + "/publish", {
           method: "POST",
-          body: { opens_at: new Date().toISOString(), closes_at: new Date(Date.now() + 86400000 * 7).toISOString() },
+          body: {
+            opens_at: new Date().toISOString(),
+            closes_at: new Date(Date.now() + 86400000 * 7).toISOString(),
+          },
         }).then(function () {
           setMsg("ประกาศบนบอร์ดสาธารณะแล้ว");
           return refresh();
         });
       } else if (act === "bid") {
-        p = j("/api/procurement/vendors").then(function (v) {
-          var ven = (v.items || [])[3] || (v.items || [])[0];
-          if (!ven) throw new Error("no_vendor");
-          return j("/api/procurement/tenders/" + encodeURIComponent(tenderId) + "/bids", {
-            method: "POST",
-            body: {
-              vendor_id: ven.id,
-              amount: 168000,
-              tor_compliant: true,
-              channel: "board",
-              notes: "เสนอผ่านบอร์ดสาธารณะ",
-            },
+        p = j("/api/procurement/vendors")
+          .then(function (v) {
+            var ven = (v.items || [])[3] || (v.items || [])[0];
+            if (!ven) throw new Error("no_vendor");
+            return j("/api/procurement/tenders/" + encodeURIComponent(tenderId) + "/bids", {
+              method: "POST",
+              body: {
+                vendor_id: ven.id,
+                amount: band === "mid" ? 37500 : 168000,
+                tor_compliant: true,
+                channel: "board",
+                notes: "เสนอผ่านบอร์ดสาธารณะ",
+              },
+            });
+          })
+          .then(function () {
+            setMsg("รับใบเสนอราคาจากบอร์ดแล้ว");
+            return refresh();
           });
-        }).then(function () {
-          setMsg("รับใบเสนอราคาจากบอร์ดแล้ว");
-          return refresh();
-        });
       } else if (act === "evaluate") {
         p = j("/api/procurement/tenders/" + encodeURIComponent(tenderId) + "/evaluate", {
           method: "POST",

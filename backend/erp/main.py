@@ -668,6 +668,7 @@ async def procurement_pr_create(
     if len(subject) < 3:
         raise HTTPException(status_code=400, detail="subject_required")
     budget = float(body.get("budget") or body.get("total") or 0)
+    band = proc_flow.band_for_budget(budget)
     row = {
         "id": f"pr-{1000 + len(seed.PROCUREMENT_PRS) + 1}",
         "title": subject,
@@ -683,12 +684,17 @@ async def procurement_pr_create(
         "from_role": body.get("from_role") or "internal_user",
         "requester": body.get("requester"),
         "external_ref": body.get("external_ref"),
-        "high_value": budget > proc_flow.HIGH_VALUE_THB,
+        "band": band,
+        "petty": band == "petty",
+        "mid_value": band == "mid_value",
+        "high_value": band == "high_value",
         "has_tor": bool(body.get("tor_summary") or body.get("has_tor")),
     }
     seed.PROCUREMENT_PRS.insert(0, row)
-    # Auto-open high-value tender when budget > 100k and TOR present
-    if row["high_value"] and (body.get("tor_summary") or body.get("create_tender")):
+    # Auto-open tender for mid (10k–100k) and high (>100k) when TOR present
+    if band in ("mid_value", "high_value") and (
+        body.get("tor_summary") or body.get("create_tender")
+    ):
         try:
             tender = proc_flow.create_tender(
                 {
@@ -968,6 +974,78 @@ async def procurement_invoice_verify(
         body = {}
     try:
         return proc_flow.verify_invoice_to_ap(invoice_id, body)
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.post("/api/procurement/tenders/{tender_id}/market-research")
+async def procurement_market_research(
+    tender_id: str, request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    try:
+        return proc_flow.research_market_price(tender_id, body)
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.get("/api/procurement/petty-cash")
+def procurement_petty_cash(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    return proc_flow.petty_cash_status()
+
+
+@app.post("/api/procurement/petty-cash/purchase")
+async def procurement_petty_purchase(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    body = await request.json()
+    try:
+        return proc_flow.petty_purchase(body)
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.post("/api/procurement/petty-cash/clearance")
+async def procurement_petty_clearance(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    try:
+        return proc_flow.petty_submit_clearance(body)
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.post("/api/procurement/petty-cash/reconcile")
+async def procurement_petty_reconcile(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    try:
+        return proc_flow.petty_month_reconcile(body)
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.post("/api/procurement/petty-cash/refill")
+async def procurement_petty_refill(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    try:
+        return proc_flow.refill_petty_cash(body)
     except ValueError as e:
         raise _proc_err(e) from e
 
