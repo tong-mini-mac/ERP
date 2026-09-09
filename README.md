@@ -60,7 +60,7 @@ Audience is **portfolio reviewers** (CTO / Senior AI who got a job-application l
 | **No signup required** | Auto / shared login `demo@erp.demo` — open from `/demo` or the live URL |
 | **No metered trial system** | Do not block shipping on per-user timers or entitlements |
 
-Story-driven seed data: **ThaiTrade Solutions Co., Ltd.** — see [`docs/SYNTHETIC_DATA.md`](docs/SYNTHETIC_DATA.md) and `backend/erp/seeds/`.  
+Story-driven seed data: **ThaiTrade Solutions Co., Ltd.** — see [`docs/SYNTHETIC_DATA.md`](docs/SYNTHETIC_DATA.md) and `backend/erp/seeds/` (catalog ≥50 customers/vendors/SKUs; procurement mock ≥50 per set).  
 Optional later: nightly `POST /api/demo/reset` (header `X-Demo-Reset-Key`) — not a ship blocker.
 
 ---
@@ -97,7 +97,29 @@ ERP/
 
 ## Modules (sandbox)
 
-Finance, accounting docs, HR, Stock, Procurement, Marketing, Documents (OCR), CFO/Athena, Organization / Enterprise / Platform, Workflows — all against **demo data**.
+Finance, accounting docs, HR, Stock, **Procurement**, Marketing, Documents (OCR), CFO/Athena, Organization / Enterprise / Platform, Workflows — all against **demo data**.
+
+### Procurement (จัดซื้อตามช่วงงบ)
+
+Open **`/procurement`**. Every case is **scan-first** (work from scanned docs in-system); receipts / tax invoices / important originals can be **sent to accounting later** for tax filing.
+
+| Band | Budget (THB) | Flow |
+|------|--------------|------|
+| **A · Petty cash** | ≤ 10,000 | Float **50,000**; max **10,000**/receipt · PR+TOR → buy → clear bills with accounting → month-end reconcile |
+| **B · Mid** | > 10,000 and ≤ 100,000 | PR+TOR → online market-price research → ≥3 registered quotes (optional public board) → same award / PO / delivery / AP path as high |
+| **C · High** | > 100,000 | Public board · AI award (TOR-fit + lowest) · manager approve · **PO** if &lt; 1M · **contract** if ≥ 1M · delivery → stock → AP |
+
+Demo APIs (auth required):
+
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /api/procurement/flow/meta` | Thresholds + scan policy |
+| `GET /api/procurement/mock-stats` | Volume counts (≥50 per mock set) |
+| `GET/POST /api/procurement/documents…` | Scan registry + physical original follow-up |
+| `GET/POST /api/procurement/petty-cash…` | Petty float, purchase, clearance, reconcile |
+| `GET/POST /api/procurement/tenders…` | Mid/high tenders, bids, evaluate, award, PO/contract, delivery, invoices |
+
+Seed volume (process start / `POST /api/demo/reset`): **≥50** vendors, tenders, board cards, petty purchases, clearances, reconciles, vendor invoices, accounting alerts, and **≥50 scanned docs per type** (PR, TOR, receipt, tax invoice, …). Walkthrough anchors: `tender-hv-001`, `tender-mid-001`, `petty-101`.
 
 ---
 
