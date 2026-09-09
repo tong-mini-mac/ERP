@@ -1,10 +1,18 @@
-"""Customers, vendors, SKUs."""
+"""Commercial catalog: customers, vendors, SKUs (≥50 each).
+
+Vendors and SKUs feed Stock, Finance, and Procurement (petty / mid / high bands).
+Keep volumes at least 50 so list UIs and `/api/procurement/mock-stats` have
+enough rows for volume testing.
+"""
 
 from __future__ import annotations
 
 from typing import Any
 
 from erp.seeds._fake_data import barcode, company_name, phone, tax_id
+
+# Target size for every catalog collection (volume testing).
+CATALOG_SET_SIZE = 50
 
 CUSTOMER_BASES = [
     "ซิโลม รีเทล", "อโศก มาร์ท", "สาทร ซัพพลาย", "บางนา เทรดดิ้ง", "ลาดพร้าว สโตร์",
@@ -34,8 +42,9 @@ SKU_CATALOG = [
 
 
 def build_catalog() -> dict[str, Any]:
+    n = CATALOG_SET_SIZE
     customers = []
-    for i in range(50):
+    for i in range(n):
         base = CUSTOMER_BASES[i % len(CUSTOMER_BASES)]
         customers.append(
             {
@@ -51,7 +60,7 @@ def build_catalog() -> dict[str, Any]:
         )
 
     vendors = []
-    for i in range(50):
+    for i in range(n):
         base = VENDOR_BASES[i % len(VENDOR_BASES)]
         vendors.append(
             {
@@ -62,11 +71,14 @@ def build_catalog() -> dict[str, Any]:
                 "phone": phone(i + 40),
                 "currency": "USD" if i < 3 else "THB",
                 "lead_days": 21 if i < 3 else 5,
+                # Procurement invite / quoting demos
+                "categories": ["goods"] if i % 2 == 0 else ["services"],
+                "status": "active",
             }
         )
 
     skus = []
-    for i in range(50):
+    for i in range(n):
         prefix, label, unit, cost, price = SKU_CATALOG[i % len(SKU_CATALOG)]
         # Story: first 5 low stock, next 2 out of stock, rest healthy.
         if i < 5:
@@ -93,4 +105,9 @@ def build_catalog() -> dict[str, Any]:
             }
         )
 
-    return {"CUSTOMERS": customers, "VENDORS": vendors, "SKUS": skus}
+    return {
+        "CUSTOMERS": customers,
+        "VENDORS": vendors,
+        "SKUS": skus,
+        "CATALOG_SET_SIZE": n,
+    }

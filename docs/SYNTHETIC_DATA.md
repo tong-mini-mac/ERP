@@ -37,6 +37,31 @@ Data must tell a story: a **living fictional company** with history, problems, a
 | Several PRs pending approval | Approval workflow |
 | Absences / pending leave | HR attention |
 | Partial PO receive | GRN / partial receive |
+| Procurement bands A/B/C | Petty ≤10k · mid 10k–100k · high >100k on `/procurement` |
+| Scan-first + physical follow-up | Tax docs scanned in-system; originals sent to accounting later |
+
+## Catalog (`catalog.py`)
+
+Master commercial catalog used across Stock / Finance / Procurement:
+
+| Set | Count | Notes |
+|-----|------:|-------|
+| Customers | **50** | Thai retail/wholesale story names |
+| Vendors | **50** | Local + overseas; fed into procurement registry |
+| SKUs | **50** | Low/out-of-stock signals on first rows for PR demos |
+
+## Procurement seed + runtime flow
+
+| Layer | Source | Volume (target) |
+|-------|--------|----------------:|
+| PRs / POs | `seeds/procurement.py` | ≥50 POs; PRs include ≥50 per band (petty / mid / high) |
+| Document OCR history | `seeds/documents_seed.py` | ≥50 per doc type (PR, TOR, receipt, tax invoice, …) |
+| Runtime tenders / bids / board | `procurement_flow.reset_flow()` | ≥50 tenders, ≥50 board cards, 3 bids × tenders |
+| Petty cash | same | Float 50k; ≥50 purchases / clearances / month reconciles |
+| Vendor invoices + accounting alerts | same | ≥50 each |
+| Proc scanned docs | same | ≥50 per type; tax types mark `physical_status=pending_send` |
+
+Verify live/demo: `GET /api/procurement/mock-stats` → `ok: true`.
 
 ## Seed layout
 
@@ -46,13 +71,17 @@ backend/erp/seeds/
 ├── _fake_data.py        # Thai names, tax ids, addresses
 ├── master.py            # company, branches, depts, CoA slice
 ├── people.py            # users, members, employees
-├── catalog.py           # customers, vendors, SKUs
+├── catalog.py           # customers, vendors, SKUs (≥50 each)
 ├── stock.py             # warehouses, lots, movements, alerts
 ├── finance.py           # invoices, receipts, GL highlights
-├── procurement.py       # PR / PO
+├── procurement.py       # PR / PO (+ band-tagged mock PRs)
+├── documents_seed.py    # OCR scan history (≥50 per type)
 ├── hr.py                # attendance, leave, payroll
 └── scenarios.py         # dashboard alert summary
 ```
+
+Runtime procurement state (vendors registry, tenders, petty float, scanned docs):
+`backend/erp/procurement_flow.py` — reset with seed on startup / demo reset.
 
 `demo_seed.py` re-exports the built namespace so existing `from erp import demo_seed as seed` keeps working.
 
