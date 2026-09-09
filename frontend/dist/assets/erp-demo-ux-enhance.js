@@ -1860,12 +1860,14 @@
       "margin:16px;padding:16px;border:1px solid #334155;border-radius:12px;background:#0f172a;color:#e2e8f0;font-family:system-ui,sans-serif";
     box.innerHTML =
       "<h2 style='margin:0 0 8px;font-size:1.15rem'>จัดซื้อตามช่วงงบประมาณ</h2>" +
-      "<p style='margin:0 0 12px;color:#94a3b8;font-size:.9rem'>≤10,000 เงินสดยืม (float 50,000) · 10,001–100,000 ค้นราคาตลาด+≥3 ราย · &gt;100,000 บอร์ดสาธารณะ / PO&lt;1ล. สัญญา≥1ล. · เบิกตัดสต็อกที่เมนู Stock</p>" +
+      "<p style='margin:0 0 12px;color:#94a3b8;font-size:.9rem'><b style='color:#e2e8f0'>สแกนเอกสารเข้าระบบก่อนทุกกรณี</b> · ใบเสร็จ/ใบกำกับภาษี/เอกสารสำคัญ ส่งตัวจริงให้บัญชีตามหลังเพื่อยื่นภาษี · ≤10k เงินสดยืม · 10k–100k ราคาตลาด+≥3 ราย · &gt;100k บอร์ด/PO/สัญญา</p>" +
       "<div style='display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px'>" +
       "<button type='button' data-band='petty' class='btn btn-primary'>A) ≤10,000 เงินสดยืม</button>" +
       "<button type='button' data-band='mid' class='btn'>B) 10k–100k</button>" +
       "<button type='button' data-band='high' class='btn'>C) &gt;100k</button>" +
       "<button type='button' data-hv='refresh' class='btn'>รีเฟรช</button>" +
+      "<button type='button' data-hv='sendPhys' class='btn'>ส่งตัวจริง → บัญชี</button>" +
+      "<button type='button' data-hv='recvPhys' class='btn'>บัญชีรับตัวจริง</button>" +
       "</div>" +
       "<div id='erp-hv-meta' style='font-size:.8rem;color:#64748b;margin-bottom:10px'></div>" +
       "<div id='erp-hv-actions' style='display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px'></div>" +
@@ -1909,12 +1911,14 @@
       var html = "";
       if (band === "petty") {
         html =
+          "<button type='button' data-hv='scanPetty' class='btn btn-primary'>0) สแกน PR+TOR+ใบเสร็จ</button>" +
           "<button type='button' data-hv='pettyBuy' class='btn btn-primary'>1–2) PR+TOR ซื้อเงินสด</button>" +
           "<button type='button' data-hv='pettyClear' class='btn btn-primary'>3) ส่งบิลเคลียร์บัญชี</button>" +
           "<button type='button' data-hv='pettyRecon' class='btn'>4) กระทบยอดสิ้นเดือน</button>" +
           "<button type='button' data-hv='pettyRefill' class='btn'>เติมเงินสดยืม → 50,000</button>";
       } else if (band === "mid") {
         html =
+          "<button type='button' data-hv='scanTender' class='btn btn-primary'>0) สแกน PR+TOR</button>" +
           "<button type='button' data-hv='prMid' class='btn'>1) สร้าง PR+TOR (งบกลาง)</button>" +
           "<button type='button' data-hv='market' class='btn btn-primary'>2) ค้นหาราคาตลาดออนไลน์</button>" +
           "<button type='button' data-hv='invite' class='btn btn-primary'>3) เชิญ ≥3 ราย</button>" +
@@ -1925,10 +1929,11 @@
           "<button type='button' data-hv='issue' class='btn btn-primary'>ออก PO</button>" +
           "<button type='button' data-hv='recv' class='btn'>ตรวจรับ</button>" +
           "<button type='button' data-hv='recvOk' class='btn'>ผู้จัดการอนุมัติรับ</button>" +
-          "<button type='button' data-hv='vinv' class='btn'>ใบแจ้งหนี้</button>" +
+          "<button type='button' data-hv='vinv' class='btn'>สแกนใบแจ้งหนี้/ใบกำกับ</button>" +
           "<button type='button' data-hv='ap' class='btn'>ส่งบัญชี</button>";
       } else {
         html =
+          "<button type='button' data-hv='scanTender' class='btn btn-primary'>0) สแกน PR+TOR</button>" +
           "<button type='button' data-hv='register' class='btn'>0) ลงทะเบียนผู้ขาย</button>" +
           "<button type='button' data-hv='pr' class='btn'>1) สร้าง PR + TOR</button>" +
           "<button type='button' data-hv='invite' class='btn'>2) เชิญเสนอราคา</button>" +
@@ -1940,7 +1945,7 @@
           "<button type='button' data-hv='doc' class='btn'>5) อนุมัติสัญญา (≥1ล.)</button>" +
           "<button type='button' data-hv='recv' class='btn'>6) เจ้าหน้าที่ตรวจรับ</button>" +
           "<button type='button' data-hv='recvOk' class='btn btn-primary'>6) ผู้จัดการอนุมัติรับ</button>" +
-          "<button type='button' data-hv='vinv' class='btn'>8) ผู้ขายส่งใบแจ้งหนี้</button>" +
+          "<button type='button' data-hv='vinv' class='btn'>8) สแกนใบแจ้งหนี้/ใบกำกับ</button>" +
           "<button type='button' data-hv='ap' class='btn btn-primary'>8) ตรวจแล้วส่งบัญชี</button>";
       }
       actions.innerHTML = html;
@@ -1973,24 +1978,21 @@
         j("/api/procurement/accounting-alerts"),
         j("/api/procurement/vendor-invoices"),
         j("/api/procurement/petty-cash"),
+        j("/api/procurement/documents"),
       ]).then(function (arr) {
         var m = arr[0];
         var tenders = arr[1].items || [];
         var petty = arr[5];
+        var docs = arr[6];
         var t = pickTender(tenders);
         if (t) tenderId = t.id;
         else if (band !== "petty") tenderId = null;
         meta.textContent =
-          "≤" +
-          (m.petty_max_thb || 10000).toLocaleString() +
-          " เงินสดยืม (float " +
-          (m.petty_float_thb || 50000).toLocaleString() +
-          ") · กลาง ≤" +
-          (m.high_value_thb || 100000).toLocaleString() +
-          " · สูง >" +
-          (m.high_value_thb || 100000).toLocaleString() +
-          " · สัญญา ≥" +
-          (m.contract_thb || 1000000).toLocaleString() +
+          (m.scan_policy_th || "สแกนก่อนทุกกรณี") +
+          " · รอส่งตัวจริง " +
+          (docs.pending_physical_send || 0) +
+          " · ระหว่างส่ง " +
+          (docs.in_transit_to_accounting || 0) +
           " · แท็บ: " +
           band +
           (tenderId ? " · tender: " + tenderId : "") +
@@ -2001,6 +2003,7 @@
           band: band,
           selected_tender: t,
           petty_cash: petty,
+          documents: docs,
           board: arr[2].items,
           accounting_alerts: arr[3].items,
           vendor_invoices: arr[4].items,
@@ -2033,7 +2036,73 @@
         p = refresh().then(function () {
           setMsg("อัปเดตแล้ว");
         });
-      else if (act === "pettyBuy") {
+      else if (act === "scanPetty") {
+        var caseId =
+          prompt("รหัสรายการเงินสด (เช่น petty-101) หรือเว้นว่างให้สร้างใหม่ตอนซื้อ", "petty-101") ||
+          "petty-101";
+        p = Promise.all(
+          ["pr", "tor", "receipt"].map(function (dt) {
+            return j("/api/procurement/documents/scan", {
+              method: "POST",
+              body: {
+                case_kind: "petty",
+                case_id: caseId,
+                doc_type: dt,
+                filename: dt.toUpperCase() + "-" + caseId + ".pdf",
+                source: "upload",
+              },
+            });
+          })
+        ).then(function () {
+          setMsg("สแกน PR+TOR+ใบเสร็จของ " + caseId + " เข้าระบบแล้ว");
+          return refresh();
+        });
+      } else if (act === "scanTender") {
+        if (!tenderId) return setMsg("ยังไม่มี tender");
+        p = Promise.all(
+          ["pr", "tor"].map(function (dt) {
+            return j("/api/procurement/documents/scan", {
+              method: "POST",
+              body: {
+                case_kind: "tender",
+                case_id: tenderId,
+                doc_type: dt,
+                filename: dt.toUpperCase() + "-" + tenderId + ".pdf",
+                source: "upload",
+              },
+            });
+          })
+        ).then(function () {
+          setMsg("สแกน PR+TOR ของ " + tenderId + " เข้าระบบแล้ว");
+          return refresh();
+        });
+      } else if (act === "sendPhys") {
+        p = j("/api/procurement/documents").then(function (docs) {
+          var pending = docs.pending_physical_items || [];
+          if (!pending.length) throw new Error("ไม่มีเอกสารรอส่งตัวจริง");
+          return j(
+            "/api/procurement/documents/" + encodeURIComponent(pending[0].id) + "/send-original",
+            { method: "POST", body: { note: "ส่งตัวจริงตามหลังเพื่อยื่นภาษี" } }
+          ).then(function (d) {
+            setMsg("ส่งตัวจริง " + d.doc_type_th + " (" + d.filename + ") ให้บัญชีแล้ว");
+            return refresh();
+          });
+        });
+      } else if (act === "recvPhys") {
+        p = j("/api/procurement/documents").then(function (docs) {
+          var transit = docs.in_transit_items || [];
+          if (!transit.length) throw new Error("ไม่มีเอกสารระหว่างส่ง");
+          return j(
+            "/api/procurement/documents/" +
+              encodeURIComponent(transit[0].id) +
+              "/receive-original",
+            { method: "POST", body: { received_by: "accounting" } }
+          ).then(function (d) {
+            setMsg("บัญชีรับตัวจริง " + d.doc_type_th + " แล้ว");
+            return refresh();
+          });
+        });
+      } else if (act === "pettyBuy") {
         var title = prompt("เรื่อง PR + TOR (ซื้อเงินสด)", "ซื้อวัสดุสิ้นเปลืองด่วน");
         if (!title) return setMsg("ยกเลิก");
         var amt = prompt("จำนวนเงิน (ไม่เกิน 10,000)", "4500");

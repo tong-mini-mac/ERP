@@ -1050,6 +1050,86 @@ async def procurement_petty_refill(
         raise _proc_err(e) from e
 
 
+@app.get("/api/procurement/documents")
+def procurement_documents(
+    case_id: str | None = None,
+    pending_physical: bool = False,
+    _: dict[str, Any] = Depends(current_user),
+) -> dict[str, Any]:
+    if case_id or pending_physical:
+        items = proc_flow.list_proc_documents(
+            case_id=case_id, pending_physical=pending_physical
+        )
+        return {"items": items, "count": len(items)}
+    return proc_flow.documents_summary()
+
+
+@app.post("/api/procurement/documents/scan")
+async def procurement_document_scan(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    body = await request.json()
+    try:
+        row = proc_flow.register_document(body)
+        # Also mirror into global document scan history for Documents module
+        seed.DOCUMENT_SCANS.insert(
+            0,
+            {
+                "id": row["scan_id"],
+                "filename": row["filename"],
+                "doc_type": row["doc_type"],
+                "status": "parsed",
+                "vendor": "",
+                "total": row.get("amount") or 0,
+                "currency": "THB",
+                "source": row.get("source") or "upload",
+                "scanned_at": row["scanned_at"][:10],
+                "procurement_case_id": row["case_id"],
+                "requires_physical_original": row["requires_physical_original"],
+                "physical_status": row["physical_status"],
+                "demo": True,
+                "lines": [
+                    {
+                        "desc": row["doc_type_th"],
+                        "qty": 1,
+                        "amount": row.get("amount") or 0,
+                    }
+                ],
+            },
+        )
+        return row
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.post("/api/procurement/documents/{doc_id}/send-original")
+async def procurement_send_original(
+    doc_id: str, request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    try:
+        return proc_flow.mark_physical_sent(doc_id, body)
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.post("/api/procurement/documents/{doc_id}/receive-original")
+async def procurement_receive_original(
+    doc_id: str, request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    try:
+        return proc_flow.mark_physical_received(doc_id, body)
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
 @app.get("/api/marketing/campaigns/pre")
 def marketing_pre(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
     return {"items": seed.CAMPAIGNS_PRE}

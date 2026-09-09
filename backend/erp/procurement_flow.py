@@ -1,14 +1,12 @@
 """Procurement budget bands (demo).
 
+Policy (all bands): scan documents into the system first — every step runs
+from digital scans. Receipts, tax invoices, and some important originals may
+be sent to accounting later for real tax filing.
+
 A) ≤ 10,000 THB — petty cash (float 50,000; max 10,000/receipt)
-   PR+TOR → buy → collect receipts → clear advance with accounting → month-end reconcile
-
-B) > 10,000 and ≤ 100,000 THB — mid value
-   PR+TOR → online market-price research → ≥3 registered quotes
-   (optional public board if time) → then same award/PO/delivery/AP as high-value
-
-C) > 100,000 THB — high value (public board + AI award + manager …)
-   PO if < 1M; contract if ≥ 1M
+B) > 10,000 and ≤ 100,000 THB — mid value (market research + ≥3 quotes)
+C) > 100,000 THB — high value (public board + AI award …)
 """
 
 from __future__ import annotations
@@ -22,6 +20,26 @@ PETTY_FLOAT_THB = 50_000
 HIGH_VALUE_THB = 100_000
 CONTRACT_THB = 1_000_000
 
+# All cases: work from scanned docs in-system. Physical originals for tax
+# (receipt / tax invoice / similar) may be sent to accounting later.
+PHYSICAL_FOLLOWUP_DOC_TYPES = frozenset(
+    {"receipt", "tax_invoice", "withholding_cert", "important"}
+)
+DOC_TYPE_LABELS_TH = {
+    "pr": "ใบ PR",
+    "tor": "TOR",
+    "receipt": "ใบเสร็จ",
+    "tax_invoice": "ใบกำกับภาษี",
+    "quote": "ใบเสนอราคา",
+    "po": "ใบสั่งซื้อ/สั่งจ้าง",
+    "contract": "สัญญา",
+    "delivery": "ใบส่งมอบ/ตรวจรับ",
+    "vendor_invoice": "ใบแจ้งหนี้",
+    "withholding_cert": "หนังสือรับรองหัก ณ ที่จ่าย",
+    "important": "เอกสารสำคัญ",
+    "other": "เอกสารอื่น",
+}
+
 # Runtime demo state (reset with seed).
 VENDOR_REGISTRY: list[dict[str, Any]] = []
 TENDERS: list[dict[str, Any]] = []
@@ -29,6 +47,7 @@ PUBLIC_BOARD: list[dict[str, Any]] = []
 ACCOUNTING_ALERTS: list[dict[str, Any]] = []
 VENDOR_INVOICES: list[dict[str, Any]] = []
 PETTY_CASH: dict[str, Any] = {}
+PROC_DOCUMENTS: list[dict[str, Any]] = []
 _seq = {
     "ven": 100,
     "tender": 100,
@@ -38,6 +57,7 @@ _seq = {
     "petty": 100,
     "clear": 100,
     "recon": 100,
+    "doc": 100,
 }
 
 
@@ -59,9 +79,10 @@ def _next(kind: str) -> int:
 
 
 def reset_flow(vendors: list[dict[str, Any]], skus: list[dict[str, Any]]) -> None:
-    """Seed high + mid tenders and a petty-cash float with sample receipts."""
-    global VENDOR_REGISTRY, TENDERS, PUBLIC_BOARD, ACCOUNTING_ALERTS, VENDOR_INVOICES, PETTY_CASH
+    """Seed high + mid tenders, petty-cash float, and scanned docs."""
+    global VENDOR_REGISTRY, TENDERS, PUBLIC_BOARD, ACCOUNTING_ALERTS, VENDOR_INVOICES, PETTY_CASH, PROC_DOCUMENTS
     VENDOR_REGISTRY = []
+    PROC_DOCUMENTS = []
     for i, v in enumerate(vendors[:8]):
         VENDOR_REGISTRY.append(
             {
@@ -246,6 +267,7 @@ def reset_flow(vendors: list[dict[str, Any]], skus: list[dict[str, Any]]) -> Non
                 "purchased_at": _now(),
                 "status": "pending_clearance",
                 "cleared_batch_id": None,
+                "scan_complete": True,
             },
             {
                 "id": "petty-102",
@@ -259,11 +281,27 @@ def reset_flow(vendors: list[dict[str, Any]], skus: list[dict[str, Any]]) -> Non
                 "purchased_at": _now(),
                 "status": "pending_clearance",
                 "cleared_batch_id": None,
+                "scan_complete": True,
             },
         ],
         "clearance_batches": [],
         "month_reconciles": [],
     }
+    # Seed scanned docs (system-of-record). Physical originals pending for tax docs.
+    _seed_scan_docs(
+        [
+            ("petty", "petty-101", "pr", "PR-petty-101.pdf", False),
+            ("petty", "petty-101", "tor", "TOR-petty-101.pdf", False),
+            ("petty", "petty-101", "receipt", "RC-8801.pdf", True),
+            ("petty", "petty-102", "pr", "PR-petty-102.pdf", False),
+            ("petty", "petty-102", "tor", "TOR-petty-102.pdf", False),
+            ("petty", "petty-102", "receipt", "RC-8802.pdf", True),
+            ("tender", "tender-mid-001", "pr", "PR-mid-1001.pdf", False),
+            ("tender", "tender-mid-001", "tor", "TOR-mid-1001.pdf", False),
+            ("tender", "tender-hv-001", "pr", "PR-hv-1001.pdf", False),
+            ("tender", "tender-hv-001", "tor", "TOR-hv-1001.pdf", False),
+        ]
+    )
     _seq.update(
         {
             "ven": 100,
@@ -274,8 +312,37 @@ def reset_flow(vendors: list[dict[str, Any]], skus: list[dict[str, Any]]) -> Non
             "petty": 110,
             "clear": 100,
             "recon": 100,
+            "doc": 200,
         }
     )
+
+
+def _seed_scan_docs(rows: list[tuple[str, str, str, str, bool]]) -> None:
+    for case_kind, case_id, doc_type, filename, physical in rows:
+        needs_physical = physical or doc_type in PHYSICAL_FOLLOWUP_DOC_TYPES
+        PROC_DOCUMENTS.append(
+            {
+                "id": f"pdoc-{_next('doc')}",
+                "scan_id": f"scan-proc-{_next('doc')}",
+                "case_kind": case_kind,
+                "case_id": case_id,
+                "doc_type": doc_type,
+                "doc_type_th": DOC_TYPE_LABELS_TH.get(doc_type, doc_type),
+                "filename": filename,
+                "scanned_at": _now(),
+                "source": "upload",
+                "status": "scanned",
+                "requires_physical_original": needs_physical,
+                "physical_status": "pending_send" if needs_physical else "not_required",
+                "physical_sent_at": None,
+                "physical_received_at": None,
+                "note_th": (
+                    "สแกนเข้าระบบแล้ว — ส่งตัวจริงให้บัญชีภายหลังเพื่อยื่นภาษี"
+                    if needs_physical
+                    else "สแกนเข้าระบบแล้ว ใช้ทำธุรกรรมบนระบบ"
+                ),
+            }
+        )
 
 
 def thresholds() -> dict[str, Any]:
@@ -285,21 +352,35 @@ def thresholds() -> dict[str, Any]:
         "high_value_thb": HIGH_VALUE_THB,
         "contract_thb": CONTRACT_THB,
         "min_quotes": 3,
+        "scan_first": True,
+        "scan_policy_th": (
+            "ทุกกรณีต้องสแกนเอกสารเข้าสู่ระบบก่อนทำรายการ "
+            "ใบเสร็จ / ใบกำกับภาษี / เอกสารสำคัญบางอย่าง "
+            "อาจส่งตัวจริงให้บัญชีภายหลังเพื่อยื่นภาษี"
+        ),
+        "physical_followup_doc_types": sorted(PHYSICAL_FOLLOWUP_DOC_TYPES),
         "bands": [
             {
                 "id": "petty",
                 "th": "≤ 10,000 — เงินสดยืมถือ (float 50,000 / บิลไม่เกิน 10,000)",
                 "steps": [
+                    {"n": 0, "id": "scan", "th": "สแกน PR+TOR+ใบเสร็จเข้าระบบ"},
                     {"n": 1, "id": "pr_tor", "th": "รับ PR + TOR จากหน่วยงาน"},
                     {"n": 2, "id": "buy_cash", "th": "ซื้อด้วยเงินสดยืม (≤10,000/บิล)"},
                     {"n": 3, "id": "collect_receipts", "th": "รวบรวมบิล/ใบเสร็จ ส่งบัญชีเคลียร์ยอดยืม"},
                     {"n": 4, "id": "month_reconcile", "th": "กระทบยอดค่าใช้จ่ายทุกสิ้นเดือน"},
+                    {
+                        "n": 5,
+                        "id": "physical_followup",
+                        "th": "ส่งตัวจริงใบเสร็จ/ใบกำกับให้บัญชีภายหลัง (ยื่นภาษี)",
+                    },
                 ],
             },
             {
                 "id": "mid_value",
                 "th": "> 10,000 และ ≤ 100,000",
                 "steps": [
+                    {"n": 0, "id": "scan", "th": "สแกนเอกสารทุกขั้นเข้าระบบ"},
                     {"n": 1, "id": "pr_tor", "th": "ได้ PR + TOR"},
                     {"n": 2, "id": "market_research", "th": "ค้นหาราคาตลาดออนไลน์ (ราคากลาง)"},
                     {
@@ -308,12 +389,18 @@ def thresholds() -> dict[str, Any]:
                         "th": "ขอราคา ≥3 รายที่ลงทะเบียน หรือเปิด bidding สาธารณะถ้ามีเวลา",
                     },
                     {"n": 4, "id": "same_as_high", "th": "จากนั้นทำตามขั้นตอนเหมือนงบ >100,000"},
+                    {
+                        "n": 5,
+                        "id": "physical_followup",
+                        "th": "ส่งตัวจริงใบเสร็จ/ใบกำกับให้บัญชีภายหลัง",
+                    },
                 ],
             },
             {
                 "id": "high_value",
                 "th": "> 100,000",
                 "steps": [
+                    {"n": 0, "id": "scan", "th": "สแกนเอกสารทุกขั้นเข้าระบบ"},
                     {"n": 0, "id": "vendor_register", "th": "ผู้ประกอบการลงทะเบียน"},
                     {"n": 1, "id": "pr_tor", "th": "รับใบ PR + TOR"},
                     {"n": 2, "id": "invite_quotes", "th": "เชิญเสนอราคา ≥ 3 ราย"},
@@ -323,10 +410,16 @@ def thresholds() -> dict[str, Any]:
                     {"n": 6, "id": "delivery", "th": "ส่งมอบ + ตรวจรับ"},
                     {"n": 7, "id": "accounting_notify", "th": "แจ้งบัญชี"},
                     {"n": 8, "id": "vendor_invoice", "th": "ใบแจ้งหนี้ → ตั้งเจ้าหนี้"},
+                    {
+                        "n": 9,
+                        "id": "physical_followup",
+                        "th": "ส่งตัวจริงใบเสร็จ/ใบกำกับภาษีให้บัญชีภายหลัง",
+                    },
                 ],
             },
         ],
         "steps": [
+            {"n": 0, "id": "scan", "th": "สแกนเอกสารเข้าระบบก่อนทุกกรณี"},
             {"n": 0, "id": "vendor_register", "th": "ผู้ประกอบการลงทะเบียน"},
             {"n": 1, "id": "pr_tor", "th": "รับใบ PR + TOR"},
             {"n": 2, "id": "invite_quotes", "th": "เชิญเสนอราคา ≥ 3 ราย"},
@@ -336,6 +429,11 @@ def thresholds() -> dict[str, Any]:
             {"n": 6, "id": "delivery", "th": "ส่งมอบ + ตรวจรับ"},
             {"n": 7, "id": "accounting_notify", "th": "แจ้งบัญชี"},
             {"n": 8, "id": "vendor_invoice", "th": "ใบแจ้งหนี้ → ตั้งเจ้าหนี้"},
+            {
+                "n": 9,
+                "id": "physical_followup",
+                "th": "ส่งตัวจริงเอกสารภาษีให้บัญชีตามหลัง",
+            },
         ],
     }
 
@@ -428,6 +526,24 @@ def create_tender(body: dict[str, Any]) -> dict[str, Any]:
         "updated_at": _now(),
     }
     TENDERS.insert(0, row)
+    # Scan-first: attach PR + TOR scans (demo auto if not provided)
+    docs_in = body.get("documents") or []
+    if not docs_in and body.get("auto_scan", True):
+        docs_in = [
+            {"doc_type": "pr", "filename": f"{row['pr_id']}.pdf"},
+            {"doc_type": "tor", "filename": f"TOR-{row['pr_id']}.pdf"},
+        ]
+    for d in docs_in:
+        register_document(
+            {
+                "case_kind": "tender",
+                "case_id": tid,
+                "doc_type": d.get("doc_type"),
+                "filename": d.get("filename"),
+                "scan_id": d.get("scan_id"),
+                "source": d.get("source") or "upload",
+            }
+        )
     return deepcopy(row)
 
 
@@ -592,6 +708,8 @@ def ai_evaluate(tender_id: str) -> dict[str, Any]:
     t = get_tender(tender_id)
     if not t:
         raise ValueError("tender_not_found")
+    # Scan-first: PR + TOR must be in the system
+    ensure_scanned(tender_id, ["pr", "tor"])
     bids = t.get("bids") or []
     if len(bids) < int(t.get("min_quotes") or 3):
         raise ValueError("need_at_least_3_quotes")
@@ -715,6 +833,23 @@ def issue_document(tender_id: str) -> dict[str, Any]:
         t["status"] = "doc_issued"
         t["manager_doc_approved"] = True
     t["document"] = doc
+    # Scan issued PO/contract into system
+    register_document(
+        {
+            "case_kind": "tender",
+            "case_id": tender_id,
+            "doc_type": "contract" if doc["type"] == "contract" else "po",
+            "filename": f"{doc['number']}.pdf",
+            "amount": amount,
+            "source": "system",
+            "requires_physical_original": doc["type"] == "contract",
+            "note_th": (
+                "สแกน/ออกเอกสารในระบบ — สัญญาตัวจริงอาจส่งบัญชีภายหลัง"
+                if doc["type"] == "contract"
+                else "ออก PO ในระบบจากเอกสารสแกน"
+            ),
+        }
+    )
     _touch(t)
     return deepcopy(t)
 
@@ -841,6 +976,37 @@ def submit_vendor_invoice(tender_id: str, body: dict[str, Any]) -> dict[str, Any
     if not (t.get("delivery") or {}).get("manager_approved"):
         raise ValueError("delivery_not_approved")
     amount = float(body.get("amount") or (t.get("ai_award") or {}).get("winner_amount") or 0)
+    # Scan tax invoice / receipt into system (physical may follow later)
+    docs_in = body.get("documents") or []
+    if not docs_in and body.get("auto_scan", True):
+        docs_in = [
+            {
+                "doc_type": "tax_invoice",
+                "filename": f"TAX-{tender_id}.pdf",
+                "amount": amount,
+            },
+            {
+                "doc_type": "vendor_invoice",
+                "filename": f"INV-{tender_id}.pdf",
+                "amount": amount,
+            },
+        ]
+    for d in docs_in:
+        register_document(
+            {
+                "case_kind": "tender",
+                "case_id": tender_id,
+                "doc_type": d.get("doc_type"),
+                "filename": d.get("filename"),
+                "scan_id": d.get("scan_id"),
+                "amount": d.get("amount") or amount,
+                "source": d.get("source") or "upload",
+            }
+        )
+    # Need at least tax_invoice or receipt scanned for AP path
+    have = {d["doc_type"] for d in _docs_for(tender_id) if d.get("status") == "scanned"}
+    if "tax_invoice" not in have and "receipt" not in have:
+        raise ValueError("scan_required:ใบกำกับภาษีหรือใบเสร็จ")
     inv = {
         "id": f"vinv-{_next('inv')}",
         "tender_id": tender_id,
@@ -852,6 +1018,8 @@ def submit_vendor_invoice(tender_id: str, body: dict[str, Any]) -> dict[str, Any
         "submitted_at": _now(),
         "status": "pending_procurement_check",
         "ap_posted": False,
+        "scan_complete": True,
+        "physical_original_pending": True,
     }
     VENDOR_INVOICES.insert(0, inv)
     t["status"] = "invoice_received"
@@ -878,21 +1046,187 @@ def verify_invoice_to_ap(invoice_id: str, body: dict[str, Any] | None = None) ->
     if expected and abs(float(inv["amount"]) - expected) / expected > 0.01:
         raise ValueError("amount_mismatch")
 
+    have = {d["doc_type"] for d in _docs_for(inv["tender_id"]) if d.get("status") == "scanned"}
+    if "tax_invoice" not in have and "receipt" not in have:
+        raise ValueError("scan_required:ใบกำกับภาษีหรือใบเสร็จ")
+
     inv["status"] = "sent_to_accounting"
     inv["ap_posted"] = True
     inv["ap_ref"] = f"AP-{inv['number']}"
     inv["verified_at"] = _now()
+    inv["physical_followup_note_th"] = (
+        "ตั้งเจ้าหนี้จากเอกสารสแกนในระบบแล้ว — "
+        "ตัวจริงใบกำกับภาษี/ใบเสร็จส่งให้บัญชีตามหลังเพื่อยื่นภาษี"
+    )
     t["status"] = "ap_posted"
     _touch(t)
     # Close matching accounting alert
     for a in ACCOUNTING_ALERTS:
-        if a["tender_id"] == t["id"] and a["status"] == "open":
+        if a["tender_id"] == t["id"] and a["status"] == "open" and a.get("kind") != "physical_original":
             a["status"] = "closed"
     return deepcopy(inv)
 
 
 def list_vendor_invoices() -> list[dict[str, Any]]:
     return deepcopy(VENDOR_INVOICES)
+
+
+def list_proc_documents(
+    case_id: str | None = None,
+    pending_physical: bool = False,
+) -> list[dict[str, Any]]:
+    rows = PROC_DOCUMENTS
+    if case_id:
+        rows = [d for d in rows if d.get("case_id") == case_id]
+    if pending_physical:
+        rows = [
+            d
+            for d in rows
+            if d.get("requires_physical_original")
+            and d.get("physical_status") in ("pending_send", "sent_to_accounting")
+        ]
+    return deepcopy(rows)
+
+
+def _docs_for(case_id: str) -> list[dict[str, Any]]:
+    return [d for d in PROC_DOCUMENTS if d.get("case_id") == case_id]
+
+
+def ensure_scanned(case_id: str, required_types: list[str]) -> None:
+    have = {
+        d["doc_type"]
+        for d in _docs_for(case_id)
+        if d.get("status") == "scanned"
+    }
+    missing = [t for t in required_types if t not in have]
+    if missing:
+        labels = [DOC_TYPE_LABELS_TH.get(t, t) for t in missing]
+        raise ValueError("scan_required:" + ",".join(labels))
+
+
+def register_document(body: dict[str, Any]) -> dict[str, Any]:
+    """Scan/register a document into the system (required before process steps)."""
+    case_kind = str(body.get("case_kind") or "tender").strip()
+    if case_kind not in ("tender", "petty"):
+        case_kind = "tender"
+    case_id = str(body.get("case_id") or "").strip()
+    if not case_id:
+        raise ValueError("case_id_required")
+    doc_type = str(body.get("doc_type") or "other").strip()
+    if doc_type not in DOC_TYPE_LABELS_TH:
+        doc_type = "other"
+    filename = str(body.get("filename") or f"{doc_type}-{case_id}.pdf").strip()
+    needs_physical = bool(
+        body.get("requires_physical_original")
+        if body.get("requires_physical_original") is not None
+        else doc_type in PHYSICAL_FOLLOWUP_DOC_TYPES
+    )
+    # Replace prior scan of same type for this case
+    PROC_DOCUMENTS[:] = [
+        d
+        for d in PROC_DOCUMENTS
+        if not (d.get("case_id") == case_id and d.get("doc_type") == doc_type)
+    ]
+    row = {
+        "id": f"pdoc-{_next('doc')}",
+        "scan_id": str(body.get("scan_id") or f"scan-proc-{_next('doc')}"),
+        "case_kind": case_kind,
+        "case_id": case_id,
+        "doc_type": doc_type,
+        "doc_type_th": DOC_TYPE_LABELS_TH.get(doc_type, doc_type),
+        "filename": filename,
+        "scanned_at": _now(),
+        "source": str(body.get("source") or "upload"),
+        "status": "scanned",
+        "amount": float(body.get("amount") or 0) or None,
+        "requires_physical_original": needs_physical,
+        "physical_status": "pending_send" if needs_physical else "not_required",
+        "physical_sent_at": None,
+        "physical_received_at": None,
+        "note_th": str(
+            body.get("note_th")
+            or (
+                "สแกนเข้าระบบแล้ว — ส่งตัวจริงให้บัญชีภายหลังเพื่อยื่นภาษี"
+                if needs_physical
+                else "สแกนเข้าระบบแล้ว ใช้ทำธุรกรรมบนระบบ"
+            )
+        ),
+    }
+    PROC_DOCUMENTS.insert(0, row)
+    return deepcopy(row)
+
+
+def mark_physical_sent(doc_id: str, body: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Send physical original to accounting later (tax filing)."""
+    body = body or {}
+    doc = next((d for d in PROC_DOCUMENTS if d["id"] == doc_id), None)
+    if not doc:
+        raise ValueError("document_not_found")
+    if not doc.get("requires_physical_original"):
+        raise ValueError("physical_original_not_required")
+    doc["physical_status"] = "sent_to_accounting"
+    doc["physical_sent_at"] = _now()
+    doc["courier_note"] = str(body.get("note") or body.get("courier_note") or "ส่งตัวจริงตามหลัง")
+    ACCOUNTING_ALERTS.insert(
+        0,
+        {
+            "id": f"acct-alert-{_next('alert')}",
+            "tender_id": doc["case_id"] if doc["case_kind"] == "tender" else None,
+            "petty_case_id": doc["case_id"] if doc["case_kind"] == "petty" else None,
+            "proc_doc_id": doc["id"],
+            "title": f"รับตัวจริง {doc['doc_type_th']}",
+            "amount": doc.get("amount"),
+            "vendor_name": None,
+            "message_th": (
+                f"จัดซื้อส่งตัวจริง{doc['doc_type_th']} ({doc['filename']}) "
+                "เพื่อใช้ยื่นภาษี — รอฝ่ายบัญชียืนยันรับ"
+            ),
+            "created_at": _now(),
+            "status": "open",
+            "kind": "physical_original",
+        },
+    )
+    return deepcopy(doc)
+
+
+def mark_physical_received(doc_id: str, body: dict[str, Any] | None = None) -> dict[str, Any]:
+    body = body or {}
+    doc = next((d for d in PROC_DOCUMENTS if d["id"] == doc_id), None)
+    if not doc:
+        raise ValueError("document_not_found")
+    if doc.get("physical_status") not in ("sent_to_accounting", "pending_send"):
+        raise ValueError("nothing_to_receive")
+    doc["physical_status"] = "received_by_accounting"
+    doc["physical_received_at"] = _now()
+    doc["received_by"] = str(body.get("received_by") or "accounting")
+    for a in ACCOUNTING_ALERTS:
+        if a.get("proc_doc_id") == doc_id and a.get("status") == "open":
+            a["status"] = "closed"
+    return deepcopy(doc)
+
+
+def documents_summary() -> dict[str, Any]:
+    pending = [
+        d
+        for d in PROC_DOCUMENTS
+        if d.get("requires_physical_original")
+        and d.get("physical_status") == "pending_send"
+    ]
+    in_transit = [
+        d
+        for d in PROC_DOCUMENTS
+        if d.get("physical_status") == "sent_to_accounting"
+    ]
+    return {
+        "scan_first": True,
+        "policy_th": thresholds()["scan_policy_th"],
+        "total_scanned": len(PROC_DOCUMENTS),
+        "pending_physical_send": len(pending),
+        "in_transit_to_accounting": len(in_transit),
+        "items": deepcopy(PROC_DOCUMENTS),
+        "pending_physical_items": deepcopy(pending),
+        "in_transit_items": deepcopy(in_transit),
+    }
 
 
 def petty_cash_status() -> dict[str, Any]:
@@ -914,7 +1248,7 @@ def petty_cash_status() -> dict[str, Any]:
 
 
 def petty_purchase(body: dict[str, Any]) -> dict[str, Any]:
-    """Buy with petty cash: PR+TOR required, each bill ≤ 10,000."""
+    """Buy with petty cash: scanned PR+TOR+receipt required, each bill ≤ 10,000."""
     global PETTY_CASH
     if not PETTY_CASH:
         raise ValueError("petty_cash_not_initialized")
@@ -944,7 +1278,34 @@ def petty_purchase(body: dict[str, Any]) -> dict[str, Any]:
         "purchased_at": _now(),
         "status": "pending_clearance",
         "cleared_batch_id": None,
+        "scan_complete": False,
     }
+    # Scan-first: register uploaded scans (or auto-mock for demo button flow)
+    docs_in = body.get("documents") or []
+    if not docs_in and body.get("auto_scan", True):
+        docs_in = [
+            {"doc_type": "pr", "filename": f"{pr_id}.pdf"},
+            {"doc_type": "tor", "filename": f"TOR-{pr_id}.pdf"},
+            {
+                "doc_type": "receipt",
+                "filename": f"{row['receipt_no']}.pdf",
+                "amount": amount,
+            },
+        ]
+    for d in docs_in:
+        register_document(
+            {
+                "case_kind": "petty",
+                "case_id": row["id"],
+                "doc_type": d.get("doc_type"),
+                "filename": d.get("filename"),
+                "scan_id": d.get("scan_id"),
+                "amount": d.get("amount") or amount,
+                "source": d.get("source") or "upload",
+            }
+        )
+    ensure_scanned(row["id"], ["pr", "tor", "receipt"])
+    row["scan_complete"] = True
     PETTY_CASH["balance_thb"] = float(PETTY_CASH["balance_thb"]) - amount
     PETTY_CASH["purchases"].insert(0, row)
     return deepcopy(row)
@@ -961,6 +1322,8 @@ def petty_submit_clearance(body: dict[str, Any] | None = None) -> dict[str, Any]
         pending = [p for p in pending if p["id"] in idset]
     if not pending:
         raise ValueError("no_pending_receipts")
+    for p in pending:
+        ensure_scanned(p["id"], ["pr", "tor", "receipt"])
     total = sum(float(p["amount"]) for p in pending)
     batch = {
         "id": f"clear-{_next('clear')}",
@@ -972,9 +1335,10 @@ def petty_submit_clearance(body: dict[str, Any] | None = None) -> dict[str, Any]
         "status": "sent_to_accounting",
         "note_th": str(
             body.get("note_th")
-            or "รวบรวมบิล/ใบเสร็จ ส่งบัญชีเพื่อเคลียร์ยอดเงินยืม"
+            or "รวบรวมบิล/ใบเสร็จ (สแกนในระบบแล้ว) ส่งบัญชีเพื่อเคลียร์ยอดเงินยืม — ตัวจริงใบเสร็จส่งตามหลัง"
         ),
         "accounting_ref": f"ADV-CLR-{_next('clear')}",
+        "physical_followup_pending": True,
     }
     for p in pending:
         p["status"] = "cleared"
@@ -991,7 +1355,8 @@ def petty_submit_clearance(body: dict[str, Any] | None = None) -> dict[str, Any]
             "vendor_name": None,
             "message_th": (
                 f"ฝ่ายจัดซื้อส่งบิล/ใบเสร็จ {len(pending)} รายการ "
-                f"รวม {total:,.0f} THB เพื่อเคลียร์ยอดเงินยืม"
+                f"รวม {total:,.0f} THB เพื่อเคลียร์ยอดเงินยืม "
+                "(สแกนในระบบแล้ว — ตัวจริงส่งตามหลังเพื่อยื่นภาษี)"
             ),
             "created_at": _now(),
             "status": "open",
