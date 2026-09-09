@@ -36,6 +36,7 @@ from erp import demo_seed as seed
 from erp import accounting_docs_demo as ac_docs
 from erp import gl_posting
 from erp import payroll_th
+from erp import procurement_flow as proc_flow
 
 JWT_SECRET = os.getenv("JWT_SECRET", "erp-demo-dev-secret-change-me-32chars")
 JWT_ALG = "HS256"
@@ -182,6 +183,9 @@ def public_user(user: dict[str, Any]) -> dict[str, Any]:
 
 
 app = FastAPI(title="Universal ERP Demo", version="1.0.0-demo")
+
+# High-value procurement demo state (vendors / tenders / board / AP alerts)
+proc_flow.reset_flow(seed.VENDORS, seed.SKUS)
 
 cors_origins = [
     o.strip()
@@ -651,8 +655,66 @@ def finance_demo_flow(_: dict[str, Any] = Depends(current_user)) -> dict[str, An
 
 
 @app.get("/api/procurement/pr")
-def procurement_pr(_: dict[str, Any] = Depends(current_user)) -> list[dict[str, Any]]:
-    return seed.PROCUREMENT_PRS
+def procurement_pr(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    return {"items": seed.PROCUREMENT_PRS, "count": len(seed.PROCUREMENT_PRS)}
+
+
+@app.post("/api/procurement/pr")
+async def procurement_pr_create(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    body = await request.json()
+    subject = str(body.get("subject") or body.get("title") or "").strip()
+    if len(subject) < 3:
+        raise HTTPException(status_code=400, detail="subject_required")
+    budget = float(body.get("budget") or body.get("total") or 0)
+    band = proc_flow.band_for_budget(budget)
+    row = {
+        "id": f"pr-{1000 + len(seed.PROCUREMENT_PRS) + 1}",
+        "title": subject,
+        "status": "pending",
+        "vendor": body.get("vendor") or "",
+        "vendor_id": body.get("vendor_id"),
+        "sku_id": body.get("sku_id"),
+        "qty": int(body.get("qty") or 1),
+        "total": budget,
+        "budget": budget,
+        "currency": "THB",
+        "message": body.get("message") or "",
+        "from_role": body.get("from_role") or "internal_user",
+        "requester": body.get("requester"),
+        "external_ref": body.get("external_ref"),
+        "band": band,
+        "petty": band == "petty",
+        "mid_value": band == "mid_value",
+        "high_value": band == "high_value",
+        "has_tor": bool(body.get("tor_summary") or body.get("has_tor")),
+    }
+    seed.PROCUREMENT_PRS.insert(0, row)
+    # Auto-open tender for mid (10k–100k) and high (>100k) when TOR present
+    if band in ("mid_value", "high_value") and (
+        body.get("tor_summary") or body.get("create_tender")
+    ):
+        try:
+            tender = proc_flow.create_tender(
+                {
+                    "title": subject,
+                    "department": body.get("department") or "Operations",
+                    "pr_id": row["id"],
+                    "budget": budget,
+                    "kind": body.get("kind") or "goods",
+                    "tor_summary": body.get("tor_summary") or body.get("message") or subject,
+                    "tor_specs": body.get("tor_specs"),
+                    "tor_text": body.get("tor_text") or body.get("message"),
+                    "qty": row["qty"],
+                    "sku_id": body.get("sku_id"),
+                    "sku_name": body.get("sku_name"),
+                }
+            )
+            row["tender_id"] = tender["id"]
+        except ValueError:
+            pass
+    return row
 
 
 @app.post("/api/procurement/pr/{pr_id}/status")
@@ -661,10 +723,439 @@ async def procurement_pr_status(
 ) -> dict[str, Any]:
     body = await request.json()
     for pr in seed.PROCUREMENT_PRS:
-        if pr["id"] == pr_id:
+        if pr["id"] == pr_id or str(pr["id"]) == str(pr_id):
             pr["status"] = body.get("status") or pr["status"]
+            if body.get("note"):
+                pr["note"] = body.get("note")
             return pr
     raise HTTPException(status_code=404, detail="PR not found")
+
+
+def _proc_err(exc: ValueError) -> HTTPException:
+    return HTTPException(status_code=400, detail=str(exc))
+
+
+@app.get("/api/procurement/flow/meta")
+def procurement_flow_meta(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    return proc_flow.thresholds()
+
+
+@app.get("/api/procurement/vendors")
+def procurement_vendors(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    return {"items": proc_flow.list_vendors()}
+
+
+@app.post("/api/procurement/vendors")
+async def procurement_vendor_register(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    body = await request.json()
+    try:
+        return proc_flow.register_vendor(body)
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.get("/api/procurement/tenders")
+def procurement_tenders(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    return {"items": proc_flow.list_tenders()}
+
+
+@app.get("/api/procurement/tenders/{tender_id}")
+def procurement_tender_get(
+    tender_id: str, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    t = proc_flow.get_tender(tender_id)
+    if not t:
+        raise HTTPException(status_code=404, detail="tender_not_found")
+    return t
+
+
+@app.post("/api/procurement/tenders")
+async def procurement_tender_create(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    body = await request.json()
+    try:
+        return proc_flow.create_tender(body)
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.post("/api/procurement/tenders/{tender_id}/invite")
+async def procurement_tender_invite(
+    tender_id: str, request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    body = await request.json()
+    try:
+        return proc_flow.invite_vendors(
+            tender_id, list(body.get("vendor_ids") or body.get("vendors") or [])
+        )
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.post("/api/procurement/tenders/{tender_id}/publish")
+async def procurement_tender_publish(
+    tender_id: str, request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    try:
+        return proc_flow.publish_board(tender_id, body)
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.get("/api/procurement/board")
+def procurement_board(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    return {"items": proc_flow.list_board()}
+
+
+@app.post("/api/procurement/tenders/{tender_id}/bids")
+async def procurement_tender_bid(
+    tender_id: str, request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    body = await request.json()
+    try:
+        return proc_flow.submit_bid(tender_id, body)
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.post("/api/procurement/tenders/{tender_id}/evaluate")
+def procurement_tender_evaluate(
+    tender_id: str, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    try:
+        return proc_flow.ai_evaluate(tender_id)
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.post("/api/procurement/tenders/{tender_id}/award/approve")
+async def procurement_award_approve(
+    tender_id: str, request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    try:
+        return proc_flow.manager_approve_award(tender_id, body)
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.post("/api/procurement/tenders/{tender_id}/issue-doc")
+def procurement_issue_doc(
+    tender_id: str, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    try:
+        return proc_flow.issue_document(tender_id)
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.post("/api/procurement/tenders/{tender_id}/document/approve")
+async def procurement_doc_approve(
+    tender_id: str, request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    try:
+        return proc_flow.manager_approve_document(tender_id, body)
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+def _stock_receive_from_tender(t: dict[str, Any]) -> None:
+    """Post goods receipt into demo stock movements / on-hand."""
+    sku_id = (t.get("tor") or {}).get("sku_id")
+    qty = int((t.get("delivery") or {}).get("qty") or (t.get("tor") or {}).get("qty") or 0)
+    if not sku_id or qty <= 0:
+        return
+    for sku in seed.SKUS:
+        if sku.get("id") == sku_id:
+            sku["qty_on_hand"] = int(sku.get("qty_on_hand") or 0) + qty
+            break
+    wh = (seed.WAREHOUSES or [{}])[0]
+    seed.STOCK_MOVEMENTS.insert(
+        0,
+        {
+            "id": f"m-recv-{t['id']}",
+            "type": "receive",
+            "sku_id": sku_id,
+            "qty": qty,
+            "warehouse_id": wh.get("id"),
+            "ref": (t.get("document") or {}).get("number") or t["id"],
+            "note": f"GRN from tender {t['id']}",
+            "at": date.today().isoformat(),
+        },
+    )
+
+
+@app.post("/api/procurement/tenders/{tender_id}/delivery")
+async def procurement_delivery(
+    tender_id: str, request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    try:
+        return proc_flow.accept_delivery(tender_id, body, stock_hook=None)
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.post("/api/procurement/tenders/{tender_id}/delivery/approve")
+async def procurement_delivery_approve(
+    tender_id: str, request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    try:
+        return proc_flow.manager_approve_delivery(
+            tender_id, body, stock_hook=_stock_receive_from_tender
+        )
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.post("/api/procurement/tenders/{tender_id}/notify-accounting")
+def procurement_notify_accounting(
+    tender_id: str, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    try:
+        return proc_flow.notify_accounting(tender_id)
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.get("/api/procurement/accounting-alerts")
+def procurement_accounting_alerts(
+    _: dict[str, Any] = Depends(current_user),
+) -> dict[str, Any]:
+    return {"items": proc_flow.list_accounting_alerts()}
+
+
+@app.get("/api/procurement/vendor-invoices")
+def procurement_vendor_invoices(
+    _: dict[str, Any] = Depends(current_user),
+) -> dict[str, Any]:
+    return {"items": proc_flow.list_vendor_invoices()}
+
+
+@app.post("/api/procurement/tenders/{tender_id}/vendor-invoice")
+async def procurement_vendor_invoice(
+    tender_id: str, request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    body = await request.json()
+    try:
+        return proc_flow.submit_vendor_invoice(tender_id, body)
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.post("/api/procurement/vendor-invoices/{invoice_id}/verify")
+async def procurement_invoice_verify(
+    invoice_id: str, request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    try:
+        return proc_flow.verify_invoice_to_ap(invoice_id, body)
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.post("/api/procurement/tenders/{tender_id}/market-research")
+async def procurement_market_research(
+    tender_id: str, request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    try:
+        return proc_flow.research_market_price(tender_id, body)
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.get("/api/procurement/petty-cash")
+def procurement_petty_cash(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    return proc_flow.petty_cash_status()
+
+
+@app.post("/api/procurement/petty-cash/purchase")
+async def procurement_petty_purchase(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    body = await request.json()
+    try:
+        return proc_flow.petty_purchase(body)
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.post("/api/procurement/petty-cash/clearance")
+async def procurement_petty_clearance(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    try:
+        return proc_flow.petty_submit_clearance(body)
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.post("/api/procurement/petty-cash/reconcile")
+async def procurement_petty_reconcile(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    try:
+        return proc_flow.petty_month_reconcile(body)
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.post("/api/procurement/petty-cash/refill")
+async def procurement_petty_refill(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    try:
+        return proc_flow.refill_petty_cash(body)
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.get("/api/procurement/documents")
+def procurement_documents(
+    case_id: str | None = None,
+    pending_physical: bool = False,
+    _: dict[str, Any] = Depends(current_user),
+) -> dict[str, Any]:
+    if case_id or pending_physical:
+        items = proc_flow.list_proc_documents(
+            case_id=case_id, pending_physical=pending_physical
+        )
+        return {"items": items, "count": len(items)}
+    return proc_flow.documents_summary()
+
+
+@app.post("/api/procurement/documents/scan")
+async def procurement_document_scan(
+    request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    body = await request.json()
+    try:
+        row = proc_flow.register_document(body)
+        # Also mirror into global document scan history for Documents module
+        seed.DOCUMENT_SCANS.insert(
+            0,
+            {
+                "id": row["scan_id"],
+                "filename": row["filename"],
+                "doc_type": row["doc_type"],
+                "status": "parsed",
+                "vendor": "",
+                "total": row.get("amount") or 0,
+                "currency": "THB",
+                "source": row.get("source") or "upload",
+                "scanned_at": row["scanned_at"][:10],
+                "procurement_case_id": row["case_id"],
+                "requires_physical_original": row["requires_physical_original"],
+                "physical_status": row["physical_status"],
+                "demo": True,
+                "lines": [
+                    {
+                        "desc": row["doc_type_th"],
+                        "qty": 1,
+                        "amount": row.get("amount") or 0,
+                    }
+                ],
+            },
+        )
+        return row
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.post("/api/procurement/documents/{doc_id}/send-original")
+async def procurement_send_original(
+    doc_id: str, request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    try:
+        return proc_flow.mark_physical_sent(doc_id, body)
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.post("/api/procurement/documents/{doc_id}/receive-original")
+async def procurement_receive_original(
+    doc_id: str, request: Request, _: dict[str, Any] = Depends(current_user)
+) -> dict[str, Any]:
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    try:
+        return proc_flow.mark_physical_received(doc_id, body)
+    except ValueError as e:
+        raise _proc_err(e) from e
+
+
+@app.get("/api/procurement/mock-stats")
+def procurement_mock_stats(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    """Counts for volume testing (≥50 per mock set)."""
+    docs = proc_flow.documents_summary()
+    petty = proc_flow.petty_cash_status()
+    bids = sum(len(t.get("bids") or []) for t in proc_flow.TENDERS)
+    return {
+        "mock_set_size": proc_flow.MOCK_SET_SIZE,
+        "counts": {
+            "vendors": len(proc_flow.VENDOR_REGISTRY),
+            "tenders": len(proc_flow.TENDERS),
+            "bids": bids,
+            "public_board": len(proc_flow.list_board()),
+            "proc_documents": docs["total_scanned"],
+            "proc_documents_by_type": docs.get("counts_by_type") or {},
+            "petty_purchases": len(petty.get("purchases") or []),
+            "petty_clearance_batches": len(petty.get("clearance_batches") or []),
+            "petty_month_reconciles": len(petty.get("month_reconciles") or []),
+            "vendor_invoices": len(proc_flow.VENDOR_INVOICES),
+            "accounting_alerts": len(proc_flow.ACCOUNTING_ALERTS),
+            "seed_prs": len(seed.PROCUREMENT_PRS),
+            "seed_pos": len(seed.PURCHASE_ORDERS),
+            "seed_document_scans": len(getattr(seed, "DOCUMENT_SCANS", [])),
+        },
+        "ok": True,
+    }
 
 
 @app.get("/api/marketing/campaigns/pre")
@@ -1373,6 +1864,7 @@ def demo_reset(
         raise HTTPException(status_code=403, detail="reset_forbidden")
     counts = seed.reset_seed()
     ac_docs.reset_runtime()
+    proc_flow.reset_flow(seed.VENDORS, seed.SKUS)
     return {"ok": True, "reset": True, "counts": counts}
 
 
