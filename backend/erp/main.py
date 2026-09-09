@@ -1130,6 +1130,34 @@ async def procurement_receive_original(
         raise _proc_err(e) from e
 
 
+@app.get("/api/procurement/mock-stats")
+def procurement_mock_stats(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    """Counts for volume testing (≥50 per mock set)."""
+    docs = proc_flow.documents_summary()
+    petty = proc_flow.petty_cash_status()
+    bids = sum(len(t.get("bids") or []) for t in proc_flow.TENDERS)
+    return {
+        "mock_set_size": proc_flow.MOCK_SET_SIZE,
+        "counts": {
+            "vendors": len(proc_flow.VENDOR_REGISTRY),
+            "tenders": len(proc_flow.TENDERS),
+            "bids": bids,
+            "public_board": len(proc_flow.list_board()),
+            "proc_documents": docs["total_scanned"],
+            "proc_documents_by_type": docs.get("counts_by_type") or {},
+            "petty_purchases": len(petty.get("purchases") or []),
+            "petty_clearance_batches": len(petty.get("clearance_batches") or []),
+            "petty_month_reconciles": len(petty.get("month_reconciles") or []),
+            "vendor_invoices": len(proc_flow.VENDOR_INVOICES),
+            "accounting_alerts": len(proc_flow.ACCOUNTING_ALERTS),
+            "seed_prs": len(seed.PROCUREMENT_PRS),
+            "seed_pos": len(seed.PURCHASE_ORDERS),
+            "seed_document_scans": len(getattr(seed, "DOCUMENT_SCANS", [])),
+        },
+        "ok": True,
+    }
+
+
 @app.get("/api/marketing/campaigns/pre")
 def marketing_pre(_: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
     return {"items": seed.CAMPAIGNS_PRE}

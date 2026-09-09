@@ -1979,20 +1979,32 @@
         j("/api/procurement/vendor-invoices"),
         j("/api/procurement/petty-cash"),
         j("/api/procurement/documents"),
+        j("/api/procurement/mock-stats"),
       ]).then(function (arr) {
         var m = arr[0];
         var tenders = arr[1].items || [];
         var petty = arr[5];
         var docs = arr[6];
+        var stats = arr[7] || {};
         var t = pickTender(tenders);
         if (t) tenderId = t.id;
         else if (band !== "petty") tenderId = null;
+        var c = (stats.counts || {});
         meta.textContent =
+          "mock≥" +
+          (stats.mock_set_size || 50) +
+          " · vendors " +
+          (c.vendors || 0) +
+          " · tenders " +
+          (c.tenders || 0) +
+          " · docs " +
+          (c.proc_documents || 0) +
+          " · scans " +
+          (c.seed_document_scans || 0) +
+          " · " +
           (m.scan_policy_th || "สแกนก่อนทุกกรณี") +
           " · รอส่งตัวจริง " +
           (docs.pending_physical_send || 0) +
-          " · ระหว่างส่ง " +
-          (docs.in_transit_to_accounting || 0) +
           " · แท็บ: " +
           band +
           (tenderId ? " · tender: " + tenderId : "") +
@@ -2001,12 +2013,19 @@
             : "");
         show({
           band: band,
+          mock_stats: stats,
           selected_tender: t,
           petty_cash: petty,
-          documents: docs,
-          board: arr[2].items,
-          accounting_alerts: arr[3].items,
-          vendor_invoices: arr[4].items,
+          documents: {
+            total_scanned: docs.total_scanned,
+            counts_by_type: docs.counts_by_type,
+            pending_physical_send: docs.pending_physical_send,
+            in_transit_to_accounting: docs.in_transit_to_accounting,
+            pending_physical_items: (docs.pending_physical_items || []).slice(0, 5),
+          },
+          board_count: (arr[2].items || []).length,
+          accounting_alerts_count: (arr[3].items || []).length,
+          vendor_invoices_count: (arr[4].items || []).length,
         });
         var invs = arr[4].items || [];
         if (invs[0]) lastInvoiceId = invs[0].id;

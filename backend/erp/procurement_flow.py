@@ -78,217 +78,541 @@ def _next(kind: str) -> int:
     return _seq[kind]
 
 
+MOCK_SET_SIZE = 50
+
+
 def reset_flow(vendors: list[dict[str, Any]], skus: list[dict[str, Any]]) -> None:
-    """Seed high + mid tenders, petty-cash float, and scanned docs."""
+    """Seed ≥50 mock rows per procurement collection for testing."""
     global VENDOR_REGISTRY, TENDERS, PUBLIC_BOARD, ACCOUNTING_ALERTS, VENDOR_INVOICES, PETTY_CASH, PROC_DOCUMENTS
     VENDOR_REGISTRY = []
     PROC_DOCUMENTS = []
-    for i, v in enumerate(vendors[:8]):
-        VENDOR_REGISTRY.append(
-            {
-                "id": v["id"],
-                "name": v["name"],
-                "tax_id": v.get("tax_id") or "",
-                "phone": v.get("phone") or "",
-                "email": f"sales@{v['id']}.demo",
-                "categories": ["goods", "services"][i % 2 : ][:1] or ["goods"],
-                "registered_at": _now(),
-                "status": "active",
-                "origin": v.get("origin") or "local",
-            }
-        )
+    n = MOCK_SET_SIZE
+
+    # --- Vendors (≥50) ---
+    for i in range(n):
+        if i < len(vendors):
+            v = vendors[i]
+            VENDOR_REGISTRY.append(
+                {
+                    "id": v["id"],
+                    "name": v["name"],
+                    "tax_id": v.get("tax_id") or f"01055{7000000 + i}",
+                    "phone": v.get("phone") or f"02-{1000 + i:04d}-{1000 + i:04d}",
+                    "email": f"sales@{v['id']}.demo",
+                    "categories": ["goods"] if i % 2 == 0 else ["services"],
+                    "registered_at": _now(),
+                    "status": "active" if i % 17 else "pending",
+                    "origin": v.get("origin") or "local",
+                }
+            )
+        else:
+            VENDOR_REGISTRY.append(
+                {
+                    "id": f"ven-mock-{i + 1:03d}",
+                    "name": f"Mock Vendor {i + 1:03d} Co., Ltd.",
+                    "tax_id": f"01055{7000000 + i}",
+                    "phone": f"02-{1000 + i:04d}-0000",
+                    "email": f"sales{i + 1}@mock-vendor.demo",
+                    "categories": ["goods"] if i % 2 == 0 else ["services"],
+                    "registered_at": _now(),
+                    "status": "active",
+                    "origin": "local",
+                }
+            )
 
     sku = skus[5] if len(skus) > 5 else skus[0]
     mid_sku = skus[2] if len(skus) > 2 else sku
     invitees = VENDOR_REGISTRY[:3]
-    tender_id = "tender-hv-001"
-    bids = []
-    # Three quotes: one non-compliant, two compliant (lowest wins)
-    quotes = [
-        (invitees[0], 185_000, True, "ครบตาม TOR"),
-        (invitees[1], 172_500, True, "ครบตาม TOR + ส่งเร็วกว่า"),
-        (invitees[2], 155_000, False, "ขาดเอกสารรับรองคุณภาพ"),
+    departments = ["Operations", "Admin", "IT", "Finance", "Warehouse", "Marketing"]
+
+    def _three_bids(base: float, channel: str = "invite") -> list[dict[str, Any]]:
+        out = []
+        spreads = [(0.08, True, "ครบตาม TOR"), (0.0, True, "ครบตาม TOR + ส่งเร็ว"), (-0.05, False, "ขาดเอกสารรับรอง")]
+        for j, (spread, ok, note) in enumerate(spreads):
+            ven = VENDOR_REGISTRY[j % len(VENDOR_REGISTRY)]
+            out.append(
+                {
+                    "id": f"bid-{_next('bid')}",
+                    "vendor_id": ven["id"],
+                    "vendor_name": ven["name"],
+                    "amount": round(base * (1 + spread), 2),
+                    "currency": "THB",
+                    "submitted_at": _now(),
+                    "channel": channel,
+                    "tor_compliant": ok,
+                    "notes": note,
+                    "score_detail": {},
+                }
+            )
+        return out
+
+    # Walkthrough anchors (kept first for UI demos)
+    tender_hv = {
+        "id": "tender-hv-001",
+        "title": f"จัดซื้อ{sku['name']} สำหรับคลังกลาง (งบสูง)",
+        "department": "Operations",
+        "pr_id": "pr-hv-1001",
+        "tor": {
+            "summary": f"จัดหา {sku['name']} ตามสเปกคุณภาพมาตรฐาน จำนวน 500 หน่วย",
+            "specs": [
+                f"SKU อ้างอิง: {sku.get('sku') or sku['id']}",
+                "รับประกันอย่างน้อย 12 เดือน",
+                "ส่งมอบภายใน 14 วันหลังออก PO",
+                "มีเอกสารรับรองคุณภาพ",
+            ],
+            "qty": 500,
+            "sku_id": sku["id"],
+            "sku_name": sku["name"],
+            "unit": sku.get("unit") or "pcs",
+        },
+        "budget": 220_000,
+        "currency": "THB",
+        "kind": "goods",
+        "threshold": "high_value",
+        "status": "quoting",
+        "invitees": [v["id"] for v in invitees],
+        "min_quotes": 3,
+        "bids": [],
+        "market_research": None,
+        "board": {
+            "published": False,
+            "opens_at": None,
+            "closes_at": None,
+            "url_path": "/procurement/board/tender-hv-001",
+        },
+        "ai_award": None,
+        "manager_award_approved": False,
+        "manager_award_by": None,
+        "document": None,
+        "manager_doc_approved": False,
+        "delivery": None,
+        "accounting_notified": False,
+        "created_at": _now(),
+        "updated_at": _now(),
+    }
+    tender_hv["bids"] = [
+        {
+            "id": f"bid-{_next('bid')}",
+            "vendor_id": invitees[0]["id"],
+            "vendor_name": invitees[0]["name"],
+            "amount": 185_000,
+            "currency": "THB",
+            "submitted_at": _now(),
+            "channel": "invite",
+            "tor_compliant": True,
+            "notes": "ครบตาม TOR",
+            "score_detail": {},
+        },
+        {
+            "id": f"bid-{_next('bid')}",
+            "vendor_id": invitees[1]["id"],
+            "vendor_name": invitees[1]["name"],
+            "amount": 172_500,
+            "currency": "THB",
+            "submitted_at": _now(),
+            "channel": "invite",
+            "tor_compliant": True,
+            "notes": "ครบตาม TOR + ส่งเร็วกว่า",
+            "score_detail": {},
+        },
+        {
+            "id": f"bid-{_next('bid')}",
+            "vendor_id": invitees[2]["id"],
+            "vendor_name": invitees[2]["name"],
+            "amount": 155_000,
+            "currency": "THB",
+            "submitted_at": _now(),
+            "channel": "invite",
+            "tor_compliant": False,
+            "notes": "ขาดเอกสารรับรองคุณภาพ",
+            "score_detail": {},
+        },
     ]
-    for ven, amount, ok, note in quotes:
-        bids.append(
+
+    tender_mid = {
+        "id": "tender-mid-001",
+        "title": f"จัดซื้อ{mid_sku['name']} (งบกลาง 10k–100k)",
+        "department": "Admin",
+        "pr_id": "pr-mid-1001",
+        "tor": {
+            "summary": f"จัดหา {mid_sku['name']} จำนวน 40 หน่วย ตามความต้องการหน่วยงาน",
+            "specs": [
+                f"SKU อ้างอิง: {mid_sku.get('sku') or mid_sku['id']}",
+                "คุณภาพมาตรฐานตลาด",
+                "ส่งมอบภายใน 7 วัน",
+            ],
+            "qty": 40,
+            "sku_id": mid_sku["id"],
+            "sku_name": mid_sku["name"],
+            "unit": mid_sku.get("unit") or "pcs",
+        },
+        "budget": 45_000,
+        "currency": "THB",
+        "kind": "goods",
+        "threshold": "mid_value",
+        "status": "quoting",
+        "invitees": [v["id"] for v in invitees],
+        "min_quotes": 3,
+        "bids": [
             {
                 "id": f"bid-{_next('bid')}",
-                "vendor_id": ven["id"],
-                "vendor_name": ven["name"],
-                "amount": amount,
+                "vendor_id": invitees[0]["id"],
+                "vendor_name": invitees[0]["name"],
+                "amount": 42_000,
                 "currency": "THB",
                 "submitted_at": _now(),
                 "channel": "invite",
-                "tor_compliant": ok,
-                "notes": note,
+                "tor_compliant": True,
+                "notes": "ครบตาม TOR",
                 "score_detail": {},
-            }
-        )
-
-    mid_id = "tender-mid-001"
-    mid_bids = []
-    mid_quotes = [
-        (invitees[0], 42_000, True, "ครบตาม TOR"),
-        (invitees[1], 38_500, True, "ครบตาม TOR"),
-        (invitees[2], 41_200, True, "ครบตาม TOR"),
-    ]
-    for ven, amount, ok, note in mid_quotes:
-        mid_bids.append(
+            },
             {
                 "id": f"bid-{_next('bid')}",
-                "vendor_id": ven["id"],
-                "vendor_name": ven["name"],
-                "amount": amount,
+                "vendor_id": invitees[1]["id"],
+                "vendor_name": invitees[1]["name"],
+                "amount": 38_500,
                 "currency": "THB",
                 "submitted_at": _now(),
                 "channel": "invite",
-                "tor_compliant": ok,
-                "notes": note,
+                "tor_compliant": True,
+                "notes": "ครบตาม TOR",
                 "score_detail": {},
-            }
-        )
+            },
+            {
+                "id": f"bid-{_next('bid')}",
+                "vendor_id": invitees[2]["id"],
+                "vendor_name": invitees[2]["name"],
+                "amount": 41_200,
+                "currency": "THB",
+                "submitted_at": _now(),
+                "channel": "invite",
+                "tor_compliant": True,
+                "notes": "ครบตาม TOR",
+                "score_detail": {},
+            },
+        ],
+        "market_research": {
+            "researched_at": _now(),
+            "sources": [
+                {"site": "shopee.demo", "price": 39_900, "url": "https://shopee.demo/item/1"},
+                {"site": "lazada.demo", "price": 41_500, "url": "https://lazada.demo/item/2"},
+                {"site": "market.demo", "price": 40_200, "url": "https://market.demo/item/3"},
+            ],
+            "market_median": 40_200.0,
+            "market_min": 39_900.0,
+            "market_max": 41_500.0,
+            "note_th": "ค้นหาราคาออนไลน์เพื่อหาราคากลาง/ราคาตลาด",
+        },
+        "board": {
+            "published": False,
+            "opens_at": None,
+            "closes_at": None,
+            "url_path": "/procurement/board/tender-mid-001",
+        },
+        "ai_award": None,
+        "manager_award_approved": False,
+        "manager_award_by": None,
+        "document": None,
+        "manager_doc_approved": False,
+        "delivery": None,
+        "accounting_notified": False,
+        "created_at": _now(),
+        "updated_at": _now(),
+    }
 
-    TENDERS = [
-        {
-            "id": tender_id,
-            "title": f"จัดซื้อ{sku['name']} สำหรับคลังกลาง (งบสูง)",
-            "department": "Operations",
-            "pr_id": "pr-hv-1001",
-            "tor": {
-                "summary": f"จัดหา {sku['name']} ตามสเปกคุณภาพมาตรฐาน จำนวน 500 หน่วย",
-                "specs": [
-                    f"SKU อ้างอิง: {sku.get('sku') or sku['id']}",
-                    "รับประกันอย่างน้อย 12 เดือน",
-                    "ส่งมอบภายใน 14 วันหลังออก PO",
-                    "มีเอกสารรับรองคุณภาพ",
-                ],
-                "qty": 500,
-                "sku_id": sku["id"],
-                "sku_name": sku["name"],
-                "unit": sku.get("unit") or "pcs",
-            },
-            "budget": 220_000,
-            "currency": "THB",
-            "kind": "goods",
-            "threshold": "high_value",
-            "status": "quoting",
-            "invitees": [v["id"] for v in invitees],
-            "min_quotes": 3,
-            "bids": bids,
-            "market_research": None,
-            "board": {
-                "published": False,
-                "opens_at": None,
-                "closes_at": None,
-                "url_path": f"/procurement/board/{tender_id}",
-            },
-            "ai_award": None,
-            "manager_award_approved": False,
-            "manager_award_by": None,
-            "document": None,
-            "manager_doc_approved": False,
-            "delivery": None,
-            "accounting_notified": False,
-            "created_at": _now(),
-            "updated_at": _now(),
-        },
-        {
-            "id": mid_id,
-            "title": f"จัดซื้อ{mid_sku['name']} (งบกลาง 10k–100k)",
-            "department": "Admin",
-            "pr_id": "pr-mid-1001",
-            "tor": {
-                "summary": f"จัดหา {mid_sku['name']} จำนวน 40 หน่วย ตามความต้องการหน่วยงาน",
-                "specs": [
-                    f"SKU อ้างอิง: {mid_sku.get('sku') or mid_sku['id']}",
-                    "คุณภาพมาตรฐานตลาด",
-                    "ส่งมอบภายใน 7 วัน",
-                ],
-                "qty": 40,
-                "sku_id": mid_sku["id"],
-                "sku_name": mid_sku["name"],
-                "unit": mid_sku.get("unit") or "pcs",
-            },
-            "budget": 45_000,
-            "currency": "THB",
-            "kind": "goods",
-            "threshold": "mid_value",
-            "status": "quoting",
-            "invitees": [v["id"] for v in invitees],
-            "min_quotes": 3,
-            "bids": mid_bids,
-            "market_research": {
-                "researched_at": _now(),
-                "sources": [
-                    {"site": "shopee.demo", "price": 39_900, "url": "https://shopee.demo/item/1"},
-                    {"site": "lazada.demo", "price": 41_500, "url": "https://lazada.demo/item/2"},
-                    {"site": "market.demo", "price": 40_200, "url": "https://market.demo/item/3"},
-                ],
-                "market_median": 40_200.0,
-                "market_min": 39_900.0,
-                "market_max": 41_500.0,
-                "note_th": "ค้นหาราคาออนไลน์เพื่อหาราคากลาง/ราคาตลาด",
-            },
-            "board": {
-                "published": False,
-                "opens_at": None,
-                "closes_at": None,
-                "url_path": f"/procurement/board/{mid_id}",
-            },
-            "ai_award": None,
-            "manager_award_approved": False,
-            "manager_award_by": None,
-            "document": None,
-            "manager_doc_approved": False,
-            "delivery": None,
-            "accounting_notified": False,
-            "created_at": _now(),
-            "updated_at": _now(),
-        },
+    TENDERS = [tender_hv, tender_mid]
+    statuses = [
+        "received",
+        "quoting",
+        "board_open",
+        "awaiting_manager_award",
+        "award_approved",
+        "doc_issued",
+        "delivered",
+        "awaiting_invoice",
+        "ap_posted",
     ]
+
+    # Pad tenders to ≥50 (mix mid/high)
+    for i in range(2, n):
+        is_mid = i % 2 == 0
+        s = skus[i % len(skus)]
+        tid = f"tender-{'mid' if is_mid else 'hv'}-{i + 1:03d}"
+        budget = (15_000 + (i * 1_700) % 80_000) if is_mid else (120_000 + (i * 9_500) % 800_000)
+        base = budget * 0.85
+        ven_ids = [VENDOR_REGISTRY[(i + k) % n]["id"] for k in range(3)]
+        published = True  # mock board volume for testing
+        st = statuses[i % len(statuses)]
+        if i < 2:
+            published = False
+            st = "quoting"
+        row = {
+            "id": tid,
+            "title": f"{'งบกลาง' if is_mid else 'งบสูง'} #{i + 1:02d} — {s['name']}",
+            "department": departments[i % len(departments)],
+            "pr_id": f"pr-{'mid' if is_mid else 'hv'}-{2000 + i}",
+            "tor": {
+                "summary": f"จัดหา {s['name']} ตาม TOR หน่วยงาน (ชุดทดสอบ #{i + 1})",
+                "specs": [
+                    f"SKU: {s.get('sku') or s['id']}",
+                    "ตามมาตรฐานคุณภาพ",
+                    f"ส่งมอบภายใน {(i % 14) + 3} วัน",
+                ],
+                "qty": 10 + (i % 40),
+                "sku_id": s["id"],
+                "sku_name": s["name"],
+                "unit": s.get("unit") or "pcs",
+            },
+            "budget": float(budget),
+            "currency": "THB",
+            "kind": "hire" if i % 7 == 0 else "goods",
+            "threshold": "mid_value" if is_mid else "high_value",
+            "status": st,
+            "invitees": ven_ids,
+            "min_quotes": 3,
+            "bids": _three_bids(base, channel="board" if published else "invite"),
+            "market_research": (
+                {
+                    "researched_at": _now(),
+                    "sources": [
+                        {"site": "shopee.demo", "price": round(base * 0.97, 2), "url": f"https://shopee.demo/{tid}"},
+                        {"site": "lazada.demo", "price": round(base * 1.03, 2), "url": f"https://lazada.demo/{tid}"},
+                        {"site": "market.demo", "price": round(base, 2), "url": f"https://market.demo/{tid}"},
+                    ],
+                    "market_median": float(base),
+                    "market_min": round(base * 0.97, 2),
+                    "market_max": round(base * 1.03, 2),
+                    "note_th": "mock ราคากลางออนไลน์",
+                }
+                if is_mid
+                else None
+            ),
+            "board": {
+                "published": published,
+                "opens_at": _now() if published else None,
+                "closes_at": _now() if published else None,
+                "url_path": f"/procurement/board/{tid}",
+            },
+            "ai_award": None,
+            "manager_award_approved": st in ("award_approved", "doc_issued", "delivered", "awaiting_invoice", "ap_posted"),
+            "manager_award_by": "procurement_manager" if st in ("award_approved", "doc_issued", "delivered", "awaiting_invoice", "ap_posted") else None,
+            "document": (
+                {
+                    "type": "po" if budget < CONTRACT_THB else "contract",
+                    "number": f"{'PO' if budget < CONTRACT_THB else 'CT'}-MOCK-{i + 1:04d}",
+                    "amount": round(base, 2),
+                    "currency": "THB",
+                    "vendor_id": ven_ids[1],
+                    "vendor_name": next(v["name"] for v in VENDOR_REGISTRY if v["id"] == ven_ids[1]),
+                    "issued_at": _now(),
+                    "status": "issued",
+                    "note_th": "เอกสาร mock สำหรับทดสอบ",
+                }
+                if st in ("doc_issued", "delivered", "awaiting_invoice", "ap_posted")
+                else None
+            ),
+            "manager_doc_approved": st in ("doc_issued", "delivered", "awaiting_invoice", "ap_posted"),
+            "delivery": (
+                {
+                    "received_at": _now(),
+                    "officer": "receiving_officer",
+                    "qty": 10 + (i % 40),
+                    "kind": "goods",
+                    "manager_approved": True,
+                    "stock_posted": True,
+                    "note": "mock GRN",
+                }
+                if st in ("delivered", "awaiting_invoice", "ap_posted")
+                else None
+            ),
+            "accounting_notified": st in ("awaiting_invoice", "ap_posted"),
+            "created_at": _now(),
+            "updated_at": _now(),
+        }
+        TENDERS.append(row)
+
+    # Public board cards (≥50)
     PUBLIC_BOARD = []
-    ACCOUNTING_ALERTS = []
-    VENDOR_INVOICES = []
+    for t in TENDERS:
+        if t.get("board", {}).get("published") or len(PUBLIC_BOARD) < n:
+            PUBLIC_BOARD.append(
+                {
+                    "tender_id": t["id"],
+                    "title": t["title"],
+                    "budget": t["budget"],
+                    "kind": t["kind"],
+                    "opens_at": t["board"].get("opens_at") or _now(),
+                    "closes_at": t["board"].get("closes_at") or _now(),
+                    "tor_summary": t["tor"]["summary"],
+                    "bid_count": len(t["bids"]),
+                    "status": t["status"],
+                }
+            )
+        if len(PUBLIC_BOARD) >= n:
+            break
+    while len(PUBLIC_BOARD) < n:
+        k = len(PUBLIC_BOARD) + 1
+        PUBLIC_BOARD.append(
+            {
+                "tender_id": f"tender-board-pad-{k:03d}",
+                "title": f"ประกาศบอร์ดทดสอบ #{k:02d}",
+                "budget": 50_000 + k * 1000,
+                "kind": "goods",
+                "opens_at": _now(),
+                "closes_at": _now(),
+                "tor_summary": f"TOR บอร์ด mock #{k}",
+                "bid_count": 3,
+                "status": "board_open",
+            }
+        )
+
+    # Petty cash purchases (≥50)
+    purchases: list[dict[str, Any]] = []
+    for i in range(n):
+        amt = 1_000 + (i * 173) % 9_000
+        pid = f"petty-{101 + i}"
+        status = "pending_clearance" if i < 8 else "cleared"
+        purchases.append(
+            {
+                "id": pid,
+                "pr_id": f"pr-petty-{1001 + i}",
+                "title": f"ซื้อวัสดุด่วน #{i + 1:02d}",
+                "department": departments[i % len(departments)],
+                "tor_summary": f"TOR เงินสดยืม รายการ #{i + 1}",
+                "amount": float(amt),
+                "receipt_no": f"RC-{8801 + i}",
+                "vendor_name": VENDOR_REGISTRY[i % n]["name"] if i % 3 else f"ร้านเงินสด #{i + 1}",
+                "purchased_at": _now(),
+                "status": status,
+                "cleared_batch_id": f"clear-{(i // 2) + 1:03d}" if status == "cleared" else None,
+                "scan_complete": True,
+            }
+        )
+    # Keep walkthrough titles on first two
+    purchases[0]["title"] = "ซื้อวัสดุสำนักงานด่วน"
+    purchases[0]["amount"] = 3_200.0
+    purchases[0]["receipt_no"] = "RC-8801"
+    purchases[0]["status"] = "pending_clearance"
+    purchases[0]["cleared_batch_id"] = None
+    purchases[1]["title"] = "ซื้อแบตเตอรี่สำรอง"
+    purchases[1]["amount"] = 5_300.0
+    purchases[1]["receipt_no"] = "RC-8802"
+    purchases[1]["status"] = "pending_clearance"
+    purchases[1]["cleared_batch_id"] = None
+
+    clearance_batches = []
+    for i in range(n):
+        clearance_batches.append(
+            {
+                "id": f"clear-{i + 1:03d}",
+                "submitted_at": _now(),
+                "purchase_ids": [f"petty-{101 + ((i * 2) % n)}", f"petty-{101 + ((i * 2 + 1) % n)}"],
+                "receipt_nos": [f"RC-{8801 + ((i * 2) % n)}", f"RC-{8801 + ((i * 2 + 1) % n)}"],
+                "amount": float(2_000 + i * 110),
+                "currency": "THB",
+                "status": "sent_to_accounting" if i % 4 else "closed",
+                "note_th": f"เคลียร์เงินสดยืมชุดที่ {i + 1} (mock)",
+                "accounting_ref": f"ADV-CLR-{i + 1:03d}",
+                "physical_followup_pending": i % 3 == 0,
+            }
+        )
+
+    month_reconciles = []
+    for i in range(n):
+        y = 2022 + (i // 12)
+        m = (i % 12) + 1
+        month_reconciles.append(
+            {
+                "id": f"recon-{i + 1:03d}",
+                "month": f"{y}-{m:02d}",
+                "reconciled_at": _now(),
+                "float_thb": PETTY_FLOAT_THB,
+                "balance_thb": PETTY_FLOAT_THB - (i * 500) % 20_000,
+                "spent_thb": float((i * 500) % 20_000),
+                "expected_balance_thb": PETTY_FLOAT_THB - (i * 500) % 20_000,
+                "purchase_count": 2 + (i % 10),
+                "cleared_count": 2 + (i % 10),
+                "pending_count": 0 if i % 5 else 1,
+                "balanced": i % 5 != 0,
+                "note_th": f"กระทบยอด mock เดือน {y}-{m:02d}",
+                "status": "balanced" if i % 5 else "variance",
+            }
+        )
+
     PETTY_CASH = {
         "float_thb": PETTY_FLOAT_THB,
         "balance_thb": PETTY_FLOAT_THB - 8_500,
         "per_bill_max_thb": PETTY_MAX_THB,
         "currency": "THB",
-        "purchases": [
-            {
-                "id": "petty-101",
-                "pr_id": "pr-petty-1001",
-                "title": "ซื้อวัสดุสำนักงานด่วน",
-                "department": "Admin",
-                "tor_summary": "ปากกา/แฟ้ม ตาม TOR หน่วยงาน",
-                "amount": 3_200,
-                "receipt_no": "RC-8801",
-                "vendor_name": "ร้านอุปกรณ์ใกล้เคียง",
-                "purchased_at": _now(),
-                "status": "pending_clearance",
-                "cleared_batch_id": None,
-                "scan_complete": True,
-            },
-            {
-                "id": "petty-102",
-                "pr_id": "pr-petty-1002",
-                "title": "ซื้อแบตเตอรี่สำรอง",
-                "department": "IT",
-                "tor_summary": "แบต UPS สำรอง ตาม TOR",
-                "amount": 5_300,
-                "receipt_no": "RC-8802",
-                "vendor_name": "IT Corner",
-                "purchased_at": _now(),
-                "status": "pending_clearance",
-                "cleared_batch_id": None,
-                "scan_complete": True,
-            },
-        ],
-        "clearance_batches": [],
-        "month_reconciles": [],
+        "purchases": purchases,
+        "clearance_batches": clearance_batches,
+        "month_reconciles": month_reconciles,
     }
-    # Seed scanned docs (system-of-record). Physical originals pending for tax docs.
-    _seed_scan_docs(
+
+    # Vendor invoices (≥50)
+    VENDOR_INVOICES = []
+    for i in range(n):
+        t = TENDERS[i % len(TENDERS)]
+        winner = (t.get("bids") or [{}])[1 if len(t.get("bids") or []) > 1 else 0]
+        amount = float(winner.get("amount") or t.get("budget") or 10_000)
+        VENDOR_INVOICES.append(
+            {
+                "id": f"vinv-{101 + i}",
+                "tender_id": t["id"],
+                "vendor_id": winner.get("vendor_id"),
+                "vendor_name": winner.get("vendor_name") or VENDOR_REGISTRY[i % n]["name"],
+                "number": f"INV-V-{1001 + i}",
+                "amount": amount,
+                "currency": "THB",
+                "submitted_at": _now(),
+                "status": ["pending_procurement_check", "sent_to_accounting", "rejected"][i % 3],
+                "ap_posted": i % 3 == 1,
+                "ap_ref": f"AP-INV-V-{1001 + i}" if i % 3 == 1 else None,
+                "scan_complete": True,
+                "physical_original_pending": i % 2 == 0,
+            }
+        )
+
+    # Accounting alerts (≥50)
+    ACCOUNTING_ALERTS = []
+    for i in range(n):
+        kind = ["delivery", "petty_clearance", "physical_original"][i % 3]
+        ACCOUNTING_ALERTS.append(
+            {
+                "id": f"acct-alert-{101 + i}",
+                "tender_id": TENDERS[i % len(TENDERS)]["id"] if kind != "petty_clearance" else None,
+                "petty_clearance_id": f"clear-{(i % n) + 1:03d}" if kind == "petty_clearance" else None,
+                "proc_doc_id": f"pdoc-{101 + i}" if kind == "physical_original" else None,
+                "title": [
+                    f"แจ้งส่งมอบ #{i + 1}",
+                    f"เคลียร์เงินสดยืม #{i + 1}",
+                    f"รอตัวจริงเอกสาร #{i + 1}",
+                ][i % 3],
+                "amount": float(5_000 + i * 1200),
+                "vendor_name": VENDOR_REGISTRY[i % n]["name"],
+                "message_th": f"ข้อความแจ้งเตือนบัญชี mock รายการที่ {i + 1}",
+                "created_at": _now(),
+                "status": "open" if i % 4 else "closed",
+                "kind": kind,
+            }
+        )
+
+    # Scanned documents (≥50 of each major type: pr, tor, receipt, tax_invoice, quote, po)
+    seed_rows: list[tuple[str, str, str, str, bool]] = []
+    doc_types_cycle = [
+        ("pr", False),
+        ("tor", False),
+        ("receipt", True),
+        ("tax_invoice", True),
+        ("quote", False),
+        ("po", False),
+        ("vendor_invoice", False),
+        ("delivery", False),
+        ("contract", True),
+        ("important", True),
+    ]
+    # Anchor walkthrough docs
+    seed_rows.extend(
         [
             ("petty", "petty-101", "pr", "PR-petty-101.pdf", False),
             ("petty", "petty-101", "tor", "TOR-petty-101.pdf", False),
@@ -302,17 +626,37 @@ def reset_flow(vendors: list[dict[str, Any]], skus: list[dict[str, Any]]) -> Non
             ("tender", "tender-hv-001", "tor", "TOR-hv-1001.pdf", False),
         ]
     )
+    # ≥50 per doc type
+    for doc_type, physical in doc_types_cycle:
+        for i in range(n):
+            case_kind = "petty" if doc_type == "receipt" or i % 5 == 0 else "tender"
+            case_id = (
+                f"petty-{101 + (i % n)}"
+                if case_kind == "petty"
+                else TENDERS[i % len(TENDERS)]["id"]
+            )
+            seed_rows.append(
+                (
+                    case_kind,
+                    case_id,
+                    doc_type,
+                    f"{doc_type.upper()}-mock-{i + 1:03d}.pdf",
+                    physical,
+                )
+            )
+    _seed_scan_docs(seed_rows)
+
     _seq.update(
         {
-            "ven": 100,
-            "tender": 100,
-            "bid": 300,
-            "inv": 100,
-            "alert": 100,
-            "petty": 110,
-            "clear": 100,
-            "recon": 100,
-            "doc": 200,
+            "ven": 200,
+            "tender": 200,
+            "bid": 2000,
+            "inv": 200,
+            "alert": 200,
+            "petty": 200,
+            "clear": 200,
+            "recon": 200,
+            "doc": 5000,
         }
     )
 
@@ -352,6 +696,7 @@ def thresholds() -> dict[str, Any]:
         "high_value_thb": HIGH_VALUE_THB,
         "contract_thb": CONTRACT_THB,
         "min_quotes": 3,
+        "mock_set_size": MOCK_SET_SIZE,
         "scan_first": True,
         "scan_policy_th": (
             "ทุกกรณีต้องสแกนเอกสารเข้าสู่ระบบก่อนทำรายการ "
@@ -598,6 +943,8 @@ def publish_board(tender_id: str, body: dict[str, Any] | None = None) -> dict[st
 
 
 def list_board() -> list[dict[str, Any]]:
+    if PUBLIC_BOARD:
+        return deepcopy(PUBLIC_BOARD)
     out = []
     for t in TENDERS:
         if t.get("board", {}).get("published"):
@@ -1217,10 +1564,14 @@ def documents_summary() -> dict[str, Any]:
         for d in PROC_DOCUMENTS
         if d.get("physical_status") == "sent_to_accounting"
     ]
+    by_type: dict[str, int] = {}
+    for d in PROC_DOCUMENTS:
+        by_type[d["doc_type"]] = by_type.get(d["doc_type"], 0) + 1
     return {
         "scan_first": True,
         "policy_th": thresholds()["scan_policy_th"],
         "total_scanned": len(PROC_DOCUMENTS),
+        "counts_by_type": by_type,
         "pending_physical_send": len(pending),
         "in_transit_to_accounting": len(in_transit),
         "items": deepcopy(PROC_DOCUMENTS),

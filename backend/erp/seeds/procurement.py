@@ -138,6 +138,62 @@ def build_procurement(vendors: list[dict], skus: list[dict]) -> dict[str, Any]:
         },
     )
 
+    # ≥50 mock PRs per budget band for testing
+    for i in range(50):
+        sku = skus[i % len(skus)]
+        ven = vendors[i % len(vendors)]
+        prs.append(
+            {
+                "id": f"pr-petty-mock-{i + 1:03d}",
+                "title": f"PR เงินสดยืม mock #{i + 1:02d} — {sku['name']}",
+                "status": "approved" if i % 3 else "pending",
+                "vendor": ven["name"] if i % 2 else "ร้านเงินสด",
+                "vendor_id": ven["id"] if i % 2 else None,
+                "sku_id": sku["id"],
+                "qty": 1 + (i % 5),
+                "total": 1_000 + (i * 170) % 9_000,
+                "currency": "THB",
+                "budget": 1_000 + (i * 170) % 9_000,
+                "band": "petty",
+                "petty": True,
+                "has_tor": True,
+            }
+        )
+        prs.append(
+            {
+                "id": f"pr-mid-mock-{i + 1:03d}",
+                "title": f"PR งบกลาง mock #{i + 1:02d} — {sku['name']}",
+                "status": "pending" if i % 4 else "approved",
+                "vendor": "",
+                "vendor_id": None,
+                "sku_id": sku["id"],
+                "qty": 5 + (i % 20),
+                "total": 12_000 + (i * 1_500) % 80_000,
+                "currency": "THB",
+                "budget": 12_000 + (i * 1_500) % 80_000,
+                "band": "mid_value",
+                "mid_value": True,
+                "has_tor": True,
+            }
+        )
+        prs.append(
+            {
+                "id": f"pr-hv-mock-{i + 1:03d}",
+                "title": f"PR งบสูง mock #{i + 1:02d} — {sku['name']}",
+                "status": "pending" if i % 5 else "approved",
+                "vendor": ven["name"],
+                "vendor_id": ven["id"],
+                "sku_id": sku["id"],
+                "qty": 20 + i,
+                "total": 120_000 + (i * 8_000) % 900_000,
+                "currency": "THB",
+                "budget": 120_000 + (i * 8_000) % 900_000,
+                "band": "high_value",
+                "high_value": True,
+                "has_tor": True,
+            }
+        )
+
     return {
         "PROCUREMENT_PRS": prs,
         "PURCHASE_ORDERS": pos,

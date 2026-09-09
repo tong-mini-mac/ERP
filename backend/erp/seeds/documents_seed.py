@@ -11,33 +11,57 @@ VENDORS = [
     "Eastern Plastics", "ASEAN Spice Hub", "Chiang Mai Agro", "Local Pack Thailand",
 ]
 
+# ≥50 mock rows per document type for testing
+DOC_TYPES = [
+    "pr",
+    "tor",
+    "receipt",
+    "tax_invoice",
+    "invoice",
+    "quote",
+    "po",
+    "contract",
+    "delivery",
+    "vendor_invoice",
+    "important",
+]
+
 
 def build_documents() -> dict[str, Any]:
     today = date(2026, 9, 7)
     scans: list[dict[str, Any]] = []
-    types = ["invoice", "tor", "contract"]
-    for i in range(50):
-        doc_type = types[i % 3]
-        day = today - timedelta(days=i % 40)
-        vendor = VENDORS[i % len(VENDORS)]
-        total = 1500 + i * 175
-        scans.append(
-            {
-                "id": f"scan-{i + 1:02d}",
-                "filename": f"{doc_type}-{i + 1:02d}.pdf",
-                "doc_type": doc_type,
-                "status": ["parsed", "parsed", "review", "parsed"][i % 4],
-                "vendor": vendor,
-                "vendor_tax_id": f"01055{6600000 + i}",
-                "invoice_number": f"INV-2026-{1000 + i}",
-                "total": total,
-                "currency": "THB",
-                "scanned_at": day.isoformat(),
-                "source": "upload" if i % 5 else "manual",
-                "lines": [
-                    {"desc": f"Line item {j + 1}", "qty": j + 1, "amount": total // 3}
-                    for j in range(3)
-                ],
-            }
-        )
+    n = 50
+    idx = 0
+    for doc_type in DOC_TYPES:
+        for i in range(n):
+            idx += 1
+            day = today - timedelta(days=(idx % 90))
+            vendor = VENDORS[idx % len(VENDORS)]
+            total = 800 + idx * 95
+            scans.append(
+                {
+                    "id": f"scan-{doc_type}-{i + 1:03d}",
+                    "filename": f"{doc_type}-{i + 1:03d}.pdf",
+                    "doc_type": doc_type,
+                    "status": ["parsed", "parsed", "review", "parsed"][idx % 4],
+                    "vendor": vendor,
+                    "vendor_tax_id": f"01055{6600000 + idx}",
+                    "invoice_number": f"DOC-2026-{1000 + idx}",
+                    "total": total,
+                    "currency": "THB",
+                    "scanned_at": day.isoformat(),
+                    "source": "upload" if idx % 5 else "manual",
+                    "requires_physical_original": doc_type
+                    in ("receipt", "tax_invoice", "contract", "important"),
+                    "physical_status": (
+                        "pending_send"
+                        if doc_type in ("receipt", "tax_invoice", "contract", "important")
+                        else "not_required"
+                    ),
+                    "lines": [
+                        {"desc": f"{doc_type} line {j + 1}", "qty": j + 1, "amount": total // 3}
+                        for j in range(3)
+                    ],
+                }
+            )
     return {"DOCUMENT_SCANS": scans}
