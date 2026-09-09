@@ -79,6 +79,27 @@ def build_procurement(vendors: list[dict], skus: list[dict]) -> dict[str, Any]:
             }
         )
 
+    # One high-value PR (>100k) that feeds the tender workflow UI.
+    hv_sku = skus[5] if len(skus) > 5 else skus[0]
+    hv_ven = vendors[0]
+    prs.insert(
+        0,
+        {
+            "id": "pr-hv-1001",
+            "title": f"PR สูงบ — {hv_sku['name']} (TOR แนบ)",
+            "status": "pending",
+            "vendor": hv_ven["name"],
+            "vendor_id": hv_ven["id"],
+            "sku_id": hv_sku["id"],
+            "qty": 500,
+            "total": 220_000,
+            "currency": "THB",
+            "budget": 220_000,
+            "high_value": True,
+            "has_tor": True,
+        },
+    )
+
     return {
         "PROCUREMENT_PRS": prs,
         "PURCHASE_ORDERS": pos,
