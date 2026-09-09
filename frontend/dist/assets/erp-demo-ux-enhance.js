@@ -1953,7 +1953,10 @@
       var act = btn.getAttribute("data-hv");
       setMsg("กำลังทำ: " + act + "…");
       var p = Promise.resolve();
-      if (act === "refresh") p = refresh();
+      if (act === "refresh")
+        p = refresh().then(function () {
+          setMsg("อัปเดตแล้ว");
+        });
       else if (act === "register") {
         var name = prompt("ชื่อผู้ประกอบการ", "Demo Vendor Co., Ltd.");
         if (!name) return setMsg("ยกเลิก");
