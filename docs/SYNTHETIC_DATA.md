@@ -93,4 +93,8 @@ Runtime procurement state (vendors registry, tenders, petty float, scanned docs)
 
 ## Product policy (aligned)
 
-Open shared sandbox, **no timed trial**, no signup required for `/demo` iframe auto-login. See README.
+- GitHub repo is **public**: [tong-mini-mac/ERP](https://github.com/tong-mini-mac/ERP)
+- Open shared sandbox, **no timed trial**, no signup required for `/demo` iframe auto-login
+- Synthetic data only — still isolated from ATLAS
+
+See README.
