@@ -6,7 +6,7 @@ It is **not** company ATLAS / live ERP. ATLAS stays untouched. Demo never shares
 
 | | |
 |--|--|
-| Private repo | [tong-mini-mac/ERP](https://github.com/tong-mini-mac/ERP) |
+| **Public** repo | [tong-mini-mac/ERP](https://github.com/tong-mini-mac/ERP) |
 | Live sandbox | https://erp-demo-production-9ab8.up.railway.app |
 | Demo hub | https://inz.lol/demo → **ERP-Demo** |
 | App version | **1.0.0-demo** |
@@ -53,8 +53,11 @@ Details: [`docs/ERP_DEMO_ISOLATION.md`](docs/ERP_DEMO_ISOLATION.md).
 
 Audience is **portfolio reviewers** (CTO / Senior AI who got a job-application link) — not paying customers. Volume is low.
 
+The GitHub repository is **public** (`tong-mini-mac/ERP`) so reviewers can browse source and seed data freely. Live demo data remains synthetic only and stays isolated from ATLAS.
+
 | Choice | Why |
 |--------|-----|
+| **Public source** | Portfolio transparency — clone/browse without a private invite |
 | **No time limit** | Reviewers look ~10–15 minutes; a trial clock adds complexity without value |
 | **Shared sandbox** | One synth tenant; cost is the server you already run |
 | **No signup required** | Auto / shared login `demo@erp.demo` — open from `/demo` or the live URL |

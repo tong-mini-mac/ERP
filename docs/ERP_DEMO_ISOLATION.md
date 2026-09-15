@@ -23,6 +23,7 @@ That handoff is **not** ATLAS access. It only proves the visitor already signed 
 
 ## ERP-Demo guarantees
 
+- GitHub repo is **public**: [tong-mini-mac/ERP](https://github.com/tong-mini-mac/ERP)
 - `PRODUCT_MODE=erp-demo`
 - `ACCEPT_PLATFORM_SSO=true` → accepts landing `?inz_sso=` / `POST /api/auth/inz-sso`
 - No outbound calls to ATLAS
