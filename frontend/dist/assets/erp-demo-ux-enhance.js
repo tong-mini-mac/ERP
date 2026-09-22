@@ -235,7 +235,7 @@
       box.setAttribute("role", "group");
       box.setAttribute("aria-label", "Language");
       box.style.cssText =
-        "position:fixed;top:12px;right:12px;z-index:2147483647;display:flex;gap:0;border:1px solid #475569;border-radius:8px;overflow:hidden;background:#0f172a;box-shadow:0 4px 16px rgba(0,0,0,.35);font-family:system-ui,sans-serif;pointer-events:auto";
+        "position:fixed;top:12px;right:12px;z-index:2147483647;display:flex;gap:0;border:1px solid rgba(10,10,10,.14);border-radius:0;overflow:hidden;background:#ffffff;box-shadow:0 4px 16px rgba(10,10,10,.08);font-family:Manrope,system-ui,sans-serif;pointer-events:auto";
       ["th", "en"].forEach(function (code) {
         var btn = document.createElement("button");
         btn.type = "button";
@@ -275,8 +275,8 @@
     var lang = getLang();
     box.querySelectorAll("[data-lang]").forEach(function (btn) {
       var on = btn.getAttribute("data-lang") === lang;
-      btn.style.background = on ? "#0f766e" : "transparent";
-      btn.style.color = on ? "#ecfdf5" : "#94a3b8";
+      btn.style.background = on ? "#0a0a0a" : "transparent";
+      btn.style.color = on ? "#f4f4f2" : "rgba(10,10,10,.62)";
     });
   }
 
@@ -291,7 +291,7 @@
       a.target = "_top";
       a.rel = "noopener";
       a.style.cssText =
-        "display:block;margin:0.5rem 0.75rem 0.75rem;padding:0.45rem 0.65rem;border-radius:6px;background:#0f766e;color:#ecfdf5;text-decoration:none;font-weight:600;font-size:0.9rem;text-align:center";
+        "display:block;margin:0.5rem 0.75rem 0.75rem;padding:0.45rem 0.65rem;border-radius:6px;background:#0a0a0a;color:#f4f4f2;text-decoration:none;font-weight:600;font-size:0.9rem;text-align:center";
       side.insertBefore(a, side.firstChild);
     }
     a.textContent = tPair("หน้าแรก · inz.lol", "Home · inz.lol");
@@ -357,7 +357,7 @@
         if (t.indexOf("Barcode") >= 0 || t.indexOf("barcode") >= 0 || t.indexOf("พิมพ์") >= 0) {
           hint = document.createElement("p");
           hint.id = "erp-demo-barcode-hint";
-          hint.style.cssText = "font-size:0.85rem;color:#94a3b8;margin:0.35rem 0 0.75rem";
+          hint.style.cssText = "font-size:0.85rem;color:rgba(10,10,10,.62);margin:0.35rem 0 0.75rem";
           labels[i].parentElement.insertBefore(hint, labels[i].nextSibling);
           break;
         }
@@ -430,16 +430,16 @@
     var card = document.createElement("div");
     card.id = "erp-demo-manual-doc";
     card.className = "card";
-    card.style.cssText = "margin:1rem 0;padding:1rem;border:1px dashed #64748b;border-radius:8px";
+    card.style.cssText = "margin:1rem 0;padding:1rem;border:1px dashed rgba(10,10,10,.28);border-radius:8px";
     card.innerHTML =
       "<h3 style='margin-top:0'>Documents — scan upload + manual failover</h3>" +
-      "<p style='color:#94a3b8;font-size:0.85rem;margin-top:0'>Primary: upload a scan file. Failover: if the scanner/OCR is broken, fill the manual form below.</p>" +
-      "<div style='padding:0.75rem;margin-bottom:1rem;border:1px solid #334155;border-radius:8px;background:rgba(15,23,42,0.45)'>" +
+      "<p style='color:rgba(10,10,10,.62);font-size:0.85rem;margin-top:0'>Primary: upload a scan file. Failover: if the scanner/OCR is broken, fill the manual form below.</p>" +
+      "<div style='padding:0.75rem;margin-bottom:1rem;border:1px solid rgba(10,10,10,.14);border-radius:0;background:rgba(10,10,10,.04)'>" +
       "<div style='font-weight:600;margin-bottom:0.35rem'>1) Upload file scan</div>" +
       "<label>Scan file (PNG, JPEG, WebP, PDF)</label>" +
       "<input type='file' accept='image/png,image/jpeg,image/webp,application/pdf' data-scan-file />" +
       "<div style='margin-top:0.5rem'><button type='button' class='btn btn-primary' data-scan-upload>Upload &amp; extract</button>" +
-      "<span data-scan-status style='margin-left:0.75rem;font-size:0.85rem;color:#94a3b8'></span></div>" +
+      "<span data-scan-status style='margin-left:0.75rem;font-size:0.85rem;color:rgba(10,10,10,.62)'></span></div>" +
       "</div>" +
       "<div style='font-weight:600;margin-bottom:0.35rem'>2) Manual entry (scanner / OCR failover)</div>" +
       "<label>Document type</label>" +
@@ -450,7 +450,7 @@
       "<label>Line description</label><input data-f='line_desc' placeholder='What was purchased' />" +
       "<label>Notes</label><textarea data-f='notes' rows='2' placeholder='Optional notes'></textarea>" +
       "<div style='margin-top:0.75rem'><button type='button' class='btn btn-primary' data-manual-save>Save manual entry</button>" +
-      "<span data-manual-status style='margin-left:0.75rem;font-size:0.85rem;color:#94a3b8'></span></div>";
+      "<span data-manual-status style='margin-left:0.75rem;font-size:0.85rem;color:rgba(10,10,10,.62)'></span></div>";
 
     // Prefer placing under Document Intelligence header; avoid leaking into other modules.
     var host = main.querySelector(".page") || main;
@@ -474,7 +474,7 @@
       var fd = new FormData();
       fd.append("file", file);
       st.textContent = "Uploading scan…";
-      st.style.color = "#94a3b8";
+      st.style.color = "rgba(10,10,10,.62)";
       fetch("/api/documents/scan", {
         method: "POST",
         headers: { Authorization: "Bearer " + token() },
@@ -492,7 +492,7 @@
             return;
           }
           st.textContent = "Scan saved " + (res.d.id || "") + " (" + (res.d.status || "parsed") + ")";
-          st.style.color = "#0f766e";
+          st.style.color = "#15803d";
         })
         .catch(function (err) {
           st.textContent = String(err);
@@ -524,7 +524,7 @@
             return;
           }
           st.textContent = "Saved " + (res.d.id || "") + " — refresh history if needed";
-          st.style.color = "#0f766e";
+          st.style.color = "#15803d";
         })
         .catch(function (err) {
           st.textContent = String(err);
@@ -546,17 +546,17 @@
     card.id = "erp-demo-add-ingredient";
     card.className = "card";
     card.style.cssText =
-      "margin:1rem 0;padding:1rem;border:1px dashed #0f766e;border-radius:8px;background:rgba(15,118,110,0.08)";
+      "margin:1rem 0;padding:1rem;border:1px dashed rgba(10,10,10,.35);border-radius:0;background:rgba(10,10,10,.04)";
     card.innerHTML =
       "<h3 style='margin-top:0'>Add ingredient to database</h3>" +
-      "<p style='color:#94a3b8;font-size:0.85rem;margin-top:0'>Not the same as “+ add line” in a recipe. Use this when the ingredient is missing from the dropdown / database.</p>" +
+      "<p style='color:rgba(10,10,10,.62);font-size:0.85rem;margin-top:0'>Not the same as “+ add line” in a recipe. Use this when the ingredient is missing from the dropdown / database.</p>" +
       "<label>Ingredient name</label><input data-ing='name' required placeholder='e.g. Holy basil' />" +
       "<label>Unit</label><select data-ing='unit'><option>g</option><option>kg</option><option>ml</option><option>l</option><option>pcs</option></select>" +
       "<label>Yield % (usable after prep)</label><input data-ing='yield_pct' type='number' min='1' max='100' step='0.1' value='100' />" +
       "<label>Purchase price / unit (THB)</label><input data-ing='purchase_price' type='number' min='0' step='0.01' value='0' />" +
       "<label>Notes</label><input data-ing='notes' placeholder='Optional' />" +
       "<div style='margin-top:0.75rem'><button type='button' class='btn btn-primary' data-ing-save>+ Add ingredient to database</button>" +
-      "<span data-ing-status style='margin-left:0.75rem;font-size:0.85rem;color:#94a3b8'></span></div>";
+      "<span data-ing-status style='margin-left:0.75rem;font-size:0.85rem;color:rgba(10,10,10,.62)'></span></div>";
 
     var anchor =
       Array.prototype.find.call(document.querySelectorAll("h3,h2,label,button"), function (el) {
@@ -583,7 +583,7 @@
         return;
       }
       st.textContent = "Saving ingredient…";
-      st.style.color = "#94a3b8";
+      st.style.color = "rgba(10,10,10,.62)";
       fetch("/api/resto/ingredients", {
         method: "POST",
         headers: authHeaders(),
@@ -606,7 +606,7 @@
             " (" +
             (res.d.id || "") +
             ") — reload / reopen Ingredients to see it in dropdowns";
-          st.style.color = "#0f766e";
+          st.style.color = "#15803d";
         })
         .catch(function (err) {
           st.textContent = String(err);
@@ -688,7 +688,7 @@
         "<h3 style='margin-top:0'>" +
         tPair("Present-campaign (สถานะแคมเปญสด)", "Present-campaign (live pulse)") +
         "</h3>" +
-        "<p style='color:#94a3b8;font-size:0.85rem'>" +
+        "<p style='color:rgba(10,10,10,.62);font-size:0.85rem'>" +
         tPair("ม็อคติดตามแคมเปญขณะกำลังรัน", "Mock live monitoring while a campaign is running.") +
         "</p>" +
         "<label>" +
@@ -762,9 +762,9 @@
 
     if (!wrap.querySelector("[data-fin-select]")) {
       wrap.innerHTML =
-        "<div class='card' style='padding:1rem;margin-bottom:1rem;border:1px solid rgba(15,118,110,0.35);background:rgba(15,118,110,0.06)'>" +
+        "<div class='card' style='padding:1rem;margin-bottom:1rem;border:1px solid rgba(10,10,10,.14);background:#ffffff'>" +
         "<h3 data-fin-title style='margin-top:0'></h3>" +
-        "<p data-fin-desc style='color:#94a3b8;font-size:0.85rem;margin-top:0'></p>" +
+        "<p data-fin-desc style='color:rgba(10,10,10,.62);font-size:0.85rem;margin-top:0'></p>" +
         "<label data-fin-label style='display:block;margin-bottom:0.35rem'></label>" +
         "<div data-fin-select style='display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem'>" +
         "<button type='button' class='btn btn-primary' data-fin-tab='journal'></button>" +
@@ -870,7 +870,7 @@
       var f = ensureFinFilters(data);
       var months = f._months || [];
       var html =
-        "<div data-fin-filters style='display:grid;gap:0.5rem;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:0.75rem;padding:0.75rem;border:1px solid #334155;border-radius:8px'>" +
+        "<div data-fin-filters style='display:grid;gap:0.5rem;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:0.75rem;padding:0.75rem;border:1px solid rgba(10,10,10,.14);border-radius:8px'>" +
         "<div><label style='font-size:0.8rem'>" +
         tPair("เดือน", "Month") +
         "</label><select data-ff-month style='width:100%'><option value=''>" +
@@ -1012,7 +1012,7 @@
       if (!panel) return;
       var tab = wrap._finTab || "journal";
       panel.innerHTML =
-        "<p style='color:#94a3b8'>" + tPair("กำลังโหลด…", "Loading…") + "</p>";
+        "<p style='color:rgba(10,10,10,.62)'>" + tPair("กำลังโหลด…", "Loading…") + "</p>";
 
       if (tab === "autopost") {
         renderAutopost(panel);
@@ -1069,7 +1069,7 @@
       var items = data.items || [];
       var html = renderFilterBar(panel, data, "journal");
       html +=
-        "<p style='font-size:0.85rem;color:#94a3b8'>" +
+        "<p style='font-size:0.85rem;color:rgba(10,10,10,.62)'>" +
         tPair("แสดง", "Showing") +
         " <b>" +
         (data.count != null ? data.count : items.length) +
@@ -1082,7 +1082,7 @@
         "</p>";
       if (!items.length) {
         html +=
-          "<p style='color:#94a3b8'>" +
+          "<p style='color:rgba(10,10,10,.62)'>" +
           tPair(
             "ไม่พบรายการในช่วงนี้ — ลองเปลี่ยนเดือนหรือช่วงวันที่",
             "No rows for this filter — try another month or range"
@@ -1095,33 +1095,33 @@
       html +=
         "<div style='overflow:auto;max-height:28rem'><table style='width:100%;border-collapse:collapse;font-size:0.9rem'>" +
         "<thead><tr>" +
-        "<th style='text-align:left;padding:0.35rem;border-bottom:1px solid #334155'>Date</th>" +
-        "<th style='text-align:left;padding:0.35rem;border-bottom:1px solid #334155'>ID / Source</th>" +
-        "<th style='text-align:left;padding:0.35rem;border-bottom:1px solid #334155'>Memo</th>" +
-        "<th style='text-align:right;padding:0.35rem;border-bottom:1px solid #334155'>Dr</th>" +
-        "<th style='text-align:right;padding:0.35rem;border-bottom:1px solid #334155'>Cr</th>" +
+        "<th style='text-align:left;padding:0.35rem;border-bottom:1px solid rgba(10,10,10,.14)'>Date</th>" +
+        "<th style='text-align:left;padding:0.35rem;border-bottom:1px solid rgba(10,10,10,.14)'>ID / Source</th>" +
+        "<th style='text-align:left;padding:0.35rem;border-bottom:1px solid rgba(10,10,10,.14)'>Memo</th>" +
+        "<th style='text-align:right;padding:0.35rem;border-bottom:1px solid rgba(10,10,10,.14)'>Dr</th>" +
+        "<th style='text-align:right;padding:0.35rem;border-bottom:1px solid rgba(10,10,10,.14)'>Cr</th>" +
         "</tr></thead><tbody>";
       items.forEach(function (e) {
         (e.lines || []).forEach(function (ln, i) {
           html +=
             "<tr>" +
-            "<td style='padding:0.3rem;border-bottom:1px solid #1e293b'>" +
+            "<td style='padding:0.3rem;border-bottom:1px solid rgba(10,10,10,.12)'>" +
             (i === 0 ? e.date || "" : "") +
             "</td>" +
-            "<td style='padding:0.3rem;border-bottom:1px solid #1e293b'>" +
+            "<td style='padding:0.3rem;border-bottom:1px solid rgba(10,10,10,.12)'>" +
             (i === 0
               ? (e.id || "") +
                 (e.source ? " · " + e.source : "") +
                 (e.ref ? " · " + e.ref : "")
               : "↳ " + (ln.account || "")) +
             "</td>" +
-            "<td style='padding:0.3rem;border-bottom:1px solid #1e293b'>" +
+            "<td style='padding:0.3rem;border-bottom:1px solid rgba(10,10,10,.12)'>" +
             (i === 0 ? e.memo || "" : ln.name || ln.account || "") +
             "</td>" +
-            "<td style='padding:0.3rem;border-bottom:1px solid #1e293b;text-align:right'>" +
+            "<td style='padding:0.3rem;border-bottom:1px solid rgba(10,10,10,.12);text-align:right'>" +
             (ln.debit ? fmtMoney(ln.debit) : "") +
             "</td>" +
-            "<td style='padding:0.3rem;border-bottom:1px solid #1e293b;text-align:right'>" +
+            "<td style='padding:0.3rem;border-bottom:1px solid rgba(10,10,10,.12);text-align:right'>" +
             (ln.credit ? fmtMoney(ln.credit) : "") +
             "</td>" +
             "</tr>";
@@ -1136,7 +1136,7 @@
       var accounts = data.accounts || [];
       var html = renderFilterBar(panel, data, "gl");
       html +=
-        "<p style='font-size:0.85rem;color:#94a3b8'>" +
+        "<p style='font-size:0.85rem;color:rgba(10,10,10,.62)'>" +
         tPair("บัญชีที่มีรายการ", "Accounts with activity") +
         ": <b>" +
         accounts.length +
@@ -1145,7 +1145,7 @@
         "</p>";
       if (!accounts.length) {
         html +=
-          "<p style='color:#94a3b8'>" +
+          "<p style='color:rgba(10,10,10,.62)'>" +
           tPair("ไม่พบรายการในช่วงนี้", "No rows for this filter") +
           "</p>";
         panel.innerHTML = html;
@@ -1154,13 +1154,13 @@
       }
       accounts.forEach(function (a) {
         html +=
-          "<div style='margin:0.75rem 0;padding:0.5rem 0;border-top:1px solid #334155'>" +
+          "<div style='margin:0.75rem 0;padding:0.5rem 0;border-top:1px solid rgba(10,10,10,.14)'>" +
           "<strong>" +
           a.account +
           " — " +
           (getLang() === "th" && a.name_th ? a.name_th : a.name) +
           "</strong>" +
-          "<span style='float:right;font-size:0.85rem;color:#94a3b8'>bal " +
+          "<span style='float:right;font-size:0.85rem;color:rgba(10,10,10,.62)'>bal " +
           fmtMoney(a.balance) +
           "</span>" +
           "<div style='overflow:auto;max-height:16rem;margin-top:0.35rem'><table style='width:100%;border-collapse:collapse;font-size:0.85rem'>" +
@@ -1191,10 +1191,10 @@
       var items = data.items || [];
       var html = renderFilterBar(panel, data, "tb");
       html +=
-        "<p style='font-size:0.85rem;color:#94a3b8'>" +
+        "<p style='font-size:0.85rem;color:rgba(10,10,10,.62)'>" +
         tPair("งบทดลองสมดุล", "Trial balance OK") +
         ": <b style='color:" +
-        (data.balanced ? "#0f766e" : "#b91c1c") +
+        (data.balanced ? "#15803d" : "#b42318") +
         "'>" +
         (data.balanced ? "YES" : "NO") +
         "</b> · Dr " +
@@ -1212,13 +1212,13 @@
         "<th style='text-align:right;padding:0.35rem'>Credit</th></tr></thead><tbody>";
       items.forEach(function (r) {
         html +=
-          "<tr><td style='padding:0.3rem;border-bottom:1px solid #1e293b'>" +
+          "<tr><td style='padding:0.3rem;border-bottom:1px solid rgba(10,10,10,.12)'>" +
           r.account +
-          "</td><td style='padding:0.3rem;border-bottom:1px solid #1e293b'>" +
+          "</td><td style='padding:0.3rem;border-bottom:1px solid rgba(10,10,10,.12)'>" +
           (getLang() === "th" && r.name_th ? r.name_th : r.name) +
-          "</td><td style='padding:0.3rem;border-bottom:1px solid #1e293b;text-align:right'>" +
+          "</td><td style='padding:0.3rem;border-bottom:1px solid rgba(10,10,10,.12);text-align:right'>" +
           (r.debit ? fmtMoney(r.debit) : "") +
-          "</td><td style='padding:0.3rem;border-bottom:1px solid #1e293b;text-align:right'>" +
+          "</td><td style='padding:0.3rem;border-bottom:1px solid rgba(10,10,10,.12);text-align:right'>" +
           (r.credit ? fmtMoney(r.credit) : "") +
           "</td></tr>";
       });
@@ -1235,11 +1235,11 @@
 
     function renderManualJournal(panel) {
       panel.innerHTML =
-        "<div style='padding:0.75rem;border:1px dashed #0f766e;border-radius:8px'>" +
+        "<div style='padding:0.75rem;border:1px dashed rgba(10,10,10,.35);border-radius:8px'>" +
         "<h4 style='margin:0 0 0.5rem'>" +
         tPair("บันทึกสมุดรายวัน (Manual Journal)", "Enter journal entry") +
         "</h4>" +
-        "<p style='font-size:0.8rem;color:#94a3b8;margin:0 0 0.75rem'>" +
+        "<p style='font-size:0.8rem;color:rgba(10,10,10,.62);margin:0 0 0.75rem'>" +
         tPair("กรอก Dr/Cr ให้ยอดเท่ากัน อย่างน้อย 2 บรรทัด", "Enter balanced Dr/Cr — at least 2 lines") +
         "</p>" +
         "<label>" +
@@ -1261,7 +1261,7 @@
         "<button type='button' class='btn btn-primary' data-mj-save>" +
         tPair("บันทึก Journal Entry", "Save journal entry") +
         "</button></div>" +
-        "<pre data-mj-out style='white-space:pre-wrap;font-family:inherit;margin-top:1rem;font-size:0.85rem;color:#cbd5e1'></pre>" +
+        "<pre data-mj-out style='white-space:pre-wrap;font-family:inherit;margin-top:1rem;font-size:0.85rem;color:rgba(10,10,10,.62)'></pre>" +
         "</div>";
 
       var dateEl = panel.querySelector("[data-mj-date]");
@@ -1374,28 +1374,28 @@
     function renderAutopost(panel) {
       panel.innerHTML =
         "<div style='display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))'>" +
-        "<div style='padding:0.75rem;border:1px dashed #0f766e;border-radius:8px'>" +
+        "<div style='padding:0.75rem;border:1px dashed rgba(10,10,10,.35);border-radius:8px'>" +
         "<h4 style='margin:0 0 0.5rem'>" +
         tPair("สร้างใบแจ้งหนี้ + ลงบัญชี", "Create invoice + post JE") +
         "</h4>" +
-        "<p style='font-size:0.8rem;color:#94a3b8;margin:0 0 0.5rem'>Dr AR / Cr Revenue + VAT</p>" +
+        "<p style='font-size:0.8rem;color:rgba(10,10,10,.62);margin:0 0 0.5rem'>Dr AR / Cr Revenue + VAT</p>" +
         "<label>Customer</label><input data-ap-cust value='Demo Customer' />" +
         "<label>Subtotal (THB)</label><input data-ap-amt type='number' value='10000' step='0.01' />" +
         "<div style='margin-top:0.5rem'><button type='button' class='btn btn-primary' data-ap-create>" +
         tPair("สร้าง + Post", "Create + Post") +
         "</button></div>" +
         "</div>" +
-        "<div style='padding:0.75rem;border:1px dashed #0f766e;border-radius:8px'>" +
+        "<div style='padding:0.75rem;border:1px dashed rgba(10,10,10,.35);border-radius:8px'>" +
         "<h4 style='margin:0 0 0.5rem'>" +
         tPair("รับชำระ + ลงบัญชี", "Receive payment + post JE") +
         "</h4>" +
-        "<p style='font-size:0.8rem;color:#94a3b8;margin:0 0 0.5rem'>Dr Cash / Cr AR — pick a pending invoice</p>" +
+        "<p style='font-size:0.8rem;color:rgba(10,10,10,.62);margin:0 0 0.5rem'>Dr Cash / Cr AR — pick a pending invoice</p>" +
         "<label>Invoice</label><select data-ap-inv></select>" +
         "<div style='margin-top:0.5rem'><button type='button' class='btn btn-primary' data-ap-pay>" +
         tPair("รับชำระ + Post", "Pay + Post") +
         "</button></div>" +
         "</div></div>" +
-        "<pre data-ap-out style='white-space:pre-wrap;font-family:inherit;margin-top:1rem;font-size:0.85rem;color:#cbd5e1'></pre>";
+        "<pre data-ap-out style='white-space:pre-wrap;font-family:inherit;margin-top:1rem;font-size:0.85rem;color:rgba(10,10,10,.62)'></pre>";
 
       var invSel = panel.querySelector("[data-ap-inv]");
       fetch("/api/finance/invoices", { headers: authHeaders() })
@@ -1532,9 +1532,9 @@
 
     if (!wrap.querySelector("[data-hr-select]")) {
       wrap.innerHTML =
-        "<div class='card' style='padding:1rem;margin-bottom:1rem;border:1px solid rgba(15,118,110,0.35);background:rgba(15,118,110,0.06)'>" +
+        "<div class='card' style='padding:1rem;margin-bottom:1rem;border:1px solid rgba(10,10,10,.14);background:#ffffff'>" +
         "<h3 data-hr-title style='margin-top:0'></h3>" +
-        "<p data-hr-desc style='color:#94a3b8;font-size:0.85rem;margin-top:0'></p>" +
+        "<p data-hr-desc style='color:rgba(10,10,10,.62);font-size:0.85rem;margin-top:0'></p>" +
         "<label data-hr-label style='display:block;margin-bottom:0.35rem'></label>" +
         "<div data-hr-select style='display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem'>" +
         "<button type='button' class='btn btn-primary' data-hr-tab='payslip'></button>" +
@@ -1615,7 +1615,7 @@
       if (!panel) return;
       var tab = wrap._hrTab || "payslip";
       panel.innerHTML =
-        "<p style='color:#94a3b8'>" + tPair("กำลังโหลด…", "Loading…") + "</p>";
+        "<p style='color:rgba(10,10,10,.62)'>" + tPair("กำลังโหลด…", "Loading…") + "</p>";
       if (tab === "payslip") renderPayslip(panel);
       else if (tab === "balances") renderBalances(panel);
       else renderRun(panel);
@@ -1643,7 +1643,7 @@
         }
         var lines = res.d.lines || [];
         var html =
-          "<p style='font-size:0.85rem;color:#94a3b8'>" +
+          "<p style='font-size:0.85rem;color:rgba(10,10,10,.62)'>" +
           tPair("รอบ", "Period") +
           " <b>" +
           (res.d.period || "") +
@@ -1685,7 +1685,7 @@
           var ded = ln.deductions || [];
           var attn = ln.attendance || {};
           box.innerHTML =
-            "<div style='padding:0.75rem;border:1px dashed #0f766e;border-radius:8px'>" +
+            "<div style='padding:0.75rem;border:1px dashed rgba(10,10,10,.35);border-radius:8px'>" +
             "<h4 style='margin:0 0 0.5rem'>" +
             tPair("สลิปเงินเดือน", "Payslip") +
             " — " +
@@ -1700,7 +1700,7 @@
             ded
               .map(function (d) {
                 return (
-                  "<tr><td style='padding:0.25rem;color:#94a3b8'>— " +
+                  "<tr><td style='padding:0.25rem;color:rgba(10,10,10,.62)'>— " +
                   (d.name || d.code) +
                   "</td><td style='text-align:right;padding:0.25rem;color:#f87171'>-" +
                   fmtMoney(d.amount) +
@@ -1708,12 +1708,12 @@
                 );
               })
               .join("") +
-            "<tr><td style='padding:0.35rem;border-top:1px solid #334155'><b>" +
+            "<tr><td style='padding:0.35rem;border-top:1px solid rgba(10,10,10,.14)'><b>" +
             tPair("รับสุทธิ / Net", "Net pay") +
-            "</b></td><td style='text-align:right;padding:0.35rem;border-top:1px solid #334155'><b>" +
+            "</b></td><td style='text-align:right;padding:0.35rem;border-top:1px solid rgba(10,10,10,.14)'><b>" +
             fmtMoney(ln.net) +
             "</b></td></tr></table>" +
-            "<p style='font-size:0.8rem;color:#94a3b8;margin:0.5rem 0 0'>SSO ER " +
+            "<p style='font-size:0.8rem;color:rgba(10,10,10,.62);margin:0.5rem 0 0'>SSO ER " +
             fmtMoney(ln.sso_employer) +
             " · absent " +
             (attn.absent_days || 0) +
@@ -1742,7 +1742,7 @@
           }
           var items = res.d.items || [];
           var html =
-            "<p style='font-size:0.85rem;color:#94a3b8'>" +
+            "<p style='font-size:0.85rem;color:rgba(10,10,10,.62)'>" +
             tPair("สิทธิ์ปี", "Year entitlements") +
             " " +
             (res.d.year || "") +
@@ -1776,15 +1776,15 @@
               );
             }
             html +=
-              "<tr><td style='padding:0.3rem;border-bottom:1px solid #1e293b'>" +
+              "<tr><td style='padding:0.3rem;border-bottom:1px solid rgba(10,10,10,.12)'>" +
               (row.code || "") +
               " " +
               (row.employee || "") +
-              "</td><td style='padding:0.3rem;border-bottom:1px solid #1e293b;text-align:right'>" +
+              "</td><td style='padding:0.3rem;border-bottom:1px solid rgba(10,10,10,.12);text-align:right'>" +
               cell("annual") +
-              "</td><td style='padding:0.3rem;border-bottom:1px solid #1e293b;text-align:right'>" +
+              "</td><td style='padding:0.3rem;border-bottom:1px solid rgba(10,10,10,.12);text-align:right'>" +
               cell("sick") +
-              "</td><td style='padding:0.3rem;border-bottom:1px solid #1e293b;text-align:right'>" +
+              "</td><td style='padding:0.3rem;border-bottom:1px solid rgba(10,10,10,.12);text-align:right'>" +
               cell("personal") +
               "</td></tr>";
           });
@@ -1798,7 +1798,7 @@
 
     function renderRun(panel) {
       panel.innerHTML =
-        "<p style='font-size:0.85rem;color:#94a3b8'>" +
+        "<p style='font-size:0.85rem;color:rgba(10,10,10,.62)'>" +
         tPair(
           "คำนวณใหม่: gross → SSO → WHT → หักขาด/สาย → net",
           "Recalculate: gross → SSO → WHT → absent/late → net"
@@ -1808,7 +1808,7 @@
         "<div style='margin-top:0.75rem'><button type='button' class='btn btn-primary' data-hr-run>" +
         tPair("รันเงินเดือน (TH)", "Run payroll (TH)") +
         "</button></div>" +
-        "<pre data-hr-out style='white-space:pre-wrap;font-family:inherit;margin-top:1rem;font-size:0.85rem;color:#cbd5e1'></pre>";
+        "<pre data-hr-out style='white-space:pre-wrap;font-family:inherit;margin-top:1rem;font-size:0.85rem;color:rgba(10,10,10,.62)'></pre>";
       panel.querySelector("[data-hr-run]").addEventListener("click", function () {
         var out = panel.querySelector("[data-hr-out]");
         var period = panel.querySelector("[data-hr-period]").value || "2026-09";
@@ -1857,10 +1857,10 @@
     var box = document.createElement("div");
     box.id = "erp-hv-proc";
     box.style.cssText =
-      "margin:16px;padding:16px;border:1px solid #334155;border-radius:12px;background:#0f172a;color:#e2e8f0;font-family:system-ui,sans-serif";
+      "margin:16px;padding:16px;border:1px solid rgba(10,10,10,.14);border-radius:0;background:#ffffff;color:#0a0a0a;font-family:Manrope,system-ui,sans-serif";
     box.innerHTML =
       "<h2 style='margin:0 0 8px;font-size:1.15rem'>จัดซื้อตามช่วงงบประมาณ</h2>" +
-      "<p style='margin:0 0 12px;color:#94a3b8;font-size:.9rem'><b style='color:#e2e8f0'>สแกนเอกสารเข้าระบบก่อนทุกกรณี</b> · ใบเสร็จ/ใบกำกับภาษี/เอกสารสำคัญ ส่งตัวจริงให้บัญชีตามหลังเพื่อยื่นภาษี · ≤10k เงินสดยืม · 10k–100k ราคาตลาด+≥3 ราย · &gt;100k บอร์ด/PO/สัญญา</p>" +
+      "<p style='margin:0 0 12px;color:rgba(10,10,10,.62);font-size:.9rem'><b style='color:#0a0a0a'>สแกนเอกสารเข้าระบบก่อนทุกกรณี</b> · ใบเสร็จ/ใบกำกับภาษี/เอกสารสำคัญ ส่งตัวจริงให้บัญชีตามหลังเพื่อยื่นภาษี · ≤10k เงินสดยืม · 10k–100k ราคาตลาด+≥3 ราย · &gt;100k บอร์ด/PO/สัญญา</p>" +
       "<div style='display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px'>" +
       "<button type='button' data-band='petty' class='btn btn-primary'>A) ≤10,000 เงินสดยืม</button>" +
       "<button type='button' data-band='mid' class='btn'>B) 10k–100k</button>" +
@@ -1871,8 +1871,8 @@
       "</div>" +
       "<div id='erp-hv-meta' style='font-size:.8rem;color:#64748b;margin-bottom:10px'></div>" +
       "<div id='erp-hv-actions' style='display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px'></div>" +
-      "<div id='erp-hv-msg' style='min-height:1.2em;margin-bottom:8px;color:#38bdf8;font-size:.9rem'></div>" +
-      "<pre id='erp-hv-out' style='white-space:pre-wrap;background:#020617;border:1px solid #1e293b;border-radius:8px;padding:12px;max-height:420px;overflow:auto;font-size:.8rem;color:#cbd5e1'></pre>";
+      "<div id='erp-hv-msg' style='min-height:1.2em;margin-bottom:8px;color:#0a0a0a;font-size:.9rem'></div>" +
+      "<pre id='erp-hv-out' style='white-space:pre-wrap;background:#f4f4f2;border:1px solid rgba(10,10,10,.14);border-radius:0;padding:12px;max-height:420px;overflow:auto;font-size:.8rem;color:rgba(10,10,10,.62)'></pre>";
 
     var anchor = host.querySelector("h1, h2, .card, form") || host.firstChild;
     if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(box, anchor);
